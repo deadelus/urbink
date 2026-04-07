@@ -167,6 +167,103 @@ flutterfire configure --project=urbink-prod    --out=lib/firebase_options_prod.d
 4. Implémente uniquement ce que la story demande — pas d'over-engineering
 5. Respecte les conventions ci-dessus sans exception
 
+## Conventions Git — OBLIGATOIRES
+
+### Branches
+
+Format : `epic-<N>/story-<N.N>-<description-courte>`
+
+```
+epic-1/story-1.1-flutter-setup
+epic-2/story-2.2-gps-tracking
+epic-4/story-4.2-badge-quartier
+```
+
+Branches spéciales :
+```
+main          ← production — merge uniquement via PR après review
+develop       ← intégration continue — base de toutes les branches story
+hotfix/<desc> ← correctif urgent en prod (branché depuis main)
+```
+
+Règles :
+- **Ne jamais committer directement sur `main` ou `develop`**
+- Chaque story = une branche dédiée
+- Une branche = une story (pas de regroupement d'epics)
+- Brancher depuis `develop`, merger dans `develop` via PR
+
+### Commits
+
+Format Conventional Commits avec référence story :
+
+```
+<type>(epic-N/story-N.N): <description courte en français>
+```
+
+Types autorisés :
+| Type | Usage |
+|------|-------|
+| `feat` | Nouvelle fonctionnalité (story implémentée) |
+| `fix` | Correctif bug |
+| `test` | Ajout ou modification de tests |
+| `refactor` | Refactoring sans changement de comportement |
+| `chore` | Config, CI, dépendances, tooling |
+| `docs` | Documentation, ADR |
+| `style` | Formatage, lint (pas de logique) |
+
+Exemples :
+```
+feat(epic-2/story-2.2): tracking GPS temps réel avec snap to road Nominatim
+feat(epic-4/story-4.2): détection complétion quartier + trigger badge Firestore
+fix(epic-2/story-2.3): correction opacité polyline MapStreetOverlay sur iOS 16
+test(epic-7/story-7.1): tests unitaires Firebase Anonymous Auth
+chore(epic-1/story-1.6): configuration GitHub Actions + Fastlane
+docs: ADR-002 choix sqflite pour cache local sessions GPS
+```
+
+Règles :
+- Un commit = une intention (pas de "fix stuff" avec 10 fichiers différents)
+- Le premier commit d'une branche inclut toujours la référence story
+- Les commits intermédiaires peuvent être squashés avant merge PR
+- **Jamais de `git push --force` sur `develop` ou `main`**
+
+### Pull Requests
+
+Titre : `[Epic N · Story N.N] Description de la story`
+
+```
+[Epic 2 · Story 2.2] Tracking GPS temps réel + snap to road Nominatim
+[Epic 4 · Story 4.2] Détection complétion quartier + badge + secret local
+```
+
+Body PR (template) :
+```markdown
+## Story
+Epic N · Story N.N — <titre de la story>
+
+## ACs implémentés
+- [ ] Given ... When ... Then ...
+- [ ] Given ... When ... Then ...
+
+## Notes techniques
+(décisions, compromis, points d'attention)
+```
+
+### Epics → Branches de référence
+
+| Epic | Domaine | Préfixe branche |
+|------|---------|-----------------|
+| Epic 1 | Fondation & Infrastructure | `epic-1/story-1.x-...` |
+| Epic 2 | Carte & Exploration GPS | `epic-2/story-2.x-...` |
+| Epic 3 | Historique & Filtrage | `epic-3/story-3.x-...` |
+| Epic 4 | Gamification & Progression | `epic-4/story-4.x-...` |
+| Epic 5 | Parcours | `epic-5/story-5.x-...` |
+| Epic 6 | Points d'Intérêt | `epic-6/story-6.x-...` |
+| Epic 7 | Compte & Auth | `epic-7/story-7.x-...` |
+| Epic 8 | Communauté & Pins | `epic-8/story-8.x-...` |
+| Epic 9 | Partage & Social | `epic-9/story-9.x-...` |
+| Epic 10 | Notifications | `epic-10/story-10.x-...` |
+
 ## Maintenance de la documentation `docs/`
 
 Mets à jour `docs/` dès qu'une des situations suivantes se présente :
