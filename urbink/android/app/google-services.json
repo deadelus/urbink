@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "748881819569",
+    "project_id": "urbink-dev",
+    "storage_bucket": "urbink-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:748881819569:android:5d53d81bd1bc90a41e2f90",
+        "android_client_info": {
+          "package_name": "com.example.urbink"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJChis4kpKK-y0-QEgUVOp0ixYFmaUvCE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
