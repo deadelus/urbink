@@ -13,10 +13,13 @@ Future<T?> showUrbinkBottomSheet<T>({
   required Widget child,
   double initialSnap = 0.4,
 }) {
-  assert(
-    initialSnap == 0.4 || initialSnap == 0.7,
-    'initialSnap doit être 0.4 (aperçu) ou 0.7 (détail)',
-  );
+  if (initialSnap != 0.4 && initialSnap != 0.7) {
+    throw ArgumentError.value(
+      initialSnap,
+      'initialSnap',
+      'doit être 0.4 (aperçu) ou 0.7 (détail)',
+    );
+  }
 
   return showModalBottomSheet<T>(
     context: context,

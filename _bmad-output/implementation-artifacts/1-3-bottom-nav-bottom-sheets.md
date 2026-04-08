@@ -87,15 +87,17 @@ Afin d'accéder rapidement à toutes les fonctionnalités depuis n'importe quel 
 La modale "Arrêter la session ?" et l'écran récapitulatif sont reportés en **Story 2.5** car :
 - Sans GPS tracké, une confirmation ne protège aucune donnée réelle
 - La modale sera branchée sur la sauvegarde Firestore (Story 2.5) — construire une version vide maintenant = double implémentation
-- Le bouton Arrêter reset le `StateProvider<bool>` — comportement correct pour le MVP navigation
+- Le bouton Arrêter reset le `sessionStateProvider` à `SessionState.idle` — comportement correct pour le MVP navigation
 
 ### Architecture `StatefulShellRoute`
 
 `StatefulShellRoute.indexedStack` crée un `Navigator` dédié par branche. Chaque onglet conserve sa pile de routes et sa position de scroll de manière indépendante. Le retap sur l'onglet actif appelle `goBranch(initialLocation: true)` pour revenir à la route racine de la branche (pattern "scroll to top").
 
-### `sessionActiveProvider` — point d'extension Epic 2
+### `sessionStateProvider` — point d'extension Epic 2
 
-Le provider est volontairement minimal (`StateProvider<bool>`). En Story 2.5 il sera remplacé par un `AsyncNotifierProvider<SessionState>` complet (GPS, Firestore, sqflite). Le bouton Arrêter dans `app_router.dart` appelle déjà `ref.read(sessionActiveProvider.notifier).state = false` — le point d'accroche pour la logique de sauvegarde est commenté dans le code.
+Le provider est volontairement minimal (`StateProvider<SessionState>`), avec `SessionState { idle, active, paused }`. En Story 2.5 il sera remplacé par un `AsyncNotifierProvider<SessionState>` complet (GPS, Firestore, sqflite). Le bouton Arrêter dans `app_router.dart` appelle déjà `ref.read(sessionStateProvider.notifier).state = SessionState.idle` — le point d'accroche pour la logique de sauvegarde est commenté dans le code.
+
+Le tap sur l'onglet 2 (bouton Démarrer) appelle `navigationShell.goBranch(2, ...)` ET bascule l'état de session (idle/paused → active, active → paused).
 
 ### Couleurs bouton Démarrer
 
@@ -106,7 +108,7 @@ Le provider est volontairement minimal (`StateProvider<bool>`). En Story 2.5 il 
 
 ### Safe areas iOS
 
-La hauteur totale du `UrbinkBottomNav` = `64 + bottomPadding + 12` (élévation). Le scaffold Urbink n'a pas d'AppBar — le bouton Arrêter est positionné avec `top: MediaQuery.padding.top + 12` pour respecter la Dynamic Island et le notch.
+La hauteur totale du `UrbinkBottomNav` = `UrbinkSpacing.bottomNavHeight` (60px) + `bottomPadding` + élévation du bouton central (12px). Le scaffold Urbink n'a pas d'AppBar — le bouton Arrêter est positionné avec `top: MediaQuery.padding.top + 12` pour respecter la Dynamic Island et le notch.
 
 ## Dev Agent Record
 

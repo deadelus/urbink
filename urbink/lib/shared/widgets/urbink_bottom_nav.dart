@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:urbink/features/sessions/session_active_provider.dart';
+import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/constants/typography.dart';
@@ -228,8 +228,8 @@ class _StartButton extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: 56,
-          height: 56,
+          width: UrbinkBottomNav._centerButtonSize,
+          height: UrbinkBottomNav._centerButtonSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: color,
