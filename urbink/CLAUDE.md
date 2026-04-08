@@ -209,6 +209,47 @@ flutterfire configure --project=urbink-prod    --out=lib/firebase_options_prod.d
 > Ne jamais committer une story sans son implementation artifact.
 > Ne jamais laisser une branche sans PR une fois la story terminée.
 
+## Traitement des reviews Copilot — OBLIGATOIRE
+
+Après chaque review Copilot sur une PR, appliquer le processus suivant **sans attendre** :
+
+### 1. Lire tous les commentaires Copilot
+
+```bash
+gh pr view <numéro> --comments
+gh api repos/deadelus/urbink/pulls/<numéro>/reviews
+gh api repos/deadelus/urbink/pulls/<numéro>/comments
+```
+
+### 2. Corriger chaque point soulevé
+
+- Appliquer la correction dans le code
+- Un commit par groupe de corrections logiques :
+  ```
+  fix(epic-N/story-N.N): corrections review Copilot PR#<numéro>
+  ```
+
+### 3. Répondre à chaque commentaire Copilot sur GitHub
+
+Pour chaque commentaire inline (sur une ligne de code) :
+```bash
+gh api repos/deadelus/urbink/pulls/comments/<comment_id>/replies \
+  -f body="✅ Corrigé : <explication courte de ce qui a été fait>"
+```
+
+Pour les commentaires généraux (review-level) :
+```bash
+gh pr comment <numéro> --body "## Corrections review Copilot\n- ✅ <point 1> : <ce qui a été fait>\n- ✅ <point 2> : <ce qui a été fait>"
+```
+
+### 4. Pusher les corrections
+
+```bash
+git push origin <branche>
+```
+
+> **Règle :** Ne jamais laisser un commentaire Copilot sans réponse. Chaque correction doit être tracée avec une réponse explicite sur GitHub.
+
 ## Conventions Git — OBLIGATOIRES
 
 ### Branches
