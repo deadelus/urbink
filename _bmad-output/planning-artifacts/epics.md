@@ -335,6 +335,18 @@ Afin d'accéder rapidement à toutes les fonctionnalités depuis n'importe quel 
 **When** il s'élève depuis le bas
 **Then** il snape à 40% (aperçu) ou 70% (détail), affiche une pill de drag 4×32px en #D4C8B4, un scrim #1E1610 à 40%, et se ferme par swipe bas ou tap sur le scrim — le focus VoiceOver est piégé à l'intérieur
 
+**Given** aucune session active
+**When** l'utilisateur tape le bouton Démarrer ▶
+**Then** le bouton passe en Ocre #B8832E avec icône ⏸ (pause), et un bouton « Arrêter » circulaire rouge #C0392B 44px apparaît en haut à droite
+
+**Given** une session active
+**When** l'utilisateur tape le bouton ⏸ (pause central)
+**Then** le bouton repasse en Vert Sauge #5A7A5A avec icône ▶ — le bouton Arrêter reste visible
+
+**Given** une session active ou en pause
+**When** l'utilisateur tape le bouton Arrêter (top right)
+**Then** la session s'arrête côté UI : le bouton Démarrer retrouve son état initial Vert Sauge ▶, le bouton Arrêter disparaît — la modale de confirmation et l'écran récapitulatif sont implémentés en Story 2.5
+
 ---
 
 ### Story 1.4 : Hiérarchie des boutons + toasts + empty states + feedback haptique
@@ -544,8 +556,8 @@ Afin de ne jamais perdre mes rues explorées même si l'app est fermée brutalem
 **Then** la session démarre en ≤ 1 seconde — le bottom sheet se ferme, `SessionCounter` apparaît, le bouton Démarrer passe à l'état "session en cours" (FR1)
 
 **Given** une session en cours
-**When** l'utilisateur tape ⏹ pour arrêter
-**Then** un Dialog de confirmation s'affiche ("Arrêter la session ?") — si confirmé, la session est sauvegardée dans Firestore avec `sessionStart`, `sessionEnd`, `mode`, `streetIds[]` (FR5, FR6)
+**When** l'utilisateur tape le bouton Arrêter rouge top-right (posé par Story 1.3)
+**Then** un Dialog de confirmation s'affiche ("Arrêter la session ?") — si confirmé, la session est sauvegardée dans Firestore avec `sessionStart`, `sessionEnd`, `mode`, `streetIds[]`, puis un écran récapitulatif affiche le tracé, les stats (rues/km/durée) et les badges débloqués (FR5, FR6)
 
 **Given** une session sauvegardée dans Firestore
 **When** la sauvegarde échoue (réseau absent)

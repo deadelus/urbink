@@ -161,11 +161,53 @@ flutterfire configure --project=urbink-prod    --out=lib/firebase_options_prod.d
 
 ## Comment travailler sur ce projet
 
-1. Choisis une story dans `_bmad-output/planning-artifacts/epics.md`
-2. Lis les ACs (Given/When/Then) — ce sont les critères de done
-3. Consulte `architecture.md` pour les décisions techniques qui s'appliquent
-4. Implémente uniquement ce que la story demande — pas d'over-engineering
-5. Respecte les conventions ci-dessus sans exception
+1. S'assurer que `develop` est à jour : `git checkout develop && git pull`
+2. Créer la branche depuis `develop` : `git checkout -b epic-N/story-N.N-description`
+3. Lire les ACs (Given/When/Then) dans `epics.md` — ce sont les critères de done
+4. Consulter `architecture.md` pour les décisions techniques qui s'appliquent
+5. Implémenter uniquement ce que la story demande — pas d'over-engineering
+6. Respecter les conventions ci-dessus sans exception
+
+> **Toujours brancher depuis `develop` à jour** — jamais depuis une branche story précédente, même si elle n'est pas encore mergée.
+
+## Fin de story — checklist OBLIGATOIRE avant commit
+
+**Avant chaque `git commit` d'une story (`feat(epic-N/story-N.N): ...`), dans cet ordre :**
+
+1. **Créer l'implementation artifact** dans `_bmad-output/implementation-artifacts/`
+   - Nom du fichier : `N-N-<description-courte>.md` (ex: `1-3-bottom-nav-bottom-sheets.md`)
+   - Modèle : copier la structure de `_bmad-output/implementation-artifacts/1-3-bottom-nav-bottom-sheets.md`
+   - Sections obligatoires : Story · ACs · Tasks/Subtasks (avec `[x]`) · Dev Notes · Dev Agent Record · File List · Change Log · Status
+   - `Status` = `done` quand tous les ACs sont implémentés
+
+2. **Vérifier `flutter analyze --no-pub`** — zéro erreur (warnings autorisés si hors scope story)
+
+3. **Committer l'artifact dans le même commit** que le code (ou commit séparé `docs:` immédiatement après)
+
+4. **Pusher la branche** : `git push -u origin <branche>`
+
+5. **Ouvrir la PR** avec le titre `[Epic N · Story N.N] <titre de la story>` et le body template :
+   ```
+   ## Story
+   Epic N · Story N.N — <titre>
+
+   ## ACs implémentés
+   - [x] Given ... When ... Then ...
+
+   ## Hors scope
+   (décisions de report avec justification)
+
+   ## Notes techniques
+   (décisions, compromis, points d'attention)
+   ```
+
+6. **Assigner Copilot en reviewer** :
+   ```bash
+   gh pr edit <numéro> --add-reviewer "Copilot"
+   ```
+
+> Ne jamais committer une story sans son implementation artifact.
+> Ne jamais laisser une branche sans PR une fois la story terminée.
 
 ## Conventions Git — OBLIGATOIRES
 
