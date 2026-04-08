@@ -180,13 +180,15 @@ flutterfire configure --project=urbink-prod    --out=lib/firebase_options_prod.d
    - Sections obligatoires : Story · ACs · Tasks/Subtasks (avec `[x]`) · Dev Notes · Dev Agent Record · File List · Change Log · Status
    - `Status` = `done` quand tous les ACs sont implémentés
 
-2. **Vérifier `flutter analyze --no-pub`** — zéro erreur (warnings autorisés si hors scope story)
+2. **Lancer `flutter test`** — tous les tests passent, y compris les nouveaux tests de la story
 
-3. **Committer l'artifact dans le même commit** que le code (ou commit séparé `docs:` immédiatement après)
+3. **Vérifier `flutter analyze --no-pub`** — zéro erreur (warnings autorisés si hors scope story)
 
-4. **Pusher la branche** : `git push -u origin <branche>`
+4. **Committer l'artifact dans le même commit** que le code (ou commit séparé `docs:` immédiatement après)
 
-5. **Ouvrir la PR vers `develop`** — toujours `--base develop`, jamais vers `main` :
+5. **Pusher la branche** : `git push -u origin <branche>`
+
+6. **Ouvrir la PR vers `develop`** — toujours `--base develop`, jamais vers `main` :
    ```bash
    gh pr create --base develop --title "[Epic N · Story N.N] <titre>" --body "..."
    ```
@@ -205,7 +207,7 @@ flutterfire configure --project=urbink-prod    --out=lib/firebase_options_prod.d
    (décisions, compromis, points d'attention)
    ```
 
-6. **Assigner Copilot en reviewer** :
+7. **Assigner Copilot en reviewer** :
    ```bash
    gh pr edit <numéro> --add-reviewer "Copilot"
    ```
