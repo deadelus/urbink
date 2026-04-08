@@ -31,12 +31,12 @@ Afin d'accéder rapidement à toutes les fonctionnalités depuis n'importe quel 
 **AC-5 :** États visuels du bouton Démarrer
 - Given aucune session active
 - When l'utilisateur tape le bouton Démarrer
-- Then le bouton passe en Vert Sauge #5A7A5A avec icône ⏸, et un bouton Arrêter rouge #C0392B 44px apparaît en haut à droite
+- Then le bouton passe en Ocre #B8832E avec icône ⏸, et un bouton Arrêter rouge #C0392B 44px apparaît en haut à droite
 
 **AC-6 :** Pause session
 - Given une session active
 - When l'utilisateur tape le bouton ⏸ (pause central)
-- Then le bouton repasse en Ocre #B8832E avec icône ▶ — le bouton Arrêter reste visible
+- Then le bouton repasse en Vert Sauge #5A7A5A avec icône ▶ — le bouton Arrêter reste visible
 
 **AC-7 :** Arrêt session UI
 - Given une session active ou en pause

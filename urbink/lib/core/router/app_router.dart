@@ -89,15 +89,15 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isSessionActive = ref.watch(sessionActiveProvider);
+    final sessionState = ref.watch(sessionStateProvider);
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       body: Stack(
         children: [
           navigationShell,
-          // Bouton Arrêter — visible uniquement pendant une session active ou en pause
-          if (isSessionActive)
+          // Bouton Arrêter — visible pendant une session active ou en pause
+          if (sessionState != SessionState.idle)
             Positioned(
               top: topPadding + 12,
               right: 16,
@@ -106,7 +106,7 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
                   // Arrêt UI de la session — reset du provider.
                   // Modale de confirmation + sauvegarde Firestore + écran récapitulatif
                   // implémentés en Story 2.5 (cycle de vie complet de la session GPS).
-                  ref.read(sessionActiveProvider.notifier).state = false;
+                  ref.read(sessionStateProvider.notifier).state = SessionState.idle;
                 },
               ),
             ),
@@ -114,11 +114,18 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
       ),
       bottomNavigationBar: UrbinkBottomNav(
         currentIndex: navigationShell.currentIndex,
-        isSessionActive: isSessionActive,
+        sessionState: sessionState,
         onTabSelected: (index) {
           if (index == 2) {
-            // Bouton Démarrer/Pause — bascule l'état de session
-            ref.read(sessionActiveProvider.notifier).state = !isSessionActive;
+            // Bouton Démarrer/Pause — navigue vers /start ET bascule l'état de session
+            navigationShell.goBranch(
+              index,
+              // Retap sur l'onglet actif → retour à la route initiale (scroll to top UX)
+              initialLocation: index == navigationShell.currentIndex,
+            );
+            final current = ref.read(sessionStateProvider);
+            ref.read(sessionStateProvider.notifier).state =
+                current == SessionState.active ? SessionState.paused : SessionState.active;
             return;
           }
           navigationShell.goBranch(

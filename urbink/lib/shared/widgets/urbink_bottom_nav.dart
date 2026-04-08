@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:urbink/features/sessions/session_active_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
+import 'package:urbink/shared/constants/spacing.dart';
+import 'package:urbink/shared/constants/typography.dart';
 
 /// Bottom navigation bar Urbink — 5 onglets avec bouton Démarrer central surélevé.
 ///
@@ -7,22 +10,24 @@ import 'package:urbink/shared/constants/colors.dart';
 /// - Bouton Démarrer central surélevé de 12px avec ombre Material 3
 /// - Onglet sélectionné : icône + label Ocre #B8832E + underline 2px
 /// - Onglets inactifs : #8C7B6A
-/// - Session active : bouton Démarrer passe en Vert Sauge #5A7A5A avec icône ⏸
+/// - [SessionState.active] : bouton Démarrer Ocre #B8832E avec icône ⏸
+/// - [SessionState.idle] / [SessionState.paused] : bouton Démarrer Vert Sauge #5A7A5A avec icône ▶
 /// - Semantics VoiceOver : "Accueil, onglet 1 sur 5", etc.
 class UrbinkBottomNav extends StatelessWidget {
   const UrbinkBottomNav({
     super.key,
     required this.currentIndex,
     required this.onTabSelected,
-    this.isSessionActive = false,
+    this.sessionState = SessionState.idle,
   });
 
   final int currentIndex;
   final ValueChanged<int> onTabSelected;
-  /// true → session en cours (bouton ⏸ Vert Sauge), false → repos (bouton ▶ Ocre)
-  final bool isSessionActive;
 
-  static const double _barHeight = 64.0;
+  /// [SessionState.active] → bouton ⏸ Ocre
+  /// [SessionState.idle] / [SessionState.paused] → bouton ▶ Vert Sauge
+  final SessionState sessionState;
+
   static const double _centerElevation = 12.0;
   static const double _centerButtonSize = 56.0;
 
@@ -30,7 +35,8 @@ class UrbinkBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     // Hauteur totale = barre + safe area + espace pour le bouton surélevé
-    final totalHeight = _barHeight + bottomPadding + _centerElevation;
+    final totalHeight =
+        UrbinkSpacing.bottomNavHeight + bottomPadding + _centerElevation;
 
     return SizedBox(
       height: totalHeight,
@@ -45,19 +51,21 @@ class UrbinkBottomNav extends StatelessWidget {
             child: _BottomNavBar(
               currentIndex: currentIndex,
               onTabSelected: onTabSelected,
-              height: _barHeight + bottomPadding,
+              height: UrbinkSpacing.bottomNavHeight + bottomPadding,
               bottomPadding: bottomPadding,
             ),
           ),
           // Bouton Démarrer central surélevé de 12px
           Positioned(
-            bottom: bottomPadding + (_barHeight - _centerButtonSize) / 2 + _centerElevation,
+            bottom: bottomPadding +
+                (UrbinkSpacing.bottomNavHeight - _centerButtonSize) / 2 +
+                _centerElevation,
             left: 0,
             right: 0,
             child: Center(
               child: _StartButton(
                 isSelected: currentIndex == 2,
-                isSessionActive: isSessionActive,
+                sessionState: sessionState,
                 onTap: () => onTabSelected(2),
               ),
             ),
@@ -148,12 +156,21 @@ class _BottomNavBar extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   item.label,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: isSelected ? UrbinkColors.primary : UrbinkColors.navInactive,
-                  ),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: isSelected
+                                ? UrbinkColors.primary
+                                : UrbinkColors.navInactive,
+                          ) ??
+                      TextStyle(
+                        fontFamily: UrbinkTypography.bodyFamily,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: isSelected
+                            ? UrbinkColors.primary
+                            : UrbinkColors.navInactive,
+                      ),
                 ),
                 const SizedBox(height: 4),
                 // Underline 2px visible uniquement si sélectionné
@@ -176,28 +193,31 @@ class _BottomNavBar extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Bouton Démarrer — FAB circulaire Ocre surélevé au centre
+// Bouton Démarrer — FAB circulaire surélevé au centre
 // ---------------------------------------------------------------------------
 
 class _StartButton extends StatelessWidget {
   const _StartButton({
     required this.isSelected,
-    required this.isSessionActive,
+    required this.sessionState,
     required this.onTap,
   });
 
   final bool isSelected;
-  final bool isSessionActive;
+  final SessionState sessionState;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    // Repos → Vert Sauge + icône play ; session active → Ocre + icône pause
-    final color = isSessionActive ? UrbinkColors.primary : UrbinkColors.secondary;
-    final icon = isSessionActive ? Icons.pause : Icons.play_arrow;
-    final semanticLabel = isSessionActive
-        ? 'Pause session, onglet 3 sur 5'
-        : 'Démarrer, onglet 3 sur 5';
+    // Repos/pause → Vert Sauge ▶ ; session active → Ocre ⏸
+    final isActive = sessionState == SessionState.active;
+    final color = isActive ? UrbinkColors.primary : UrbinkColors.secondary;
+    final icon = isActive ? Icons.pause : Icons.play_arrow;
+    final semanticLabel = switch (sessionState) {
+      SessionState.idle => 'Démarrer, onglet 3 sur 5',
+      SessionState.active => 'Pause session, onglet 3 sur 5',
+      SessionState.paused => 'Reprendre session, onglet 3 sur 5',
+    };
 
     return Semantics(
       label: semanticLabel,

@@ -337,11 +337,11 @@ Afin d'accéder rapidement à toutes les fonctionnalités depuis n'importe quel 
 
 **Given** aucune session active
 **When** l'utilisateur tape le bouton Démarrer ▶
-**Then** le bouton passe en Vert Sauge #5A7A5A avec icône ⏸ (pause), et un bouton « Arrêter » circulaire rouge #C0392B 44px apparaît en haut à droite
+**Then** le bouton passe en Ocre #B8832E avec icône ⏸ (pause), et un bouton « Arrêter » circulaire rouge #C0392B 44px apparaît en haut à droite
 
 **Given** une session active
 **When** l'utilisateur tape le bouton ⏸ (pause central)
-**Then** le bouton repasse en Ocre #B8832E avec icône ▶ — le bouton Arrêter reste visible
+**Then** le bouton repasse en Vert Sauge #5A7A5A avec icône ▶ — le bouton Arrêter reste visible
 
 **Given** une session active ou en pause
 **When** l'utilisateur tape le bouton Arrêter (top right)

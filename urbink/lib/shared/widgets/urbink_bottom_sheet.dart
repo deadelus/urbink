@@ -6,7 +6,7 @@ import 'package:urbink/shared/constants/colors.dart';
 /// - Pill de drag 4×32px en #D4C8B4
 /// - Scrim #1E1610 à 40% opacité
 /// - Fermeture par swipe bas ou tap sur le scrim
-/// - Focus VoiceOver piégé à l'intérieur (Semantics modal: true)
+/// - Focus VoiceOver limité au bottom sheet via `Semantics(scopesRoute: true)`
 Future<T?> showUrbinkBottomSheet<T>({
   required BuildContext context,
   required Widget child,
