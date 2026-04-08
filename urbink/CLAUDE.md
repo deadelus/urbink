@@ -181,7 +181,30 @@ flutterfire configure --project=urbink-prod    --out=lib/firebase_options_prod.d
 
 3. **Committer l'artifact dans le même commit** que le code (ou commit séparé `docs:` immédiatement après)
 
+4. **Pusher la branche** : `git push -u origin <branche>`
+
+5. **Ouvrir la PR** avec le titre `[Epic N · Story N.N] <titre de la story>` et le body template :
+   ```
+   ## Story
+   Epic N · Story N.N — <titre>
+
+   ## ACs implémentés
+   - [x] Given ... When ... Then ...
+
+   ## Hors scope
+   (décisions de report avec justification)
+
+   ## Notes techniques
+   (décisions, compromis, points d'attention)
+   ```
+
+6. **Assigner Copilot en reviewer** :
+   ```bash
+   gh pr edit <numéro> --add-reviewer "Copilot"
+   ```
+
 > Ne jamais committer une story sans son implementation artifact.
+> Ne jamais laisser une branche sans PR une fois la story terminée.
 
 ## Conventions Git — OBLIGATOIRES
 
