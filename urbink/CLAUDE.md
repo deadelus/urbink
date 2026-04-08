@@ -167,6 +167,22 @@ flutterfire configure --project=urbink-prod    --out=lib/firebase_options_prod.d
 4. Implémente uniquement ce que la story demande — pas d'over-engineering
 5. Respecte les conventions ci-dessus sans exception
 
+## Fin de story — checklist OBLIGATOIRE avant commit
+
+**Avant chaque `git commit` d'une story (`feat(epic-N/story-N.N): ...`), dans cet ordre :**
+
+1. **Créer l'implementation artifact** dans `_bmad-output/implementation-artifacts/`
+   - Nom du fichier : `N-N-<description-courte>.md` (ex: `1-3-bottom-nav-bottom-sheets.md`)
+   - Modèle : copier la structure de `_bmad-output/implementation-artifacts/1-3-bottom-nav-bottom-sheets.md`
+   - Sections obligatoires : Story · ACs · Tasks/Subtasks (avec `[x]`) · Dev Notes · Dev Agent Record · File List · Change Log · Status
+   - `Status` = `done` quand tous les ACs sont implémentés
+
+2. **Vérifier `flutter analyze --no-pub`** — zéro erreur (warnings autorisés si hors scope story)
+
+3. **Committer l'artifact dans le même commit** que le code (ou commit séparé `docs:` immédiatement après)
+
+> Ne jamais committer une story sans son implementation artifact.
+
 ## Conventions Git — OBLIGATOIRES
 
 ### Branches
