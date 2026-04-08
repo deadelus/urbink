@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
-import 'package:urbink/shared/constants/typography.dart';
 
 /// Bottom navigation bar Urbink — 5 onglets avec bouton Démarrer central surélevé.
 ///
@@ -134,6 +133,8 @@ class _BottomNavBar extends StatelessWidget {
 
   Widget _buildTab(BuildContext context, _TabItem item) {
     final isSelected = currentIndex == item.index;
+    final disableAnimations = MediaQuery.of(context).disableAnimations;
+
     return Expanded(
       child: Semantics(
         label: '${item.label}, onglet ${item.index + 1} sur 5',
@@ -145,7 +146,16 @@ class _BottomNavBar extends StatelessWidget {
           onTap: () => onTabSelected(item.index),
           child: SizedBox(
             height: double.infinity,
-            child: Column(
+            // Cap textScaler à 1.3x : évite l'overflow vertical dans la nav bar
+            // (espace fixe ~60px — WCAG 2.1 AA autorise ce cap sur les éléments de navigation)
+            child: MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: MediaQuery.of(context).textScaler.clamp(
+                  minScaleFactor: 0.8,
+                  maxScaleFactor: 1.3,
+                ),
+              ),
+              child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
@@ -154,37 +164,44 @@ class _BottomNavBar extends StatelessWidget {
                   color: isSelected ? UrbinkColors.primary : UrbinkColors.navInactive,
                 ),
                 const SizedBox(height: 4),
+                // Dynamic Type : labelSmall du thème, textScaler capé à 1.3x pour éviter overflow
                 Text(
                   item.label,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: isSelected
-                                ? UrbinkColors.primary
-                                : UrbinkColors.navInactive,
-                          ) ??
-                      TextStyle(
-                        fontFamily: UrbinkTypography.bodyFamily,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: isSelected
-                            ? UrbinkColors.primary
-                            : UrbinkColors.navInactive,
-                      ),
+                    fontWeight: FontWeight.w500,
+                    color: isSelected ? UrbinkColors.primary : UrbinkColors.navInactive,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                // Underline 2px visible uniquement si sélectionné
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  height: 2,
-                  width: isSelected ? 24 : 0,
-                  decoration: BoxDecoration(
-                    color: UrbinkColors.primary,
-                    borderRadius: BorderRadius.circular(1),
+                // Underline : fade si "Réduire les animations" activé, sinon animation de largeur
+                if (disableAnimations)
+                  AnimatedOpacity(
+                    opacity: isSelected ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 150),
+                    child: Container(
+                      height: 2,
+                      width: 24,
+                      decoration: BoxDecoration(
+                        color: UrbinkColors.primary,
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                    ),
+                  )
+                else
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    height: 2,
+                    width: isSelected ? 24 : 0,
+                    decoration: BoxDecoration(
+                      color: UrbinkColors.primary,
+                      borderRadius: BorderRadius.circular(1),
+                    ),
                   ),
-                ),
               ],
             ),
+            ), // MediaQuery
           ),
         ),
       ),
@@ -219,6 +236,14 @@ class _StartButton extends StatelessWidget {
       SessionState.paused => 'Reprendre session, onglet 3 sur 5',
     };
 
+    // Réduire les animations : transitions instant (couleur) + fade court (icône)
+    final disableAnimations = MediaQuery.of(context).disableAnimations;
+    final colorDuration =
+        disableAnimations ? Duration.zero : const Duration(milliseconds: 200);
+    final iconDuration = disableAnimations
+        ? const Duration(milliseconds: 150)
+        : const Duration(milliseconds: 200);
+
     return Semantics(
       label: semanticLabel,
       button: true,
@@ -227,14 +252,13 @@ class _StartButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: colorDuration,
           width: UrbinkBottomNav._centerButtonSize,
           height: UrbinkBottomNav._centerButtonSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: color,
             boxShadow: [
-              // Ombre Material 3
               BoxShadow(
                 color: color.withValues(alpha: 0.30),
                 blurRadius: 12,
@@ -248,7 +272,10 @@ class _StartButton extends StatelessWidget {
             ],
           ),
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
+            duration: iconDuration,
+            // FadeTransition explicite — compatible "Réduire les animations"
+            transitionBuilder: (child, animation) =>
+                FadeTransition(opacity: animation, child: child),
             child: Icon(
               icon,
               key: ValueKey(icon),

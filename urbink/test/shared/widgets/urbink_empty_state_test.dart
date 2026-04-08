@@ -49,12 +49,12 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('pas de CTA si ctaLabel absent', (tester) async {
+    testWidgets('pas de CTA si ctaLabel et onCta tous les deux absents', (tester) async {
       await tester.pumpWidget(wrap(
-        UrbinkEmptyState(
+        const UrbinkEmptyState(
           emoji: '🗺️',
           title: 'Aucun itinéraire',
-          onCta: () {},
+          // ctaLabel et onCta tous les deux null → aucun bouton
         ),
       ));
       expect(find.byType(UrbinkButton), findsNothing);
