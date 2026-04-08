@@ -42,7 +42,7 @@ class UrbinkButton extends StatelessWidget {
     switch (variant) {
       case UrbinkButtonVariant.primary:
         return FilledButton(
-          onPressed: isLoading ? null : _handlePress,
+          onPressed: (isLoading || onPressed == null) ? null : _handlePress,
           style: FilledButton.styleFrom(
             backgroundColor: UrbinkColors.primary,
             disabledBackgroundColor: UrbinkColors.primary.withValues(alpha: 0.5),
@@ -57,7 +57,7 @@ class UrbinkButton extends StatelessWidget {
 
       case UrbinkButtonVariant.secondary:
         return OutlinedButton(
-          onPressed: isLoading ? null : _handlePress,
+          onPressed: (isLoading || onPressed == null) ? null : _handlePress,
           style: OutlinedButton.styleFrom(
             foregroundColor: UrbinkColors.primary,
             side: const BorderSide(color: UrbinkColors.primary, width: 1.5),
@@ -71,7 +71,7 @@ class UrbinkButton extends StatelessWidget {
 
       case UrbinkButtonVariant.destructive:
         return TextButton(
-          onPressed: isLoading ? null : _handlePress,
+          onPressed: (isLoading || onPressed == null) ? null : _handlePress,
           style: TextButton.styleFrom(
             foregroundColor: UrbinkColors.destructive,
             minimumSize: const Size(UrbinkSpacing.minTapTarget, 52),
@@ -116,9 +116,11 @@ class UrbinkButton extends StatelessWidget {
     switch (variant) {
       case UrbinkButtonVariant.primary:
         HapticFeedback.heavyImpact();
+        break;
       case UrbinkButtonVariant.secondary:
       case UrbinkButtonVariant.destructive:
         HapticFeedback.lightImpact();
+        break;
     }
     onPressed?.call();
   }

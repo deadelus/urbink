@@ -25,7 +25,10 @@ class UrbinkEmptyState extends StatelessWidget {
     this.subtitle,
     this.ctaLabel,
     this.onCta,
-  });
+  }) : assert(
+          (ctaLabel == null) == (onCta == null),
+          'ctaLabel et onCta doivent être fournis ensemble ou tous les deux null.',
+        );
 
   final String emoji;
   final String title;
