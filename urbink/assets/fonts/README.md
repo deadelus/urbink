@@ -22,10 +22,10 @@ Fichiers attendus :
 
 ## Installation
 
-1. Télécharger les polices depuis Google Fonts
-2. Extraire les fichiers TTF dans ce répertoire
-3. Lancer `flutter pub get` pour recharger les assets
-4. Relancer l'app
+Les fichiers TTF requis sont déjà présents dans ce répertoire et versionnés avec le projet.
 
-> Les fichiers TTF ne sont pas commités dans le repo (gitignored) car ils sont redistribuables sous licence OFL-1.1.
-> Chaque développeur doit les télécharger localement.
+1. Lancer `flutter pub get` pour recharger les assets
+2. Relancer l'app
+
+> Les fichiers TTF utilisés par l'application sont redistribués dans ce dépôt sous licence OFL-1.1.
+> Les liens Google Fonts ci-dessus sont conservés comme source amont de référence.
