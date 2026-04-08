@@ -186,7 +186,11 @@ flutterfire configure --project=urbink-prod    --out=lib/firebase_options_prod.d
 
 4. **Pusher la branche** : `git push -u origin <branche>`
 
-5. **Ouvrir la PR** avec le titre `[Epic N · Story N.N] <titre de la story>` et le body template :
+5. **Ouvrir la PR vers `develop`** — toujours `--base develop`, jamais vers `main` :
+   ```bash
+   gh pr create --base develop --title "[Epic N · Story N.N] <titre>" --body "..."
+   ```
+   Template body :
    ```
    ## Story
    Epic N · Story N.N — <titre>
