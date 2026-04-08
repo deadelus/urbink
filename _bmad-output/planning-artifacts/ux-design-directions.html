@@ -71,15 +71,26 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
 }
 .bni-center-btn {
   width:44px; height:44px; border-radius:22px;
-  background:#B8832E;
+  /* Repos → Vert Sauge #5A7A5A + ▶ */
+  background:#5A7A5A;
   display:flex; align-items:center; justify-content:center;
   font-size:18px;
   margin-top:-18px;
-  box-shadow:0 4px 14px rgba(184,131,46,.45);
+  box-shadow:0 4px 14px rgba(90,122,90,.45);
   border:3px solid rgba(250,250,247,.97);
 }
 .bni-center-btn-dark { border-color:rgba(16,13,9,.97); }
 .bni-center-label { font-size:8px; font-weight:500; color:#8C7B6A; margin-top:2px; }
+
+/* Bouton Arrêter session — cercle rouge top-right */
+.stop-btn {
+  position:absolute; top:52px; right:12px;
+  width:36px; height:36px; border-radius:18px;
+  background:#C0392B;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; color:white; z-index:20;
+  box-shadow:0 3px 10px rgba(192,57,43,.4);
+}
 
 /* ── Map (world context) ── */
 .map-wrap { position:absolute; inset:0; overflow:hidden; }
@@ -717,8 +728,9 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
             <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
             <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
             <div class="bni-center">
-              <div class="bni-center-btn" style="background:#A84E2C;">▶</div>
-              <div class="bni-center-label" style="color:#A84E2C;">Démarrer</div>
+              <!-- Repos → Vert Sauge #5A7A5A + ▶ -->
+              <div class="bni-center-btn">▶</div>
+              <div class="bni-center-label">Démarrer</div>
             </div>
             <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
             <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
@@ -781,13 +793,16 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
           </div>
           <!-- Photo button -->
           <div class="float-cam">📷</div>
+          <!-- Bouton Arrêter session — top-right, rouge, visible uniquement pendant une session -->
+          <div class="stop-btn">⏹</div>
 
           <div class="bnav">
             <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
             <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
             <div class="bni-center">
-              <div class="bni-center-btn" style="background:#A84E2C;animation:pulse 1.4s infinite;">⏹</div>
-              <div class="bni-center-label" style="color:#A84E2C;">28:14</div>
+              <!-- Session active → Ocre #B8832E + ⏸ (pause) -->
+              <div class="bni-center-btn" style="background:#B8832E;box-shadow:0 4px 14px rgba(184,131,46,.45);">⏸</div>
+              <div class="bni-center-label" style="color:#B8832E;">Pause</div>
             </div>
             <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
             <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
@@ -806,14 +821,15 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
       <div class="pi">📋 Suivre un itinéraire : liste des itinéraires enregistrés</div>
       <div class="pi">🚶🚴🚗 Mode de transport (marche/vélo/voiture) dans les deux cas</div>
       <div class="pi">🟢 GPS ready indicator avant de démarrer</div>
-      <div class="pi">⏹ Session active : bouton central = timer rouge pulsé</div>
+      <div class="pi">⏸ Session active : bouton central passe en Ocre #B8832E + icône pause ⏸</div>
+      <div class="pi">🔴 Bouton Arrêter (⏹) rouge #C0392B apparaît top-right pendant la session</div>
     </div>
     <div class="tags">
       <div class="tag hl">Parcours libre</div>
       <div class="tag hl">Suivre itinéraire</div>
       <div class="tag">Choix 2 modes</div>
       <div class="tag">GPS ready</div>
-      <div class="tag">Timer actif</div>
+      <div class="tag">Bouton Arrêter top-right</div>
     </div>
   </div>
 </div>
@@ -1489,7 +1505,7 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
 <div class="scr" id="s7">
   <div class="scr-num">Navigation</div>
   <div class="scr-title">Bottom Nav — Anatomie Strava</div>
-  <div class="scr-desc">La bottom nav Strava adaptée Urbink : 5 onglets, bouton central proéminent, icônes + labels, indicateur actif. Aucune bottom nav sur les écrans de session active (plein écran carte).</div>
+  <div class="scr-desc">La bottom nav Strava adaptée Urbink : 5 onglets, bouton central proéminent. Repos : bouton Vert Sauge #5A7A5A ▶. Session active : bouton Ocre #B8832E ⏸ (pause) + bouton Arrêter rouge ⏹ top-right.</div>
 
   <div class="phones">
 
@@ -1510,9 +1526,9 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
                 <div style="font-size:14px;">🏠</div>
                 <div style="font-size:10px;color:#4A3D30;font-weight:500;">Icône 18px + Label 8px</div>
               </div>
-              <div style="display:flex;align-items:center;gap:8px;background:rgba(184,131,46,.1);border-radius:8px;padding:7px 10px;border:1px solid rgba(184,131,46,.3);">
-                <div style="width:32px;height:32px;border-radius:16px;background:#B8832E;display:flex;align-items:center;justify-content:center;font-size:14px;color:white;margin-top:-10px;">▶</div>
-                <div style="font-size:10px;color:#B8832E;font-weight:500;">Bouton central — 44px cercle</div>
+              <div style="display:flex;align-items:center;gap:8px;background:rgba(90,122,90,.1);border-radius:8px;padding:7px 10px;border:1px solid rgba(90,122,90,.3);">
+                <div style="width:32px;height:32px;border-radius:16px;background:#5A7A5A;display:flex;align-items:center;justify-content:center;font-size:14px;color:white;margin-top:-10px;">▶</div>
+                <div style="font-size:10px;color:#5A7A5A;font-weight:500;">Repos → Vert Sauge ▶ · 44px</div>
               </div>
               <div style="display:flex;align-items:center;gap:8px;background:white;border-radius:8px;padding:7px 10px;border:1px solid #E8E2DA;">
                 <div style="font-size:10px;color:#8C7B6A;">Hauteur nav : 74px</div>
@@ -1543,14 +1559,15 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
         <div class="ph" style="background:#F0EDE8;">
           <div class="notch" style="background:#1E1610;"></div>
           <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:74px;align-items:center;padding-top:50px;gap:12px;">
-            <div style="font-size:10px;color:#8C7B6A;text-align:center;max-width:170px;line-height:1.6;">Pendant la session, le bouton central devient un timer rouge animé. Tap → arrêter la session.</div>
+            <div style="font-size:10px;color:#8C7B6A;text-align:center;max-width:170px;line-height:1.6;">Session active : bouton central → Ocre ⏸ (pause). Bouton Arrêter rouge ⏹ top-right.</div>
             <div style="display:flex;flex-direction:column;gap:6px;width:180px;">
-              <div style="display:flex;align-items:center;gap:8px;background:rgba(168,78,44,.1);border-radius:8px;padding:7px 10px;border:1px solid rgba(168,78,44,.3);">
-                <div style="width:32px;height:32px;border-radius:16px;background:#A84E2C;display:flex;align-items:center;justify-content:center;font-size:14px;color:white;margin-top:-10px;">⏹</div>
-                <div style="font-size:10px;color:#A84E2C;font-weight:500;">Bouton rouge pulsé · Stop</div>
+              <div style="display:flex;align-items:center;gap:8px;background:rgba(184,131,46,.1);border-radius:8px;padding:7px 10px;border:1px solid rgba(184,131,46,.3);">
+                <div style="width:32px;height:32px;border-radius:16px;background:#B8832E;display:flex;align-items:center;justify-content:center;font-size:14px;color:white;margin-top:-10px;">⏸</div>
+                <div style="font-size:10px;color:#B8832E;font-weight:500;">Bouton Ocre ⏸ · Pause session</div>
               </div>
-              <div style="display:flex;align-items:center;gap:8px;background:white;border-radius:8px;padding:7px 10px;border:1px solid #E8E2DA;">
-                <div style="font-size:10px;color:#8C7B6A;">Label = timer "28:14" (pas "Démarrer")</div>
+              <div style="display:flex;align-items:center;gap:8px;background:rgba(192,57,43,.08);border-radius:8px;padding:7px 10px;border:1px solid rgba(192,57,43,.3);">
+                <div style="width:28px;height:28px;border-radius:14px;background:#C0392B;display:flex;align-items:center;justify-content:center;font-size:12px;color:white;flex-shrink:0;">⏹</div>
+                <div style="font-size:10px;color:#C0392B;font-weight:500;">Arrêter · Rouge top-right 36px</div>
               </div>
               <div style="display:flex;align-items:center;gap:8px;background:white;border-radius:8px;padding:7px 10px;border:1px solid #E8E2DA;">
                 <div style="font-size:10px;color:#8C7B6A;">Autres onglets restent accessibles</div>
@@ -1565,8 +1582,9 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
               <div class="bni-label" style="color:#B8832E;">Carte</div>
             </div>
             <div class="bni-center">
-              <div class="bni-center-btn" style="background:#A84E2C;animation:pulse 1.4s infinite;box-shadow:0 4px 14px rgba(168,78,44,.5);">⏹</div>
-              <div class="bni-center-label" style="color:#A84E2C;">28:14</div>
+              <!-- Session active → Ocre #B8832E + ⏸ -->
+              <div class="bni-center-btn" style="background:#B8832E;box-shadow:0 4px 14px rgba(184,131,46,.45);">⏸</div>
+              <div class="bni-center-label" style="color:#B8832E;">Pause</div>
             </div>
             <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
             <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
@@ -1582,7 +1600,8 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
     <div class="pgrid">
       <div class="pi">🏠 Accueil · 🗺️ Carte · ▶ Démarrer · 🏆 Challenges · 👤 Vous</div>
       <div class="pi">⭕ Bouton central : 44px, -18px margin-top, cercle proéminent</div>
-      <div class="pi">🔴 Session : bouton rouge ⏹ pulsé + label = timer live</div>
+      <div class="pi">🟢 Repos : bouton Vert Sauge #5A7A5A ▶ · Session : Ocre #B8832E ⏸</div>
+      <div class="pi">🔴 Bouton Arrêter ⏹ rouge #C0392B — top-right, visible pendant session seulement</div>
       <div class="pi">📏 Nav height : 74px · Fond blanc chaud 97% · Backdrop blur</div>
       <div class="pi">📷 Pas de tab 📷 — accessible uniquement via la carte</div>
       <div class="pi">🌐 Menu overlay accessible depuis le bouton sur la carte (si nécessaire)</div>
