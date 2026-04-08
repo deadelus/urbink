@@ -161,11 +161,14 @@ flutterfire configure --project=urbink-prod    --out=lib/firebase_options_prod.d
 
 ## Comment travailler sur ce projet
 
-1. Choisis une story dans `_bmad-output/planning-artifacts/epics.md`
-2. Lis les ACs (Given/When/Then) — ce sont les critères de done
-3. Consulte `architecture.md` pour les décisions techniques qui s'appliquent
-4. Implémente uniquement ce que la story demande — pas d'over-engineering
-5. Respecte les conventions ci-dessus sans exception
+1. S'assurer que `develop` est à jour : `git checkout develop && git pull`
+2. Créer la branche depuis `develop` : `git checkout -b epic-N/story-N.N-description`
+3. Lire les ACs (Given/When/Then) dans `epics.md` — ce sont les critères de done
+4. Consulter `architecture.md` pour les décisions techniques qui s'appliquent
+5. Implémenter uniquement ce que la story demande — pas d'over-engineering
+6. Respecter les conventions ci-dessus sans exception
+
+> **Toujours brancher depuis `develop` à jour** — jamais depuis une branche story précédente, même si elle n'est pas encore mergée.
 
 ## Fin de story — checklist OBLIGATOIRE avant commit
 
