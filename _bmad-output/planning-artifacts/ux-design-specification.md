@@ -90,7 +90,7 @@ Pattern familier (GPS tracking, connu via Strava/Google Maps) + twist Urbink : *
 
 ### 2.5 Experience Mechanics
 
-**Initiation :** Bouton flottant "Démarrer" en bas de l'écran carte — un tap. Le bouton change d'état visuel immédiatement (animation + couleur rouge "en cours").
+**Initiation :** Bouton FAB central "Démarrer" dans la bottom nav — un tap. Le bouton passe immédiatement de Vert Sauge ▶ (repos) à Ocre ⏸ (session active), et un bouton Arrêter rouge circulaire apparaît en haut à droite.
 
 **Interaction :** L'utilisateur marche, l'app tourne en arrière-plan. Toutes les 10 mètres, Nominatim snappe la position GPS à la rue OSM la plus proche. La rue se colorie progressivement — comme un surligneur qui suit l'utilisateur avec un léger délai naturel.
 
@@ -379,7 +379,7 @@ Sept directions visuelles ont été explorées et documentées dans le fichier i
 
 - **D1 · Accueil (Feed social)** — fil d'activités des personnes suivies, avec tracés miniatures SVG, stats, badges débloqués, réactions (🔥💬🗺️). Structure type Strava adaptée à l'exploration urbaine.
 - **D2 · Carte & Itinéraires** — écran carte plein écran avec barre de recherche pill flottante, bottom sheet "Mes itinéraires" (liste sauvegardés + bouton Créer), vue Paris zoomée avec tracé ocre d'un itinéraire enregistré et CTA "Démarrer cet itinéraire".
-- **D3 · Démarrer** — bottom sheet de choix entre Parcours libre (sans destination) et Itinéraire, sélecteur de mode de transport (🚶🚴🚗), indicateur GPS, bouton Démarrer. Vue session active : compteur flottant rues/km/durée, bouton 📷, timer chronomètre et ⏹ stop.
+- **D3 · Démarrer** — bottom sheet de choix entre Parcours libre (sans destination) et Itinéraire, sélecteur de mode de transport (🚶🚴🚗), indicateur GPS, bouton Démarrer. Vue session active : compteur flottant rues/km/durée, bouton 📷, timer chronomètre — bouton FAB central devient Ocre ⏸ (pause), bouton Arrêter rouge circulaire top-right (⏹ stop → modale de confirmation → écran récapitulatif parcours).
 - **D4 · Challenges** — grille badges monuments (débloqués en couleur / grisés non atteints), progression quartiers, cartes parcours thématiques (Églises, Parcs, Marchés) avec barre de progression et CTA.
 - **D5 · Vous (Historique)** — histogramme 7 jours d'activité, rangée de stats (semaine, total km, quartiers), toggle Vue simple / Vue feed, liste compacte en vue simple, cartes sorties avec tracé miniature SVG + badges + chip photos en vue feed.
 - **D6 · Découvertes (📷)** — pins communautaires sur carte, flow de création de pin avec photo.
@@ -927,7 +927,9 @@ Tous les composants custom sont documentés avec des golden tests Flutter (widge
 | **Secondaire** | Contour #B8832E 1.5px, fond transparent, texte Ocre | Modifier, Voir le tracé, Ajouter à un itinéraire |
 | **Tertiaire / Ghost** | Texte seul, Ocre ou Brun foncé | Annuler, Ignorer, Plus tard |
 | **Destructif** | Texte Rouge #C0392B, fond transparent | Supprimer itinéraire, Quitter session |
-| **FAB central** | Cercle Ocre #B8832E, surélevé +12px, ombre M3, icône blanche ▶ | Bouton Démarrer (bottom nav) |
+| **FAB central — repos** | Cercle Vert Sauge #5A7A5A, surélevé +12px, ombre M3, icône blanche ▶ | Bouton Démarrer (aucune session active) |
+| **FAB central — actif** | Cercle Ocre #B8832E, surélevé +12px, ombre M3, icône blanche ⏸ | Bouton Pause (session en cours) |
+| **Bouton Arrêter** | Cercle Rouge #C0392B 44px, ombre M3, icône ⏹ blanche, top-right | Arrêter la session (visible uniquement pendant une session) |
 
 **Règles :**
 - Jamais 2 boutons primaires sur le même écran ou bottom sheet
@@ -992,7 +994,8 @@ Tous les composants custom sont documentés avec des golden tests Flutter (widge
 **Bottom navigation — états :**
 - Onglet actif : icône + label Ocre #B8832E + underline 2px
 - Onglets inactifs : icône + label #8C7B6A
-- Bouton Démarrer central : toujours Ocre, jamais désactivé
+- Bouton Démarrer central : **Vert Sauge #5A7A5A + ▶** (repos) → **Ocre #B8832E + ⏸** (session active) — jamais désactivé
+- Bouton Arrêter : cercle rouge #C0392B 44px, top-right, **visible uniquement pendant une session** active ou en pause
 
 **Deep linking inter-onglets :**
 - Toujours via CTA explicite ("Voir sur carte", "Démarrer dans ce quartier")
@@ -1140,7 +1143,9 @@ L'app ne repose jamais sur la couleur seule : badges verrouillés = icône gris�
 **Navigation VoiceOver (iOS) :**
 - Tous les éléments interactifs ont un `Semantics` Flutter avec `label` explicite
 - Bottom nav : `"Accueil, onglet 1 sur 5"` etc.
-- Bouton Démarrer : `"Démarrer une session d'exploration"`
+- Bouton Démarrer (repos) : `"Démarrer, onglet 3 sur 5"`
+- Bouton Pause (session active) : `"Pause session, onglet 3 sur 5"`
+- Bouton Arrêter : `"Arrêter la session"`
 - Badges verrouillés : `"Tour Eiffel, badge non débloqué. Passez à 100 mètres pour l'obtenir."`
 - `CelebrationOverlay` : `accessibilityAnnouncement` déclenché à l'apparition
 - Focus piégé dans les bottom sheets tant qu'elles sont ouvertes
