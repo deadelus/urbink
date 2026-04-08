@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:urbink/shared/constants/colors.dart';
+import 'package:urbink/shared/constants/spacing.dart';
 
 /// Affiche un bottom sheet Urbink conforme Story 1.3 :
 /// - Snap à [initialSnap] (défaut 0.4 = 40% aperçu) ou 70% (détail)
@@ -60,7 +61,9 @@ class _UrbinkSheetContent extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(UrbinkSpacing.radiusCard),
+          ),
         ),
         child: Column(
           children: [
