@@ -141,6 +141,7 @@ class _BottomNavBar extends StatelessWidget {
         button: true,
         selected: isSelected,
         excludeSemantics: true,
+        onTap: () => onTabSelected(item.index),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => onTabSelected(item.index),
@@ -249,6 +250,7 @@ class _StartButton extends StatelessWidget {
       button: true,
       selected: isSelected,
       excludeSemantics: true,
+      onTap: onTap,
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(

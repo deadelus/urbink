@@ -115,8 +115,19 @@ void main() {
           mediaQuery: const MediaQueryData(disableAnimations: true),
         ),
       );
-      // Avec disableAnimations, on utilise AnimatedOpacity (pas AnimatedContainer pour l'underline)
-      expect(find.byType(AnimatedOpacity), findsWidgets);
+      // Avec disableAnimations, on cible explicitement l'underline :
+      // un AnimatedOpacity qui enveloppe un Container avec BoxDecoration arrondie.
+      final underlineFinder = find.byWidgetPredicate(
+        (widget) =>
+            widget is AnimatedOpacity &&
+            widget.child is Container &&
+            (widget.child as Container).decoration is BoxDecoration &&
+            ((widget.child as Container).decoration as BoxDecoration)
+                    .borderRadius !=
+                null,
+        description: "AnimatedOpacity utilisé pour l'underline",
+      );
+      expect(underlineFinder, findsWidgets);
     });
 
     testWidgets('AnimatedContainer présent sur underline quand disableAnimations=false',
