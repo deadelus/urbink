@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+    name: Flutter test + analyze
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        working-directory: urbink
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: urbink
+        run: flutter analyze --no-pub
+
+      - name: Test
+        working-directory: urbink
+        run: flutter test --no-pub
+
+  build-ios:
+    name: Build iOS (no sign)
+    runs-on: macos-15
+    needs: test
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        working-directory: urbink
+        run: flutter pub get
+
+      - name: Build iOS (no codesign)
+        working-directory: urbink
+        run: |
+          flutter build ios \
+            --no-codesign \
+            --dart-define=FLUTTER_ENV=dev
