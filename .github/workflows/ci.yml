@@ -27,12 +27,6 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Recréer firebase_options_dev.dart depuis le secret GitHub
-        working-directory: urbink
-        env:
-          FIREBASE_OPTIONS_DEV: ${{ secrets.FIREBASE_OPTIONS_DEV }}
-        run: echo "$FIREBASE_OPTIONS_DEV" > lib/firebase_options_dev.dart
-
       - name: Install dependencies
         working-directory: urbink
         run: flutter pub get
@@ -62,11 +56,11 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Recréer firebase_options_dev.dart depuis le secret GitHub
+      # Le template compile avec des placeholders — suffit pour vérifier que le build passe.
+      # Les vraies valeurs Firebase sont uniquement nécessaires à runtime (pas au build).
+      - name: Créer firebase_options_dev.dart depuis le template
         working-directory: urbink
-        env:
-          FIREBASE_OPTIONS_DEV: ${{ secrets.FIREBASE_OPTIONS_DEV }}
-        run: echo "$FIREBASE_OPTIONS_DEV" > lib/firebase_options_dev.dart
+        run: cp lib/firebase_options_dev.template.dart lib/firebase_options_dev.dart
 
       - name: Install dependencies
         working-directory: urbink

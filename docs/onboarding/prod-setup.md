@@ -7,40 +7,28 @@ Aucun de ces éléments n'est dans le repo (c'est voulu).
 
 ## 1. Firebase — fichiers options (tous environnements)
 
-Les fichiers `firebase_options_*.dart` sont **exclus du repo** (clés API). Ils sont recréés en CI depuis des GitHub Secrets, et localement via `flutterfire configure`.
+Les fichiers `firebase_options_*.dart` sont **exclus du repo** (clés API). Un template avec des placeholders est commité pour guider le setup.
 
-### En local (à faire une fois par machine)
+### En local — setup initial (à faire une fois par machine)
 
 ```bash
 cd ~/Code/urbink/urbink
 
-flutterfire configure --project=urbink-dev     --out=lib/firebase_options_dev.dart
+# Dev : copier le template et remplir les vraies valeurs
+cp lib/firebase_options_dev.template.dart lib/firebase_options_dev.dart
+# → ouvrir le fichier et remplacer les PLACEHOLDER_* par les valeurs
+#   du projet urbink-dev dans la console Firebase
+
+# Staging et prod : générer via flutterfire CLI
 flutterfire configure --project=urbink-staging --out=lib/firebase_options_staging.dart
 flutterfire configure --project=urbink-prod    --out=lib/firebase_options_prod.dart
 ```
 
-Sélectionner **iOS uniquement** à chaque fois.
+Sélectionner **iOS uniquement** à chaque fois pour staging/prod.
 
-### GitHub Secrets — pour la CI
+### CI — aucun secret Firebase nécessaire
 
-Va dans **github.com/deadelus/urbink → Settings → Secrets and variables → Actions**.
-
-Pour chaque fichier généré, créer un secret avec le contenu complet du fichier Dart :
-
-```bash
-# Copier le contenu d'un fichier dans le presse-papier
-cat lib/firebase_options_dev.dart | pbcopy
-```
-
-| Secret | Fichier source |
-|--------|---------------|
-| `FIREBASE_OPTIONS_DEV` | `lib/firebase_options_dev.dart` |
-| `FIREBASE_OPTIONS_PROD` | `lib/firebase_options_prod.dart` |
-
-> `FIREBASE_OPTIONS_STAGING` n'est pas encore utilisé en CI (pas de pipeline staging). À ajouter si besoin.
-
-La CI (`ci.yml`) recrée `firebase_options_dev.dart` depuis `FIREBASE_OPTIONS_DEV` avant chaque build.
-Le deploy (`deploy.yml`) recrée `firebase_options_prod.dart` depuis `FIREBASE_OPTIONS_PROD`.
+La CI copie simplement le template pour que le build compile. Les placeholders ne connectent pas à Firebase, mais suffisent pour vérifier que le code compile correctement. Les vrais identifiants ne sont jamais sur GitHub.
 
 ### Mise à jour firebase_service.dart
 
@@ -104,8 +92,6 @@ base64 -i AuthKey_XXXX.p8 | pbcopy
 
 | Secret | Usage | Valeur |
 |--------|-------|--------|
-| `FIREBASE_OPTIONS_DEV` | CI test + build | Contenu de `firebase_options_dev.dart` |
-| `FIREBASE_OPTIONS_PROD` | Deploy TestFlight | Contenu de `firebase_options_prod.dart` |
 | `APP_STORE_CONNECT_API_KEY_ID` | Fastlane upload | Key ID de l'étape 4 |
 | `APP_STORE_CONNECT_API_ISSUER_ID` | Fastlane upload | Issuer ID de l'étape 4 |
 | `APP_STORE_CONNECT_API_KEY_CONTENT` | Fastlane upload | Contenu `.p8` encodé base64 |
@@ -140,8 +126,7 @@ git push origin v1.0.0
 
 | Étape | CI (tests) | Build iOS | TestFlight | App Store |
 |-------|-----------|-----------|------------|-----------|
-| Secret `FIREBASE_OPTIONS_DEV` | Oui | Oui | — | — |
-| Secret `FIREBASE_OPTIONS_PROD` | — | — | Oui | Oui |
+| Template `firebase_options_dev.template.dart` | Non (déjà commité) | Non (déjà commité) | — | — |
 | Compte Apple Developer $99 | Non | Non | Oui | Oui |
 | ExportOptions.plist Team ID | Non | Non | Oui | Oui |
 | App Store Connect API Key | Non | Non | Oui | Oui |
