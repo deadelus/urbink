@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase options — contiennent des clés API, ne jamais committer
+lib/firebase_options_dev.dart
+lib/firebase_options_staging.dart
+lib/firebase_options_prod.dart
