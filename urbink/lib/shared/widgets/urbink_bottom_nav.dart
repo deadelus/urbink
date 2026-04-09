@@ -151,7 +151,7 @@ class _BottomNavBar extends StatelessWidget {
             child: MediaQuery(
               data: MediaQuery.of(context).copyWith(
                 textScaler: MediaQuery.of(context).textScaler.clamp(
-                  minScaleFactor: 0.8,
+                  minScaleFactor: 0.0,
                   maxScaleFactor: 1.3,
                 ),
               ),

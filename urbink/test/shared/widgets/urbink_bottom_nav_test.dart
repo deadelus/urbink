@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/theme/app_theme.dart';
+import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/widgets/urbink_bottom_nav.dart';
 
 // ---------------------------------------------------------------------------
@@ -11,14 +12,27 @@ import 'package:urbink/shared/widgets/urbink_bottom_nav.dart';
 
 Widget wrap(
   Widget child, {
-  MediaQueryData mediaQuery = const MediaQueryData(),
+  MediaQueryData? mediaQuery,
 }) {
   return ProviderScope(
     child: MaterialApp(
       theme: AppTheme.light(),
-      home: MediaQuery(
-        data: mediaQuery,
-        child: Scaffold(body: child),
+      home: Builder(
+        builder: (context) {
+          final baseMediaQuery = MediaQuery.of(context);
+          final effectiveMediaQuery = mediaQuery == null
+              ? baseMediaQuery
+              : baseMediaQuery.copyWith(
+                  disableAnimations: mediaQuery.disableAnimations,
+                  padding: mediaQuery.padding,
+                  textScaler: mediaQuery.textScaler,
+                );
+
+          return MediaQuery(
+            data: effectiveMediaQuery,
+            child: Scaffold(body: child),
+          );
+        },
       ),
     ),
   );
@@ -113,8 +127,17 @@ void main() {
           mediaQuery: const MediaQueryData(disableAnimations: false),
         ),
       );
-      // Avec animations normales, AnimatedContainer gère la largeur de l'underline
-      expect(find.byType(AnimatedContainer), findsWidgets);
+      // Avec animations normales, les underlines sont des AnimatedContainer
+      // à décoration rectangulaire (vs le bouton central qui est BoxShape.circle).
+      // Il y en a exactement 4 (un par onglet non-central).
+      final underlineFinder = find.byWidgetPredicate(
+        (widget) =>
+            widget is AnimatedContainer &&
+            widget.decoration is BoxDecoration &&
+            (widget.decoration as BoxDecoration).shape == BoxShape.rectangle,
+        description: "AnimatedContainer utilisé pour l'underline",
+      );
+      expect(underlineFinder, findsNWidgets(4));
     });
 
     testWidgets("AnimatedSwitcher présent pour l'icône du bouton central", (tester) async {
@@ -135,6 +158,30 @@ void main() {
       );
       // L'app ne doit pas provoquer d'overflow (pas d'exception RenderFlex)
       expect(tester.takeException(), isNull);
+
+      final textWidgets = tester.widgetList<Text>(
+        find.descendant(
+          of: find.byType(UrbinkBottomNav),
+          matching: find.byType(Text),
+        ),
+      );
+      const labels = ['Accueil', 'Carte', 'Challenges', 'Vous'];
+      final labelTexts =
+          textWidgets.where((text) => labels.contains(text.data)).toList();
+
+      expect(labelTexts, hasLength(labels.length));
+      for (final text in labelTexts) {
+        expect(
+          text.maxLines,
+          1,
+          reason: '${text.data} doit être limité à une seule ligne',
+        );
+        expect(
+          text.overflow,
+          TextOverflow.ellipsis,
+          reason: '${text.data} doit utiliser ellipsis en cas de débordement',
+        );
+      }
     });
 
     testWidgets('aucun overflow avec Dynamic Type xxxLarge', (tester) async {
@@ -181,12 +228,19 @@ void main() {
     testWidgets('le bouton Démarrer fait 56×56', (tester) async {
       await tester.pumpWidget(wrap(buildNav()));
 
-      final animatedContainers = tester.widgetList<AnimatedContainer>(
-        find.byType(AnimatedContainer),
+      final startButtonFinder = find.byWidgetPredicate(
+        (widget) =>
+            widget is AnimatedContainer &&
+            widget.decoration is BoxDecoration &&
+            (widget.decoration as BoxDecoration).shape == BoxShape.circle,
+        description: 'AnimatedContainer circulaire 56×56 du bouton Démarrer',
       );
-      final startButtonContainer = animatedContainers.first;
-      // AnimatedContainer pour le bouton central
-      expect(startButtonContainer, isNotNull);
+      expect(startButtonFinder, findsOneWidget);
+
+      // Vérification des dimensions réelles rendues par le moteur Flutter
+      final size = tester.getSize(startButtonFinder);
+      expect(size.width, 56.0);
+      expect(size.height, 56.0);
     });
 
     testWidgets('tap sur onglet Carte déclenche onTabSelected(1)', (tester) async {
@@ -232,8 +286,11 @@ void main() {
         ),
       );
 
-      // Hauteur totale = bottomNavHeight(60) + safeArea(34) + elevation(12) = 106
-      expect(sizedBox.height, greaterThan(60));
+      // La hauteur doit inclure au minimum la hauteur de base + le padding safe area.
+      expect(
+        sizedBox.height,
+        greaterThanOrEqualTo(UrbinkSpacing.bottomNavHeight + bottomPadding),
+      );
     });
 
     testWidgets('rendu correct sans padding (iPhone SE)', (tester) async {
