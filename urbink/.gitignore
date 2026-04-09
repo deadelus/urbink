@@ -48,3 +48,9 @@ app.*.map.json
 lib/firebase_options_dev.dart
 lib/firebase_options_staging.dart
 lib/firebase_options_prod.dart
+
+# GoogleService-Info.plist — clés Firebase, ne jamais committer
+ios/Runner/GoogleService-Info.plist
+ios/Runner/GoogleService-Info-dev.plist
+ios/Runner/GoogleService-Info-staging.plist
+ios/Runner/GoogleService-Info-prod.plist

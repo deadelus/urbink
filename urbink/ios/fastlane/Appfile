@@ -1,4 +1,4 @@
-app_identifier("com.urbink.app")
+app_identifier("com.urbink.app") # Bundle ID final
 apple_id(ENV["APPLE_ID"] || "")
 
 # App Store Connect API Key (pas de mot de passe Apple ID en dur)

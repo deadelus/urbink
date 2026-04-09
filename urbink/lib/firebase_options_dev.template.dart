@@ -35,6 +35,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: 'PLACEHOLDER_SENDER_ID',
     projectId: 'urbink-dev',
     storageBucket: 'PLACEHOLDER_STORAGE_BUCKET',
-    iosBundleId: 'PLACEHOLDER_BUNDLE_ID',
+    iosBundleId: 'com.urbink.app',
   );
 }
