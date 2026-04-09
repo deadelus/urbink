@@ -1,21 +1,49 @@
 default_platform(:ios)
 
 platform :ios do
-  # Lane beta : build + upload TestFlight
-  # Déclenchée par un tag vX.Y.Z via GitHub Actions deploy.yml
-  desc "Build Flutter IPA et soumettre à TestFlight"
-  lane :beta do
-    # Récupération du numéro de build depuis le tag Git (ex: v1.2.3 → build 123)
+  # ─── STAGING → TestFlight ─────────────────────────────────────────────────
+  # Déclenchée par un tag vX.Y.Z-beta via deploy-staging.yml
+  # Firebase : urbink-staging | Distribution : TestFlight
+  desc "Build Flutter IPA staging et soumettre à TestFlight"
+  lane :staging do
     build_number = ENV["FLUTTER_BUILD_TAG"]&.gsub(/[^0-9]/, '') || "1"
 
-    # Certificates & profiles via match (cert store Git privé)
-    # MATCH_GIT_URL et MATCH_PASSWORD lus depuis les secrets GitHub
     match(
       type: "appstore",
       readonly: true,
     )
 
-    # Build Flutter IPA (prod)
+    sh(
+      "cd ../.. && flutter build ipa " \
+      "--dart-define=FLUTTER_ENV=staging " \
+      "--build-number=#{build_number} " \
+      "--export-options-plist=ios/ExportOptions.plist"
+    )
+
+    upload_to_testflight(
+      ipa: "../../build/ios/ipa/urbink.ipa",
+      api_key: {
+        key_id: ENV["STAGING_APP_STORE_CONNECT_API_KEY_ID"],
+        issuer_id: ENV["STAGING_APP_STORE_CONNECT_API_ISSUER_ID"],
+        key_content: ENV["STAGING_APP_STORE_CONNECT_API_KEY_CONTENT"],
+        is_key_content_base64: true,
+      },
+      skip_waiting_for_build_processing: true,
+    )
+  end
+
+  # ─── PROD → App Store ─────────────────────────────────────────────────────
+  # Déclenchée par un tag vX.Y.Z (sans suffix) via deploy-prod.yml
+  # Firebase : urbink-prod | Distribution : App Store
+  desc "Build Flutter IPA prod et soumettre à l'App Store"
+  lane :production do
+    build_number = ENV["FLUTTER_BUILD_TAG"]&.gsub(/[^0-9]/, '') || "1"
+
+    match(
+      type: "appstore",
+      readonly: true,
+    )
+
     sh(
       "cd ../.. && flutter build ipa " \
       "--dart-define=FLUTTER_ENV=prod " \
@@ -23,17 +51,18 @@ platform :ios do
       "--export-options-plist=ios/ExportOptions.plist"
     )
 
-    # Upload TestFlight via App Store Connect API
-    upload_to_testflight(
+    upload_to_app_store(
       ipa: "../../build/ios/ipa/urbink.ipa",
-      api_key_path: nil, # clé inline ci-dessous
       api_key: {
-        key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
-        issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
-        key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+        key_id: ENV["PROD_APP_STORE_CONNECT_API_KEY_ID"],
+        issuer_id: ENV["PROD_APP_STORE_CONNECT_API_ISSUER_ID"],
+        key_content: ENV["PROD_APP_STORE_CONNECT_API_KEY_CONTENT"],
         is_key_content_base64: true,
       },
-      skip_waiting_for_build_processing: true,
+      submit_for_review: false,
+      automatic_release: false,
+      skip_screenshots: true,
+      skip_metadata: true,
     )
   end
 end

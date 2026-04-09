@@ -1,0 +1,55 @@
+name: Deploy Staging → TestFlight
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+-beta'
+
+jobs:
+  testflight-staging:
+    name: Build staging + Upload TestFlight
+    runs-on: macos-15
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: stable
+          cache: true
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: urbink/ios
+
+      - name: Créer firebase_options_staging.dart depuis le secret
+        working-directory: urbink
+        env:
+          FIREBASE_OPTIONS_STAGING: ${{ secrets.FIREBASE_OPTIONS_STAGING }}
+        run: echo "$FIREBASE_OPTIONS_STAGING" > lib/firebase_options_staging.dart
+
+      - name: Install Flutter dependencies
+        working-directory: urbink
+        run: flutter pub get
+
+      - name: Install CocoaPods
+        working-directory: urbink/ios
+        run: pod install
+
+      - name: Build & Upload via Fastlane (lane staging)
+        working-directory: urbink/ios
+        env:
+          STAGING_APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.STAGING_APP_STORE_CONNECT_API_KEY_ID }}
+          STAGING_APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.STAGING_APP_STORE_CONNECT_API_ISSUER_ID }}
+          STAGING_APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.STAGING_APP_STORE_CONNECT_API_KEY_CONTENT }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          FLUTTER_BUILD_TAG: ${{ github.ref_name }}
+        run: bundle exec fastlane staging

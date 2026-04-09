@@ -90,13 +90,20 @@ base64 -i AuthKey_XXXX.p8 | pbcopy
 
 ## 5. GitHub Secrets — récapitulatif complet
 
-| Secret | Usage | Valeur |
-|--------|-------|--------|
-| `APP_STORE_CONNECT_API_KEY_ID` | Fastlane upload | Key ID de l'étape 4 |
-| `APP_STORE_CONNECT_API_ISSUER_ID` | Fastlane upload | Issuer ID de l'étape 4 |
-| `APP_STORE_CONNECT_API_KEY_CONTENT` | Fastlane upload | Contenu `.p8` encodé base64 |
-| `MATCH_PASSWORD` | Fastlane match | Mot de passe chiffrement certificats |
-| `MATCH_GIT_URL` | Fastlane match | URL SSH repo Git privé certificats |
+| Secret | Workflow | Valeur |
+|--------|---------|--------|
+| `FIREBASE_OPTIONS_STAGING` | deploy-staging | Contenu de `firebase_options_staging.dart` |
+| `FIREBASE_OPTIONS_PROD` | deploy-prod | Contenu de `firebase_options_prod.dart` |
+| `STAGING_APP_STORE_CONNECT_API_KEY_ID` | deploy-staging | Key ID App Store Connect (staging) |
+| `STAGING_APP_STORE_CONNECT_API_ISSUER_ID` | deploy-staging | Issuer ID App Store Connect (staging) |
+| `STAGING_APP_STORE_CONNECT_API_KEY_CONTENT` | deploy-staging | Clé `.p8` en base64 (staging) |
+| `PROD_APP_STORE_CONNECT_API_KEY_ID` | deploy-prod | Key ID App Store Connect (prod) |
+| `PROD_APP_STORE_CONNECT_API_ISSUER_ID` | deploy-prod | Issuer ID App Store Connect (prod) |
+| `PROD_APP_STORE_CONNECT_API_KEY_CONTENT` | deploy-prod | Clé `.p8` en base64 (prod) |
+| `MATCH_PASSWORD` | staging + prod | Mot de passe chiffrement certificats match |
+| `MATCH_GIT_URL` | staging + prod | URL SSH repo Git privé certificats |
+
+> Staging et prod peuvent partager la même clé App Store Connect si tu utilises un seul compte — dans ce cas les 3 secrets `STAGING_*` et `PROD_*` ont les mêmes valeurs.
 
 ---
 
@@ -112,12 +119,18 @@ bundle exec fastlane match appstore
 
 ---
 
-## 7. Déclencher le premier deploy
+## 7. Déclencher un deploy
 
 ```bash
+# Staging → TestFlight (tag avec suffixe -beta)
+git tag v1.0.0-beta
+git push origin v1.0.0-beta
+# → déclenche deploy-staging.yml → Fastlane staging → TestFlight
+
+# Prod → App Store (tag sans suffixe)
 git tag v1.0.0
 git push origin v1.0.0
-# → déclenche deploy.yml → Fastlane beta → TestFlight
+# → déclenche deploy-prod.yml → Fastlane production → App Store
 ```
 
 ---
