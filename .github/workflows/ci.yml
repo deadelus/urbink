@@ -27,6 +27,12 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Recréer firebase_options_dev.dart depuis le secret GitHub
+        working-directory: urbink
+        env:
+          FIREBASE_OPTIONS_DEV: ${{ secrets.FIREBASE_OPTIONS_DEV }}
+        run: echo "$FIREBASE_OPTIONS_DEV" > lib/firebase_options_dev.dart
+
       - name: Install dependencies
         working-directory: urbink
         run: flutter pub get
@@ -55,6 +61,12 @@ jobs:
           flutter-version: '3.x'
           channel: stable
           cache: true
+
+      - name: Recréer firebase_options_dev.dart depuis le secret GitHub
+        working-directory: urbink
+        env:
+          FIREBASE_OPTIONS_DEV: ${{ secrets.FIREBASE_OPTIONS_DEV }}
+        run: echo "$FIREBASE_OPTIONS_DEV" > lib/firebase_options_dev.dart
 
       - name: Install dependencies
         working-directory: urbink

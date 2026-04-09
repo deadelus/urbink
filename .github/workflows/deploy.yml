@@ -29,6 +29,12 @@ jobs:
           bundler-cache: true
           working-directory: urbink/ios
 
+      - name: Recréer firebase_options_prod.dart depuis le secret GitHub
+        working-directory: urbink
+        env:
+          FIREBASE_OPTIONS_PROD: ${{ secrets.FIREBASE_OPTIONS_PROD }}
+        run: echo "$FIREBASE_OPTIONS_PROD" > lib/firebase_options_prod.dart
+
       - name: Install Flutter dependencies
         working-directory: urbink
         run: flutter pub get
