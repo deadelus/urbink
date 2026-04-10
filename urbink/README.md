@@ -36,10 +36,10 @@ Télécharger depuis Firebase Console → projet `urbink-dev` → ⚙️ Paramè
 ### 3. Lancer l'app
 
 ```bash
-flutter run                                       # dev (défaut)
-flutter run --dart-define=FLUTTER_ENV=staging
-flutter build ipa --dart-define=FLUTTER_ENV=prod  # CI uniquement
+flutter run   # dev — utilise le firebase_options.dart présent localement
 ```
+
+> **Note sur `--dart-define=FLUTTER_ENV`** : ce flag alimente uniquement `FirebaseService.currentEnv` (valeur lisible côté code), mais **ne sélectionne pas** un environnement Firebase différent. L'environnement Firebase effectivement utilisé est déterminé par le contenu du fichier `firebase_options.dart` (gitignored) — en local, le fichier dev ; en CI, le fichier injecté depuis l'Environment GitHub (`ios-dev`, `ios-staging` ou `ios-prod`).
 
 ---
 
