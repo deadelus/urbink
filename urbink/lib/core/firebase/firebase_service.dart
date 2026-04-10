@@ -5,9 +5,13 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:urbink/firebase_options.dart';
 
-// Environnement injecté via --dart-define=FLUTTER_ENV=<env>
-// Valeurs possibles : dev (défaut) | staging | prod
-// En CI, firebase_options.dart est écrit depuis le secret GitHub de l'environment correspondant.
+// Environnement injecté via --dart-define=FLUTTER_ENV=<env>.
+// Valeurs possibles : dev (défaut) | staging | prod.
+// Cette valeur est exposée via `currentEnv`, mais ne sélectionne pas les
+// options Firebase dans cette implémentation.
+// L'environnement Firebase effectivement utilisé dépend du contenu de
+// `firebase_options.dart` (injecté/généré pour l'environment GitHub visé),
+// puis de `DefaultFirebaseOptions.currentPlatform`.
 const String _env = String.fromEnvironment('FLUTTER_ENV', defaultValue: 'dev');
 
 abstract final class FirebaseService {
