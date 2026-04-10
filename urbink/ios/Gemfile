@@ -1,0 +1,4 @@
+source "https://rubygems.org"
+
+# Version pinnée pour des builds CI déterministes — mettre à jour volontairement après validation
+gem "fastlane", "2.226.0"

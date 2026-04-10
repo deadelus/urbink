@@ -3,7 +3,8 @@ name: Deploy iOS Prod → App Store
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      # Glob GitHub Actions : [0-9]* = chiffre suivi de 0..n caractères quelconques
+      - 'v[0-9]*.[0-9]*.[0-9]*'
     branches-ignore:
       - '**'
 
@@ -13,6 +14,8 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 90
     environment: ios-prod
+    # Évite de déclencher le deploy prod sur des tags -beta (qui triggent aussi le pattern v*.*.*)
+    if: "!contains(github.ref_name, '-beta')"
 
     steps:
       - name: Checkout
@@ -36,13 +39,24 @@ jobs:
         working-directory: urbink
         env:
           FIREBASE_OPTIONS: ${{ secrets.FIREBASE_OPTIONS }}
-        run: echo "$FIREBASE_OPTIONS" > lib/firebase_options.dart
+        # printf '%s' préserve les retours à la ligne et les caractères spéciaux du fichier Dart multi-lignes
+        run: printf '%s' "$FIREBASE_OPTIONS" > lib/firebase_options.dart
 
       - name: Créer GoogleService-Info.plist depuis le secret
         working-directory: urbink
         env:
           GOOGLE_SERVICE_INFO: ${{ secrets.GOOGLE_SERVICE_INFO }}
-        run: echo "$GOOGLE_SERVICE_INFO" > ios/Runner/GoogleService-Info.plist
+        run: printf '%s' "$GOOGLE_SERVICE_INFO" > ios/Runner/GoogleService-Info.plist
+
+      - name: Activer flutterfire_cli (requis par le build phase Crashlytics Xcode)
+        run: dart pub global activate flutterfire_cli
+
+      - name: Injecter APPLE_TEAM_ID dans ExportOptions.plist
+        working-directory: urbink/ios
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        # Remplace le placeholder committé par la vraie valeur depuis le secret GitHub
+        run: sed -i '' "s/TEAM_ID_PLACEHOLDER/$APPLE_TEAM_ID/" ExportOptions.plist
 
       - name: Install Flutter dependencies
         working-directory: urbink

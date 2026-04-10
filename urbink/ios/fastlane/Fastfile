@@ -6,22 +6,27 @@ platform :ios do
   # Firebase : urbink-staging | Distribution : TestFlight
   desc "Build Flutter IPA staging et soumettre à TestFlight"
   lane :staging do
-    build_number = ENV["FLUTTER_BUILD_TAG"]&.gsub(/[^0-9]/, '') || "1"
+    # GITHUB_RUN_NUMBER est monotone (incrémenté à chaque run CI) — garantit que le build number
+    # augmente toujours, ce que l'App Store / TestFlight exige. L'extraction de chiffres depuis le tag
+    # (ex: v1.2.10 → 1210) n'est pas monotone et peut régresser entre versions.
+    build_number = ENV["GITHUB_RUN_NUMBER"] || "1"
 
     match(
       type: "appstore",
       readonly: true,
     )
 
+    # sh s'exécute depuis urbink/ios/ (racine Fastlane) — cd .. remonte à urbink/ (Flutter root)
     sh(
-      "cd ../.. && flutter build ipa " \
+      "cd .. && flutter build ipa " \
       "--dart-define=FLUTTER_ENV=staging " \
       "--build-number=#{build_number} " \
       "--export-options-plist=ios/ExportOptions.plist"
     )
 
+    # Chemin IPA relatif à urbink/ios/ → ../build/ = urbink/build/
     upload_to_testflight(
-      ipa: "../../build/ios/ipa/urbink.ipa",
+      ipa: "../build/ios/ipa/urbink.ipa",
       api_key: {
         key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
         issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
@@ -37,22 +42,27 @@ platform :ios do
   # Firebase : urbink-prod | Distribution : App Store
   desc "Build Flutter IPA prod et soumettre à l'App Store"
   lane :production do
-    build_number = ENV["FLUTTER_BUILD_TAG"]&.gsub(/[^0-9]/, '') || "1"
+    # GITHUB_RUN_NUMBER est monotone (incrémenté à chaque run CI) — garantit que le build number
+    # augmente toujours, ce que l'App Store / TestFlight exige. L'extraction de chiffres depuis le tag
+    # (ex: v1.2.10 → 1210) n'est pas monotone et peut régresser entre versions.
+    build_number = ENV["GITHUB_RUN_NUMBER"] || "1"
 
     match(
       type: "appstore",
       readonly: true,
     )
 
+    # sh s'exécute depuis urbink/ios/ (racine Fastlane) — cd .. remonte à urbink/ (Flutter root)
     sh(
-      "cd ../.. && flutter build ipa " \
+      "cd .. && flutter build ipa " \
       "--dart-define=FLUTTER_ENV=prod " \
       "--build-number=#{build_number} " \
       "--export-options-plist=ios/ExportOptions.plist"
     )
 
+    # Chemin IPA relatif à urbink/ios/ → ../build/ = urbink/build/
     upload_to_app_store(
-      ipa: "../../build/ios/ipa/urbink.ipa",
+      ipa: "../build/ios/ipa/urbink.ipa",
       api_key: {
         key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
         issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],

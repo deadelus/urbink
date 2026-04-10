@@ -16,7 +16,7 @@ Tous les fichiers Firebase sont gitignorés — ils contiennent des clés API. �
 #### Fichier Dart (options Firebase)
 
 ```bash
-flutterfire configure --project=urbink-dev --out=lib/firebase_options_dev.dart
+flutterfire configure --project=urbink-dev --out=lib/firebase_options.dart
 ```
 
 #### GoogleService-Info.plist (SDK natif Firebase iOS)
@@ -25,9 +25,13 @@ Télécharger depuis [Firebase Console](https://console.firebase.google.com) →
 
 > Ce fichier est gitignore. En CI, il est écrit automatiquement depuis le secret GitHub `GOOGLE_SERVICE_INFO` de l'environment `ios-dev`/`ios-staging`/`ios-prod`.
 
-#### google-services.json (Android — optionnel pour le MVP iOS)
+#### google-services.json (Android)
 
-Télécharger depuis Firebase Console → projet `urbink-dev` → ⚙️ Paramètres → Android et placer dans `android/app/`.
+**Requis pour tout build ou run Android** — optionnel uniquement si vous ciblez exclusivement iOS (MVP).
+
+Télécharger depuis Firebase Console → projet `urbink-dev` → ⚙️ Paramètres → Android et placer dans `android/app/google-services.json`.
+
+> Ce fichier est gitignored. Sans lui, `flutter run` ou `flutter build` Android échoue (le plugin `google-services` est actif). La CI actuelle ne cible qu'iOS — aucun build Android n'est déclenché.
 
 ### 3. Lancer l'app
 

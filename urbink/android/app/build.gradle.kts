@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
+    // Nécessite android/app/google-services.json (gitignored) — tout build Android échoue sans ce fichier.
+    // Télécharger depuis Firebase Console → projet urbink-dev → Paramètres → Android.
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
     // END: FlutterFire Configuration

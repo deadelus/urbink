@@ -7,44 +7,30 @@ Aucun de ces éléments n'est dans le repo (c'est voulu).
 
 ## 1. Firebase — fichiers options (tous environnements)
 
-Les fichiers `firebase_options_*.dart` sont **exclus du repo** (clés API). Un template avec des placeholders est commité pour guider le setup.
+Le fichier `lib/firebase_options.dart` est **exclu du repo** (clés API). Un seul fichier est utilisé dans tous les environnements — c'est le GitHub Environment qui isole les valeurs via le secret `FIREBASE_OPTIONS`.
 
 ### En local — setup initial (à faire une fois par machine)
 
 ```bash
 cd ~/Code/urbink/urbink
 
-# Dev : copier le template et remplir les vraies valeurs
-cp lib/firebase_options_dev.template.dart lib/firebase_options_dev.dart
-# → ouvrir le fichier et remplacer les PLACEHOLDER_* par les valeurs
-#   du projet urbink-dev dans la console Firebase
-
-# Staging et prod : générer via flutterfire CLI
-flutterfire configure --project=urbink-staging --out=lib/firebase_options_staging.dart
-flutterfire configure --project=urbink-prod    --out=lib/firebase_options_prod.dart
+# Générer le fichier attendu par l'app depuis le projet Firebase dev
+flutterfire configure --project=urbink-dev --out=lib/firebase_options.dart
 ```
 
-Sélectionner **iOS uniquement** à chaque fois pour staging/prod.
+Sélectionner **iOS uniquement** (MVP iOS).
 
-### CI — aucun secret Firebase nécessaire
+### CI — jobs test/analyze
 
-La CI copie simplement le template pour que le build compile. Les placeholders ne connectent pas à Firebase, mais suffisent pour vérifier que le code compile correctement. Les vrais identifiants ne sont jamais sur GitHub.
+Le job `test` n'a pas accès aux secrets Firebase (pas d'environment configuré). Il génère un stub compilable `lib/firebase_options.dart` avec des valeurs placeholder. Les tests ne contactent pas Firebase réellement — ils mockent les services via les providers Riverpod.
 
-### Mise à jour firebase_service.dart
+### CI — jobs build et deploy
 
-Une fois les fichiers staging/prod générés, mettre à jour `lib/core/firebase/firebase_service.dart` pour les importer :
+Les jobs `build-ios`, `deploy-ios-staging` et `deploy-ios-prod` utilisent les GitHub Environments (`ios-dev`, `ios-staging`, `ios-prod`). Le secret `FIREBASE_OPTIONS` de chaque environment contient le vrai contenu du fichier `firebase_options.dart` pour l'environnement correspondant — écrit via `printf '%s'` pour préserver le format multi-lignes exact.
 
-```dart
-// En haut du fichier, ajouter :
-import 'package:urbink/firebase_options_staging.dart' as staging;
-import 'package:urbink/firebase_options_prod.dart' as prod;
+### `firebase_service.dart` — architecture simplifiée
 
-// Remplacer les StateError par :
-case 'prod':
-  return prod.DefaultFirebaseOptions.currentPlatform;
-case 'staging':
-  return staging.DefaultFirebaseOptions.currentPlatform;
-```
+Depuis cette story, `firebase_service.dart` utilise directement `DefaultFirebaseOptions.currentPlatform` sans switch sur l'environnement. C'est le contenu du fichier `firebase_options.dart` qui détermine le projet Firebase — injecté via le secret GitHub de l'environment correspondant en CI.
 
 ---
 
@@ -97,15 +83,17 @@ Les secrets ont le **même nom** dans chaque environment — c'est l'environment
 
 | Secret | `ios-dev` | `ios-staging` | `ios-prod` |
 |--------|----------|--------------|-----------|
-| `FIREBASE_OPTIONS` | `firebase_options_dev.dart` | `firebase_options_staging.dart` | `firebase_options_prod.dart` |
-| `GOOGLE_SERVICE_INFO` | — | `GoogleService-Info-ios-staging.plist` | `GoogleService-Info-ios-prod.plist` |
+| `FIREBASE_OPTIONS` | Contenu de `lib/firebase_options.dart` (projet `urbink-dev`) | Contenu de `lib/firebase_options.dart` (projet `urbink-staging`) | Contenu de `lib/firebase_options.dart` (projet `urbink-prod`) |
+| `GOOGLE_SERVICE_INFO` | `GoogleService-Info.plist` (projet `urbink-dev`) | `GoogleService-Info.plist` (projet `urbink-staging`) | `GoogleService-Info.plist` (projet `urbink-prod`) |
 | `APP_STORE_CONNECT_API_KEY_ID` | — | Key ID (Apple Developer) | Key ID (Apple Developer) |
 | `APP_STORE_CONNECT_API_ISSUER_ID` | — | Issuer ID | Issuer ID |
 | `APP_STORE_CONNECT_API_KEY_CONTENT` | — | Clé `.p8` base64 | Clé `.p8` base64 |
+| `APPLE_TEAM_ID` | — | Team ID Apple Developer | Team ID Apple Developer |
 | `MATCH_PASSWORD` | — | mot de passe match | mot de passe match |
 | `MATCH_GIT_URL` | — | URL repo certificats | URL repo certificats |
 
 > Les secrets App Store Connect peuvent être identiques en staging et prod si tu n'as qu'un seul compte Apple Developer.
+> Pour générer le contenu du secret `FIREBASE_OPTIONS` : `flutterfire configure --project=urbink-<env> --out=lib/firebase_options.dart` puis copier le fichier généré comme valeur du secret.
 
 ---
 
@@ -141,7 +129,10 @@ git push origin v1.0.0
 
 | Étape | CI (tests) | Build iOS | TestFlight | App Store |
 |-------|-----------|-----------|------------|-----------|
-| Template `firebase_options_dev.template.dart` | Non (déjà commité) | Non (déjà commité) | — | — |
+| Secret `FIREBASE_OPTIONS` (environment `ios-dev`) | Non (stub généré automatiquement) | Oui | — | — |
+| Secret `FIREBASE_OPTIONS` (environment `ios-staging`) | Non | — | Oui | — |
+| Secret `FIREBASE_OPTIONS` (environment `ios-prod`) | Non | — | — | Oui |
+| Secret `GOOGLE_SERVICE_INFO` (ios-dev) | Non | Oui | — | — |
 | Compte Apple Developer $99 | Non | Non | Oui | Oui |
 | ExportOptions.plist Team ID | Non | Non | Oui | Oui |
 | App Store Connect API Key | Non | Non | Oui | Oui |

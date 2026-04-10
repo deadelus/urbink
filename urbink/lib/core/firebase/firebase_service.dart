@@ -25,13 +25,29 @@ abstract final class FirebaseService {
     // En debug : désactiver la collection pour éviter le bruit dans le dashboard
     await crashlytics.setCrashlyticsCollectionEnabled(!kDebugMode);
 
-    // Redirige toutes les exceptions Flutter non gérées vers Crashlytics
-    FlutterError.onError = crashlytics.recordFlutterFatalError;
+    // Chaîne avec le handler Flutter existant (affichage console/overlay en debug)
+    // et n'envoie vers Crashlytics qu'en non-debug pour éviter le bruit.
+    final previousFlutterOnError = FlutterError.onError;
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      previousFlutterOnError?.call(details);
+      if (!kDebugMode) {
+        crashlytics.recordFlutterFatalError(details);
+      }
+    };
 
-    // Capture les erreurs async hors zone Flutter (ex: erreurs Isolate)
+    // Capture les erreurs async hors zone Flutter (ex: erreurs Isolate).
+    // Chaîne avec un handler existant ; retourne false en debug pour ne pas
+    // masquer les exceptions (comportement par défaut préservé).
+    final previousPlatformOnError = PlatformDispatcher.instance.onError;
     PlatformDispatcher.instance.onError = (error, stack) {
-      crashlytics.recordError(error, stack, fatal: true);
-      return true;
+      if (!kDebugMode) {
+        crashlytics.recordError(error, stack, fatal: true);
+      }
+      if (previousPlatformOnError != null) {
+        return previousPlatformOnError(error, stack);
+      }
+      return !kDebugMode;
     };
   }
 
