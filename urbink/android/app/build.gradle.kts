@@ -1,7 +1,10 @@
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
+    // Nécessite android/app/google-services.json (gitignored) — tout build Android échoue sans ce fichier.
+    // Télécharger depuis Firebase Console → projet urbink-dev → Paramètres → Android.
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
     // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -9,7 +12,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.urbink"
+    namespace = "com.urbink.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -24,7 +27,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.urbink"
+        applicationId = "com.urbink.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

@@ -1,0 +1,153 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+    name: Flutter test + analyze
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: stable
+          cache: true
+
+      - name: Créer firebase_options.dart (stub pour CI — analyze/test ne contactent pas Firebase)
+        working-directory: urbink
+        run: |
+          cat > lib/firebase_options.dart << 'DART_EOF'
+          // Stub généré automatiquement par CI — ne pas utiliser en production.
+          // Permet à flutter analyze et flutter test de compiler sans le vrai firebase_options.dart (gitignored).
+          import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
+          import 'package:flutter/foundation.dart'
+              show defaultTargetPlatform, kIsWeb, TargetPlatform;
+
+          class DefaultFirebaseOptions {
+            static FirebaseOptions get currentPlatform {
+              if (kIsWeb) return web;
+              switch (defaultTargetPlatform) {
+                case TargetPlatform.android:
+                  return android;
+                case TargetPlatform.iOS:
+                  return ios;
+                default:
+                  return ios;
+              }
+            }
+            static const FirebaseOptions ios = FirebaseOptions(
+              apiKey: 'ci-placeholder',
+              appId: '1:000000000000:ios:000000000000000000000000',
+              messagingSenderId: '000000000000',
+              projectId: 'urbink-ci-stub',
+              storageBucket: 'urbink-ci-stub.appspot.com',
+              iosBundleId: 'com.urbink.app',
+            );
+            static const FirebaseOptions android = FirebaseOptions(
+              apiKey: 'ci-placeholder',
+              appId: '1:000000000000:android:000000000000000000000000',
+              messagingSenderId: '000000000000',
+              projectId: 'urbink-ci-stub',
+              storageBucket: 'urbink-ci-stub.appspot.com',
+            );
+            static const FirebaseOptions web = FirebaseOptions(
+              apiKey: 'ci-placeholder',
+              appId: '1:000000000000:web:000000000000000000000000',
+              messagingSenderId: '000000000000',
+              projectId: 'urbink-ci-stub',
+              storageBucket: 'urbink-ci-stub.appspot.com',
+            );
+          }
+          DART_EOF
+
+      - name: Install dependencies
+        working-directory: urbink
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: urbink
+        run: flutter analyze --no-pub
+
+      - name: Test
+        working-directory: urbink
+        run: flutter test --no-pub
+
+  build-ios:
+    name: Build iOS (no sign)
+    runs-on: macos-15
+    needs: test
+    timeout-minutes: 45
+    environment: ios-dev
+    # Build iOS uniquement sur push vers main/develop — pas sur les PRs.
+    # flutter analyze + test suffisent pour valider un PR.
+    # Le build complet ne sert qu'à confirmer la compilation avant merge.
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: stable
+          cache: true
+
+      - name: Créer firebase_options.dart depuis le secret
+        working-directory: urbink
+        env:
+          FIREBASE_OPTIONS: ${{ secrets.FIREBASE_OPTIONS }}
+        # printf '%s' préserve les retours à la ligne et les caractères spéciaux du fichier Dart multi-lignes
+        run: printf '%s' "$FIREBASE_OPTIONS" > lib/firebase_options.dart
+
+      - name: Créer GoogleService-Info.plist depuis le secret
+        working-directory: urbink
+        env:
+          GOOGLE_SERVICE_INFO: ${{ secrets.GOOGLE_SERVICE_INFO }}
+        run: printf '%s' "$GOOGLE_SERVICE_INFO" > ios/Runner/GoogleService-Info.plist
+
+      - name: Activer flutterfire_cli (requis par le build phase Crashlytics Xcode)
+        run: dart pub global activate flutterfire_cli
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v5
+        with:
+          path: urbink/ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('urbink/ios/Podfile.lock') }}
+          restore-keys: ${{ runner.os }}-pods-
+
+      - name: Cache DerivedData
+        uses: actions/cache@v5
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-derived-${{ hashFiles('urbink/ios/Podfile.lock') }}-${{ hashFiles('urbink/pubspec.lock') }}
+          restore-keys: ${{ runner.os }}-derived-
+
+      - name: Install dependencies
+        working-directory: urbink
+        run: flutter pub get
+
+      - name: Install CocoaPods
+        working-directory: urbink/ios
+        run: pod install
+
+      - name: Build iOS (simulateur — vérification de compilation)
+        working-directory: urbink
+        # Mode simulateur : ~3x plus rapide qu'un build device (pas de codesign,
+        # pas d'optimisations release ARM). Suffisant pour détecter les erreurs de compilation.
+        run: flutter build ios --simulator --dart-define=FLUTTER_ENV=dev

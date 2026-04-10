@@ -1,0 +1,88 @@
+name: Deploy iOS Staging → TestFlight
+
+on:
+  push:
+    tags:
+      # Glob GitHub Actions : [0-9]* = chiffre suivi de 0..n caractères quelconques
+      - 'v[0-9]*.[0-9]*.[0-9]*-beta'
+
+jobs:
+  ios-testflight-staging:
+    name: Build iOS staging + Upload TestFlight
+    runs-on: macos-15
+    timeout-minutes: 90
+    environment: ios-staging
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: stable
+          cache: true
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: urbink/ios
+
+      - name: Créer firebase_options.dart depuis le secret
+        working-directory: urbink
+        env:
+          FIREBASE_OPTIONS: ${{ secrets.FIREBASE_OPTIONS }}
+        # printf '%s' préserve les retours à la ligne et les caractères spéciaux du fichier Dart multi-lignes
+        run: printf '%s' "$FIREBASE_OPTIONS" > lib/firebase_options.dart
+
+      - name: Créer GoogleService-Info.plist depuis le secret
+        working-directory: urbink
+        env:
+          GOOGLE_SERVICE_INFO: ${{ secrets.GOOGLE_SERVICE_INFO }}
+        run: printf '%s' "$GOOGLE_SERVICE_INFO" > ios/Runner/GoogleService-Info.plist
+
+      - name: Activer flutterfire_cli (requis par le build phase Crashlytics Xcode)
+        run: dart pub global activate flutterfire_cli
+
+      - name: Injecter APPLE_TEAM_ID dans ExportOptions.plist
+        working-directory: urbink/ios
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        # Remplace le placeholder committé par la vraie valeur depuis le secret GitHub
+        run: sed -i '' "s/TEAM_ID_PLACEHOLDER/$APPLE_TEAM_ID/" ExportOptions.plist
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v5
+        with:
+          path: urbink/ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('urbink/ios/Podfile.lock') }}
+          restore-keys: ${{ runner.os }}-pods-
+
+      - name: Cache DerivedData
+        uses: actions/cache@v5
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-derived-${{ hashFiles('urbink/ios/Podfile.lock') }}-${{ hashFiles('urbink/pubspec.lock') }}
+          restore-keys: ${{ runner.os }}-derived-
+
+      - name: Install Flutter dependencies
+        working-directory: urbink
+        run: flutter pub get
+
+      - name: Install CocoaPods
+        working-directory: urbink/ios
+        run: pod install
+
+      - name: Build & Upload via Fastlane (lane staging)
+        working-directory: urbink/ios
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          FLUTTER_BUILD_TAG: ${{ github.ref_name }}
+        run: bundle exec fastlane staging

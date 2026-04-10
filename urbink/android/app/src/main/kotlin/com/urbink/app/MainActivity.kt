@@ -1,4 +1,4 @@
-package com.example.urbink
+package com.urbink.app
 
 import io.flutter.embedding.android.FlutterActivity
 
