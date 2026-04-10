@@ -115,33 +115,11 @@ jobs:
         # printf '%s' préserve les retours à la ligne et les caractères spéciaux du fichier Dart multi-lignes
         run: printf '%s' "$FIREBASE_OPTIONS" > lib/firebase_options.dart
 
-      - name: Créer GoogleService-Info.plist depuis le secret (ou stub si secret absent)
+      - name: Créer GoogleService-Info.plist depuis le secret
         working-directory: urbink
         env:
           GOOGLE_SERVICE_INFO: ${{ secrets.GOOGLE_SERVICE_INFO }}
-        # Si le secret n'est pas configuré dans l'environment ios-dev,
-        # on écrit un plist stub valide pour que Xcode ne plante pas.
-        run: |
-          if [ -n "$GOOGLE_SERVICE_INFO" ]; then
-            printf '%s' "$GOOGLE_SERVICE_INFO" > ios/Runner/GoogleService-Info.plist
-          else
-            cat > ios/Runner/GoogleService-Info.plist << 'PLIST_EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>API_KEY</key><string>ci-placeholder</string>
-            <key>BUNDLE_ID</key><string>com.urbink.app</string>
-            <key>CLIENT_ID</key><string>ci-placeholder</string>
-            <key>GOOGLE_APP_ID</key><string>1:000000000000:ios:000000000000000000000000</string>
-            <key>GCM_SENDER_ID</key><string>000000000000</string>
-            <key>PROJECT_ID</key><string>urbink-ci-stub</string>
-            <key>REVERSED_CLIENT_ID</key><string>ci-placeholder</string>
-            <key>STORAGE_BUCKET</key><string>urbink-ci-stub.appspot.com</string>
-          </dict>
-          </plist>
-          PLIST_EOF
-          fi
+        run: printf '%s' "$GOOGLE_SERVICE_INFO" > ios/Runner/GoogleService-Info.plist
 
       - name: Activer flutterfire_cli (requis par le build phase Crashlytics Xcode)
         run: dart pub global activate flutterfire_cli
