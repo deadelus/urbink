@@ -23,9 +23,9 @@ platform :ios do
     upload_to_testflight(
       ipa: "../../build/ios/ipa/urbink.ipa",
       api_key: {
-        key_id: ENV["STAGING_APP_STORE_CONNECT_API_KEY_ID"],
-        issuer_id: ENV["STAGING_APP_STORE_CONNECT_API_ISSUER_ID"],
-        key_content: ENV["STAGING_APP_STORE_CONNECT_API_KEY_CONTENT"],
+        key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+        issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+        key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
         is_key_content_base64: true,
       },
       skip_waiting_for_build_processing: true,
@@ -54,9 +54,9 @@ platform :ios do
     upload_to_app_store(
       ipa: "../../build/ios/ipa/urbink.ipa",
       api_key: {
-        key_id: ENV["PROD_APP_STORE_CONNECT_API_KEY_ID"],
-        issuer_id: ENV["PROD_APP_STORE_CONNECT_API_ISSUER_ID"],
-        key_content: ENV["PROD_APP_STORE_CONNECT_API_KEY_CONTENT"],
+        key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+        issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+        key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
         is_key_content_base64: true,
       },
       submit_for_review: false,

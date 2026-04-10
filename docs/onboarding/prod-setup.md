@@ -88,22 +88,24 @@ base64 -i AuthKey_XXXX.p8 | pbcopy
 
 ---
 
-## 5. GitHub Secrets — récapitulatif complet
+## 5. GitHub Environments + Secrets
 
-| Secret | Workflow | Valeur |
-|--------|---------|--------|
-| `FIREBASE_OPTIONS_STAGING` | deploy-staging | Contenu de `firebase_options_staging.dart` |
-| `FIREBASE_OPTIONS_PROD` | deploy-prod | Contenu de `firebase_options_prod.dart` |
-| `STAGING_APP_STORE_CONNECT_API_KEY_ID` | deploy-staging | Key ID App Store Connect (staging) |
-| `STAGING_APP_STORE_CONNECT_API_ISSUER_ID` | deploy-staging | Issuer ID App Store Connect (staging) |
-| `STAGING_APP_STORE_CONNECT_API_KEY_CONTENT` | deploy-staging | Clé `.p8` en base64 (staging) |
-| `PROD_APP_STORE_CONNECT_API_KEY_ID` | deploy-prod | Key ID App Store Connect (prod) |
-| `PROD_APP_STORE_CONNECT_API_ISSUER_ID` | deploy-prod | Issuer ID App Store Connect (prod) |
-| `PROD_APP_STORE_CONNECT_API_KEY_CONTENT` | deploy-prod | Clé `.p8` en base64 (prod) |
-| `MATCH_PASSWORD` | staging + prod | Mot de passe chiffrement certificats match |
-| `MATCH_GIT_URL` | staging + prod | URL SSH repo Git privé certificats |
+Créer 3 environments dans **github.com/deadelus/urbink → Settings → Environments** :
+`ios-dev`, `ios-staging`, `ios-prod`
 
-> Staging et prod peuvent partager la même clé App Store Connect si tu utilises un seul compte — dans ce cas les 3 secrets `STAGING_*` et `PROD_*` ont les mêmes valeurs.
+Les secrets ont le **même nom** dans chaque environment — c'est l'environment qui isole les valeurs.
+
+| Secret | `ios-dev` | `ios-staging` | `ios-prod` |
+|--------|----------|--------------|-----------|
+| `FIREBASE_OPTIONS` | `firebase_options_dev.dart` | `firebase_options_staging.dart` | `firebase_options_prod.dart` |
+| `GOOGLE_SERVICE_INFO` | — | `GoogleService-Info-ios-staging.plist` | `GoogleService-Info-ios-prod.plist` |
+| `APP_STORE_CONNECT_API_KEY_ID` | — | Key ID (Apple Developer) | Key ID (Apple Developer) |
+| `APP_STORE_CONNECT_API_ISSUER_ID` | — | Issuer ID | Issuer ID |
+| `APP_STORE_CONNECT_API_KEY_CONTENT` | — | Clé `.p8` base64 | Clé `.p8` base64 |
+| `MATCH_PASSWORD` | — | mot de passe match | mot de passe match |
+| `MATCH_GIT_URL` | — | URL repo certificats | URL repo certificats |
+
+> Les secrets App Store Connect peuvent être identiques en staging et prod si tu n'as qu'un seul compte Apple Developer.
 
 ---
 

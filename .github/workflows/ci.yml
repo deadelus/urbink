@@ -44,6 +44,7 @@ jobs:
     runs-on: macos-15
     needs: test
     timeout-minutes: 45
+    environment: ios-dev
 
     steps:
       - name: Checkout
@@ -56,11 +57,11 @@ jobs:
           channel: stable
           cache: true
 
-      # Le template compile avec des placeholders — suffit pour vérifier que le build passe.
-      # Les vraies valeurs Firebase sont uniquement nécessaires à runtime (pas au build).
-      - name: Créer firebase_options_dev.dart depuis le template
+      - name: Créer firebase_options.dart depuis le secret
         working-directory: urbink
-        run: cp lib/firebase_options_dev.template.dart lib/firebase_options_dev.dart
+        env:
+          FIREBASE_OPTIONS: ${{ secrets.FIREBASE_OPTIONS }}
+        run: echo "$FIREBASE_OPTIONS" > lib/firebase_options.dart
 
       - name: Install dependencies
         working-directory: urbink

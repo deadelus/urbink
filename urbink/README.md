@@ -1,17 +1,42 @@
-# urbink
+# Urbink — Flutter App
 
-A new Flutter project.
+## Setup développement
 
-## Getting Started
+### 1. Cloner et installer les dépendances
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+cd ios && pod install && cd ..
+```
 
-A few resources to get you started if this is your first Flutter project:
+### 2. Configurer Firebase (dev)
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Tous les fichiers Firebase sont gitignorés — ils contiennent des clés API. À faire une fois par machine.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+#### Fichier Dart (options Firebase)
+
+```bash
+flutterfire configure --project=urbink-dev --out=lib/firebase_options_dev.dart
+```
+
+#### GoogleService-Info.plist (SDK natif Firebase iOS)
+
+Télécharger depuis [Firebase Console](https://console.firebase.google.com) → projet `urbink-dev` → ⚙️ Paramètres → iOS et placer dans `ios/Runner/GoogleService-Info.plist`.
+
+> Ce fichier est gitignore. En CI, il est écrit automatiquement depuis le secret GitHub `GOOGLE_SERVICE_INFO` de l'environment `ios-dev`/`ios-staging`/`ios-prod`.
+
+#### google-services.json (Android — optionnel pour le MVP iOS)
+
+Télécharger depuis Firebase Console → projet `urbink-dev` → ⚙️ Paramètres → Android et placer dans `android/app/`.
+
+### 3. Lancer l'app
+
+```bash
+flutter run                                       # dev (défaut)
+flutter run --dart-define=FLUTTER_ENV=staging
+flutter build ipa --dart-define=FLUTTER_ENV=prod  # CI uniquement
+```
+
+---
+
+Pour la configuration CI/CD et le deploy TestFlight/App Store, voir [docs/onboarding/prod-setup.md](../docs/onboarding/prod-setup.md).

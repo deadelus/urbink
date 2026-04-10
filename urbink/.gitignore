@@ -45,12 +45,11 @@ app.*.map.json
 /android/app/release
 
 # Firebase options — contiennent des clés API, ne jamais committer
-lib/firebase_options_dev.dart
-lib/firebase_options_staging.dart
-lib/firebase_options_prod.dart
+# En local : généré par flutterfire configure | En CI : écrit depuis le secret GitHub
+lib/firebase_options.dart
 
-# GoogleService-Info.plist — clés Firebase, ne jamais committer
+# Fichiers Firebase natifs — clés API, ne jamais committer
+# En local : télécharger depuis Firebase Console → ios/Runner/GoogleService-Info.plist
+# En CI : écrit depuis le secret GitHub GOOGLE_SERVICE_INFO de l'environment correspondant
 ios/Runner/GoogleService-Info.plist
-ios/Runner/GoogleService-Info-dev.plist
-ios/Runner/GoogleService-Info-staging.plist
-ios/Runner/GoogleService-Info-prod.plist
+android/app/google-services.json

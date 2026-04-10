@@ -1,18 +1,18 @@
-name: Deploy Prod → App Store
+name: Deploy iOS Prod → App Store
 
 on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
-    # Exclure les tags -beta pour ne pas déclencher en même temps que staging
     branches-ignore:
       - '**'
 
 jobs:
-  appstore-prod:
-    name: Build prod + Upload App Store
+  ios-appstore-prod:
+    name: Build iOS prod + Upload App Store
     runs-on: macos-15
     timeout-minutes: 90
+    environment: ios-prod
 
     steps:
       - name: Checkout
@@ -32,11 +32,17 @@ jobs:
           bundler-cache: true
           working-directory: urbink/ios
 
-      - name: Créer firebase_options_prod.dart depuis le secret
+      - name: Créer firebase_options.dart depuis le secret
         working-directory: urbink
         env:
-          FIREBASE_OPTIONS_PROD: ${{ secrets.FIREBASE_OPTIONS_PROD }}
-        run: echo "$FIREBASE_OPTIONS_PROD" > lib/firebase_options_prod.dart
+          FIREBASE_OPTIONS: ${{ secrets.FIREBASE_OPTIONS }}
+        run: echo "$FIREBASE_OPTIONS" > lib/firebase_options.dart
+
+      - name: Créer GoogleService-Info.plist depuis le secret
+        working-directory: urbink
+        env:
+          GOOGLE_SERVICE_INFO: ${{ secrets.GOOGLE_SERVICE_INFO }}
+        run: echo "$GOOGLE_SERVICE_INFO" > ios/Runner/GoogleService-Info.plist
 
       - name: Install Flutter dependencies
         working-directory: urbink
@@ -49,9 +55,9 @@ jobs:
       - name: Build & Upload via Fastlane (lane production)
         working-directory: urbink/ios
         env:
-          PROD_APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.PROD_APP_STORE_CONNECT_API_KEY_ID }}
-          PROD_APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.PROD_APP_STORE_CONNECT_API_ISSUER_ID }}
-          PROD_APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.PROD_APP_STORE_CONNECT_API_KEY_CONTENT }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
           FLUTTER_BUILD_TAG: ${{ github.ref_name }}

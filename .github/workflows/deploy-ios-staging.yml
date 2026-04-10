@@ -1,4 +1,4 @@
-name: Deploy Staging → TestFlight
+name: Deploy iOS Staging → TestFlight
 
 on:
   push:
@@ -6,10 +6,11 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+-beta'
 
 jobs:
-  testflight-staging:
-    name: Build staging + Upload TestFlight
+  ios-testflight-staging:
+    name: Build iOS staging + Upload TestFlight
     runs-on: macos-15
     timeout-minutes: 90
+    environment: ios-staging
 
     steps:
       - name: Checkout
@@ -29,11 +30,17 @@ jobs:
           bundler-cache: true
           working-directory: urbink/ios
 
-      - name: Créer firebase_options_staging.dart depuis le secret
+      - name: Créer firebase_options.dart depuis le secret
         working-directory: urbink
         env:
-          FIREBASE_OPTIONS_STAGING: ${{ secrets.FIREBASE_OPTIONS_STAGING }}
-        run: echo "$FIREBASE_OPTIONS_STAGING" > lib/firebase_options_staging.dart
+          FIREBASE_OPTIONS: ${{ secrets.FIREBASE_OPTIONS }}
+        run: echo "$FIREBASE_OPTIONS" > lib/firebase_options.dart
+
+      - name: Créer GoogleService-Info.plist depuis le secret
+        working-directory: urbink
+        env:
+          GOOGLE_SERVICE_INFO: ${{ secrets.GOOGLE_SERVICE_INFO }}
+        run: echo "$GOOGLE_SERVICE_INFO" > ios/Runner/GoogleService-Info.plist
 
       - name: Install Flutter dependencies
         working-directory: urbink
@@ -46,9 +53,9 @@ jobs:
       - name: Build & Upload via Fastlane (lane staging)
         working-directory: urbink/ios
         env:
-          STAGING_APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.STAGING_APP_STORE_CONNECT_API_KEY_ID }}
-          STAGING_APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.STAGING_APP_STORE_CONNECT_API_ISSUER_ID }}
-          STAGING_APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.STAGING_APP_STORE_CONNECT_API_KEY_CONTENT }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
           FLUTTER_BUILD_TAG: ${{ github.ref_name }}

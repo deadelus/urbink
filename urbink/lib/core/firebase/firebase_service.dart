@@ -3,36 +3,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
-import 'package:urbink/firebase_options_dev.dart';
+import 'package:urbink/firebase_options.dart';
 
 // Environnement injecté via --dart-define=FLUTTER_ENV=<env>
 // Valeurs possibles : dev (défaut) | staging | prod
+// En CI, firebase_options.dart est écrit depuis le secret GitHub de l'environment correspondant.
 const String _env = String.fromEnvironment('FLUTTER_ENV', defaultValue: 'dev');
 
 abstract final class FirebaseService {
   static Future<void> initialize() async {
-    await Firebase.initializeApp(options: _firebaseOptions());
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     await _setupCrashlytics();
     await _setupAnalytics();
-  }
-
-  static FirebaseOptions _firebaseOptions() {
-    switch (_env) {
-      case 'prod':
-        // ignore: only_throw_errors
-        throw StateError(
-          'firebase_options_prod.dart non configuré. '
-          'Exécuter : flutterfire configure --project=urbink-prod',
-        );
-      case 'staging':
-        // ignore: only_throw_errors
-        throw StateError(
-          'firebase_options_staging.dart non configuré. '
-          'Exécuter : flutterfire configure --project=urbink-staging',
-        );
-      default:
-        return DefaultFirebaseOptions.currentPlatform;
-    }
   }
 
   /// Crashlytics — capture les exceptions Flutter non gérées et les erreurs natives.
