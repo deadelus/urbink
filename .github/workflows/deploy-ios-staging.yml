@@ -54,6 +54,20 @@ jobs:
         # Remplace le placeholder committé par la vraie valeur depuis le secret GitHub
         run: sed -i '' "s/TEAM_ID_PLACEHOLDER/$APPLE_TEAM_ID/" ExportOptions.plist
 
+      - name: Cache CocoaPods
+        uses: actions/cache@v5
+        with:
+          path: urbink/ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('urbink/ios/Podfile.lock') }}
+          restore-keys: ${{ runner.os }}-pods-
+
+      - name: Cache DerivedData
+        uses: actions/cache@v5
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-derived-${{ hashFiles('urbink/ios/Podfile.lock') }}-${{ hashFiles('urbink/pubspec.lock') }}
+          restore-keys: ${{ runner.os }}-derived-
+
       - name: Install Flutter dependencies
         working-directory: urbink
         run: flutter pub get
