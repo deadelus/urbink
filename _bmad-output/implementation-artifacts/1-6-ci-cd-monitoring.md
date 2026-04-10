@@ -9,15 +9,16 @@ Afin de détecter les régressions rapidement et publier sur l'App Store en conf
 ## Acceptance Criteria
 
 - [x] **AC1 — CI sur push** : `.github/workflows/ci.yml` déclenche `flutter analyze + test` + build iOS (no codesign) sur push vers `main` ou `develop`, et sur toutes les PRs ciblant ces branches. Résultat visible dans l'interface GitHub.
-- [x] **AC2 — Deploy TestFlight** : `.github/workflows/deploy.yml` se déclenche sur un tag `vX.Y.Z`. Lance Fastlane `beta` lane qui build l'IPA prod et l'upload sur TestFlight. Identifiants App Store Connect lus depuis les secrets GitHub (`APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY_CONTENT`, `MATCH_PASSWORD`, `MATCH_GIT_URL`), jamais committés.
+- [x] **AC2 — Deploy TestFlight / App Store** : deux workflows distincts — `deploy-ios-staging.yml` (tag `vX.Y.Z-beta` → TestFlight) et `deploy-ios-prod.yml` (tag `vX.Y.Z` → App Store). Chacun utilise un GitHub Environment dédié (`ios-staging`, `ios-prod`) pour isoler les secrets sans préfixes. Fastlane lanes `staging` et `production` correspondantes. Identifiants App Store Connect lus depuis les secrets GitHub, jamais committés.
 - [x] **AC3 — Crashlytics** : `FirebaseCrashlytics.instance` initialisé dans `FirebaseService.initialize()`. `FlutterError.onError` redirige vers `recordFlutterFatalError`. `PlatformDispatcher.instance.onError` capture les erreurs async fatales. Collection désactivée en `kDebugMode`.
 - [x] **AC4 — Analytics app_open** : `firebase_analytics: ^11.3.4` ajouté. `FirebaseAnalytics.instance` configuré dans `FirebaseService`. L'événement `app_open` est loggué automatiquement par le SDK. Collection désactivée en `kDebugMode`.
 
 ## Tasks / Subtasks
 
-- [x] Créer `.github/workflows/ci.yml` (test + analyze + build iOS no codesign)
-- [x] Créer `.github/workflows/deploy.yml` (tag vX.Y.Z → Fastlane beta)
-- [x] Créer `urbink/ios/fastlane/Fastfile` (lane beta : match + flutter build ipa + upload_to_testflight)
+- [x] Créer `.github/workflows/ci.yml` (test + analyze + build iOS no codesign, environment `ios-dev`)
+- [x] Créer `.github/workflows/deploy-ios-staging.yml` (tag `vX.Y.Z-beta` → Fastlane `staging` → TestFlight)
+- [x] Créer `.github/workflows/deploy-ios-prod.yml` (tag `vX.Y.Z` → Fastlane `production` → App Store)
+- [x] Créer `urbink/ios/fastlane/Fastfile` (lanes `staging` + `production`)
 - [x] Créer `urbink/ios/fastlane/Appfile` (app_identifier)
 - [x] Créer `urbink/ios/fastlane/Gemfile` (gem fastlane)
 - [x] Créer `urbink/ios/ExportOptions.plist` (method: app-store, placeholder Team ID)
@@ -53,9 +54,10 @@ Afin de détecter les régressions rapidement et publier sur l'App Store en conf
 ## File List
 
 ### Créés
-- `.github/workflows/ci.yml` — pipeline CI (test + analyze + build iOS)
-- `.github/workflows/deploy.yml` — pipeline deploy TestFlight sur tag
-- `urbink/ios/fastlane/Fastfile` — lane beta Fastlane
+- `.github/workflows/ci.yml` — pipeline CI (test + analyze + build iOS no codesign)
+- `.github/workflows/deploy-ios-staging.yml` — deploy staging vers TestFlight (tag `-beta`)
+- `.github/workflows/deploy-ios-prod.yml` — deploy prod vers App Store
+- `urbink/ios/fastlane/Fastfile` — lanes `staging` et `production`
 - `urbink/ios/fastlane/Appfile` — app identifier Fastlane
 - `urbink/ios/fastlane/Gemfile` — dépendance gem fastlane
 - `urbink/ios/ExportOptions.plist` — options export IPA App Store
@@ -69,6 +71,7 @@ Afin de détecter les régressions rapidement et publier sur l'App Store en conf
 | Version | Date | Auteur | Description |
 |---------|------|--------|-------------|
 | 1.0 | 2026-04-09 | Claude Sonnet 4.6 | Implémentation initiale Story 1.6 |
+| 1.1 | 2026-04-10 | Claude Sonnet 4.6 | Refactor : firebase_options.dart unique + GoogleService-Info.plist unique, GitHub Environments isolent les secrets |
 
 ## Status
 
