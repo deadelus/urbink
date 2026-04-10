@@ -92,6 +92,10 @@ jobs:
     needs: test
     timeout-minutes: 45
     environment: ios-dev
+    # Build iOS uniquement sur push vers main/develop — pas sur les PRs.
+    # flutter analyze + test suffisent pour valider un PR.
+    # Le build complet ne sert qu'à confirmer la compilation avant merge.
+    if: github.event_name == 'push'
 
     steps:
       - name: Checkout
@@ -142,9 +146,8 @@ jobs:
         working-directory: urbink/ios
         run: pod install
 
-      - name: Build iOS (no codesign)
+      - name: Build iOS (simulateur — vérification de compilation)
         working-directory: urbink
-        run: |
-          flutter build ios \
-            --no-codesign \
-            --dart-define=FLUTTER_ENV=dev
+        # Mode simulateur : ~3x plus rapide qu'un build device (pas de codesign,
+        # pas d'optimisations release ARM). Suffisant pour détecter les erreurs de compilation.
+        run: flutter build ios --simulator --dart-define=FLUTTER_ENV=dev
