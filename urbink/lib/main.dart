@@ -7,7 +7,11 @@ import 'package:urbink/core/firebase/firebase_service.dart';
 import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/shared/theme/app_theme.dart';
 
-bool _isCancelled(Object error) => error.toString() == 'Cancelled';
+// CancelledException is thrown by vector_map_tiles (via the executor package)
+// when a tile-loading operation is cancelled. Checking runtimeType is more
+// stable than relying on toString(), which can vary across package versions.
+bool _isCancelled(Object error) =>
+    error.runtimeType.toString() == 'CancelledException';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

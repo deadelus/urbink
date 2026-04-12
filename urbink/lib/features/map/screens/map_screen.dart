@@ -49,7 +49,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ).read();
       if (mounted) setState(() { _mapStyle = style; _styleLoading = false; });
     } catch (e) {
-      if (mounted) setState(() { _styleError = e.toString(); _styleLoading = false; });
+      // Log only the exception type — never e.toString() which may include
+      // the MapTiler API key embedded in the style URL.
+      debugPrint('MapStyle loading error: ${e.runtimeType}');
+      if (mounted) {
+        setState(() {
+          _styleError = 'Impossible de charger le style de la carte.';
+          _styleLoading = false;
+        });
+      }
     }
   }
 
