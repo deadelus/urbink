@@ -11,8 +11,15 @@ import 'package:urbink/shared/utils/nominatim_client.dart';
 class SnapToRoadService {
   final NominatimClient _nominatimClient;
 
+  /// Vrai si ce service a créé le client lui-même — dans ce cas il en est
+  /// propriétaire et doit le fermer dans [dispose].
+  /// Faux si le client a été injecté (ex: via Riverpod) : c'est alors le
+  /// fournisseur du client qui gère son cycle de vie.
+  final bool _ownsClient;
+
   SnapToRoadService({NominatimClient? nominatimClient})
-      : _nominatimClient = nominatimClient ?? NominatimClient();
+      : _nominatimClient = nominatimClient ?? NominatimClient(),
+        _ownsClient = nominatimClient == null;
 
   /// Retourne le `streetId` OSM le plus proche de la position donnée.
   ///
@@ -26,5 +33,7 @@ class SnapToRoadService {
     return result?.streetId;
   }
 
-  void dispose() => _nominatimClient.dispose();
+  void dispose() {
+    if (_ownsClient) _nominatimClient.dispose();
+  }
 }

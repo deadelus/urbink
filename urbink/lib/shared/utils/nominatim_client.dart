@@ -16,6 +16,8 @@ class NominatimResult {
 /// Client HTTP pour l'API Nominatim (OpenStreetMap reverse geocoding).
 ///
 /// Respecte le rate limit de 1 req/s via un délai minimum entre les requêtes.
+/// Les appels concurrents sont sérialisés (queue interne) pour garantir
+/// globalement ≤ 1 req/1,1s, quel que soit le nombre d'appelants simultanés.
 /// Implémente un retry x3 avec backoff exponentiel (ADR-004).
 ///
 /// Usage :
@@ -28,32 +30,62 @@ class NominatimClient {
   static const _baseUrl = 'https://nominatim.openstreetmap.org';
   static const _minRequestInterval = Duration(milliseconds: 1100);
   static const _maxRetries = 3;
+  static const _defaultRetryDelays = [
+    Duration(seconds: 1),
+    Duration(seconds: 2),
+    Duration(seconds: 4),
+  ];
 
   final http.Client _httpClient;
+
+  /// Délais entre tentatives — injectables pour bypasser le backoff réel en tests.
+  final List<Duration> _retryDelays;
+
   DateTime? _lastRequestTime;
 
-  NominatimClient({http.Client? httpClient})
-      : _httpClient = httpClient ?? http.Client();
+  /// File d'attente : sérialise les appels concurrents pour garantir
+  /// que le rate limit est respecté globalement (pas seulement par appelant).
+  Future<void> _queue = Future.value();
+
+  NominatimClient({
+    http.Client? httpClient,
+    List<Duration>? retryDelays,
+  })  : _httpClient = httpClient ?? http.Client(),
+        _retryDelays = retryDelays ?? _defaultRetryDelays;
 
   /// Reverse geocoding : retourne la rue la plus proche des coordonnées données.
   ///
+  /// Les appels concurrents sont mis en file et exécutés séquentiellement.
   /// Retourne `null` en cas d'échec persistant après [_maxRetries] tentatives
   /// ou si les coordonnées ne correspondent à aucune rue OSM.
   Future<NominatimResult?> reverseGeocode({
     required double lat,
     required double lon,
-  }) async {
-    await _respectRateLimit();
+  }) {
+    final result =
+        _queue.then((_) => _doReverseGeocode(lat: lat, lon: lon));
+    // La queue avance même si result échoue (cas théorique : _doReverseGeocode
+    // retourne null plutôt que de lancer une exception).
+    _queue = result.then((_) {}, onError: (_) {});
+    return result;
+  }
 
+  Future<NominatimResult?> _doReverseGeocode({
+    required double lat,
+    required double lon,
+  }) async {
     Exception? lastError;
     for (var attempt = 0; attempt < _maxRetries; attempt++) {
       try {
+        // Rate limit appliqué avant chaque tentative (pas seulement la première)
+        // pour que les retries respectent aussi l'intervalle minimum.
+        await _respectRateLimit();
         final result = await _doRequest(lat: lat, lon: lon);
         return result;
       } on Exception catch (e) {
         lastError = e;
         if (attempt < _maxRetries - 1) {
-          await Future.delayed(Duration(seconds: 1 << attempt)); // 1s, 2s, 4s
+          await Future.delayed(_retryDelays[attempt]);
         }
       }
     }

@@ -11,17 +11,21 @@ final gpsTrackingServiceProvider = Provider<GpsTrackingService>(
 );
 
 /// Provider du client Nominatim.
+/// Propriétaire du cycle de vie du client : le ferme à la destruction du provider.
 final nominatimClientProvider = Provider<NominatimClient>((ref) {
   final client = NominatimClient();
-  ref.onDispose(client.dispose);
+  ref.onDispose(client.dispose); // seul responsable du dispose du client
   return client;
 });
 
 /// Provider du service snap-to-road.
+/// Le client est injecté depuis [nominatimClientProvider] : SnapToRoadService
+/// n'en est pas propriétaire (_ownsClient = false) et n'appellera pas
+/// client.dispose() — évite un double-close sur la même instance.
 final snapToRoadServiceProvider = Provider<SnapToRoadService>((ref) {
   final nominatimClient = ref.watch(nominatimClientProvider);
   final service = SnapToRoadService(nominatimClient: nominatimClient);
-  ref.onDispose(service.dispose);
+  ref.onDispose(service.dispose); // dispose le service uniquement, pas le client
   return service;
 });
 

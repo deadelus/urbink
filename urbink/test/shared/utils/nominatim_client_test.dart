@@ -49,6 +49,8 @@ void main() {
           callCount++;
           return http.Response('Internal Server Error', 500);
         }),
+        // Bypass du backoff réel (1s + 2s) pour ne pas ralentir la CI.
+        retryDelays: [Duration.zero, Duration.zero, Duration.zero],
       );
 
       final result =
