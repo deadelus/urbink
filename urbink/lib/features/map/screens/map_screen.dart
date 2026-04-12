@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,10 +54,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       // Log only the exception type — never e.toString() which may include
       // the MapTiler API key embedded in the style URL.
       debugPrint('MapStyle loading error: ${e.runtimeType}');
-      // Crashlytics is disabled in debug (see FirebaseService._setupCrashlytics),
-      // so this call is a no-op locally and only reports in staging/prod.
-      FirebaseCrashlytics.instance.recordError(e, s,
-          reason: 'MapStyle loading error', fatal: false);
+      // Crashlytics n'est pas initialisé en debug/test : on ne l'appelle qu'en
+      // release pour éviter un crash au démarrage hors Firebase.
+      if (!kDebugMode) {
+        FirebaseCrashlytics.instance.recordError(e, s,
+            reason: 'MapStyle loading error', fatal: false);
+      }
       if (mounted) {
         setState(() {
           _styleError = 'Impossible de charger le style de la carte.';
