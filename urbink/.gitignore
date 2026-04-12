@@ -1,3 +1,7 @@
+# Config locaux — contiennent des clés, ne jamais committer
+config/*.json
+!config/*.json.example
+
 # Miscellaneous
 *.class
 *.log
