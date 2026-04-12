@@ -1,14 +1,33 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/core/firebase/firebase_service.dart';
 import 'package:urbink/core/router/app_router.dart';
+import 'package:urbink/core/utils/tile_error_utils.dart';
 import 'package:urbink/shared/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await FirebaseService.initialize();
+
+  // Filtre posé APRÈS Firebase pour wrapper le handler Crashlytics.
+  // Crashlytics appelle FlutterError.presentError avant de chaîner,
+  // donc notre filtre doit être le dernier maillon de la chaîne.
+  final previousFlutterHandler = FlutterError.onError;
+  FlutterError.onError = (details) {
+    if (isCancelledTileError(details.exception, details.stack ?? StackTrace.empty)) return;
+    previousFlutterHandler?.call(details);
+  };
+
+  final previousPlatformHandler = PlatformDispatcher.instance.onError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    if (isCancelledTileError(error, stack)) return true;
+    return previousPlatformHandler?.call(error, stack) ?? false;
+  };
+
   runApp(const ProviderScope(child: UrbinkApp()));
 }
 

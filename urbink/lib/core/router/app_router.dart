@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:urbink/features/map/screens/map_screen.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/widgets/urbink_bottom_nav.dart';
@@ -15,7 +16,9 @@ abstract final class AppRoutes {
 }
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: AppRoutes.home,
+  // La carte est l'écran principal — ouvrir directement sur l'onglet Carte.
+  // Conformément à l'UX spec : "Carte comme écran principal permanent".
+  initialLocation: AppRoutes.map,
   routes: [
     // StatefulShellRoute préserve le Navigator (et donc l'état de scroll)
     // de chaque onglet indépendamment — conformité AC Story 1.3 "mémorise sa position".
@@ -38,7 +41,7 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: AppRoutes.map,
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: _PlaceholderScreen(label: 'Carte'),
+                child: MapScreen(),
               ),
             ),
           ],
