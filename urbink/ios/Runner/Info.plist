@@ -47,6 +47,14 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Urbink trace ton exploration en temps réel pour colorier les rues que tu parcours.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Urbink trace ton exploration en temps réel pour colorier les rues que tu parcours.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
