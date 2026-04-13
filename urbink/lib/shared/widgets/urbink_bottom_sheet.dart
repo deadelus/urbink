@@ -61,6 +61,7 @@ class _UrbinkSheetContent extends StatelessWidget {
       // Focus VoiceOver piégé : scopesRoute délimite la portée de navigation
       // accessibilité à ce widget, empêchant VoiceOver d'atteindre le contenu dessous.
       scopesRoute: true,
+      explicitChildNodes: true,
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,

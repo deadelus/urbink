@@ -17,6 +17,10 @@ abstract final class UrbinkColors {
   static const Color toastError = Color(0xFF8B2020);
   static const Color toastWarning = Color(0xFF7A5A1E);
 
+  // Session status bar
+  static const Color terraCotta = Color(0xFFA84E2C); // Circuit libre
+  static const Color ocre = Color(0xFFB8832E);        // Itinéraire (= primary)
+
   // Bouton destructif
   static const Color destructive = Color(0xFFC0392B);
 

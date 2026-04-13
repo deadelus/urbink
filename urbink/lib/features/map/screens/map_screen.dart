@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/map/providers/map_state_provider.dart';
+import 'package:urbink/features/sessions/models/session.dart';
+import 'package:urbink/features/sessions/providers/crash_recovery_provider.dart';
+import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 import 'package:urbink/shared/constants/map_constants.dart';
 import 'package:urbink/shared/widgets/map_street_overlay.dart';
 import 'package:urbink/shared/widgets/session_counter.dart';
@@ -44,6 +47,62 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         );
       }
     });
+
+    // Crash recovery — vérification au premier rendu
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final crashService = ref.read(crashRecoveryServiceProvider);
+      final interrupted = await crashService.checkForInterruptedSession();
+      if (interrupted != null && mounted) {
+        await _showCrashRecoveryDialog(interrupted);
+      }
+    });
+  }
+
+  Future<void> _showCrashRecoveryDialog(Session session) async {
+    final duration = session.duration;
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds =
+        duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final durationLabel =
+        duration.inHours > 0 ? '${duration.inHours}:$minutes:$seconds' : '$minutes:$seconds';
+    final distanceLabel = session.distanceKm >= 1.0
+        ? '${session.distanceKm.toStringAsFixed(1)} km'
+        : '${session.distanceMeters.toStringAsFixed(0)} m';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Reprendre la session précédente ?'),
+        content: Text(
+          '$distanceLabel · $durationLabel\n'
+          'Une session a été interrompue. Tu peux la reprendre ou l\'abandonner.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Abandonner'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Reprendre'),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (confirmed == true) {
+      await ref
+          .read(sessionLifecycleProvider.notifier)
+          .resumeFromCrash(session);
+    } else {
+      await ref
+          .read(sessionLifecycleProvider.notifier)
+          .cancelInterrupted(session.sessionId);
+    }
   }
 
   Future<void> _loadStyle() async {
@@ -53,11 +112,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ).read();
       if (mounted) setState(() { _mapStyle = style; _styleLoading = false; });
     } catch (e, s) {
-      // Log only the exception type — never e.toString() which may include
-      // the MapTiler API key embedded in the style URL.
       debugPrint('MapStyle loading error: ${e.runtimeType}');
-      // Crashlytics n'est pas initialisé en debug/test : on ne l'appelle qu'en
-      // release pour éviter un crash au démarrage hors Firebase.
       if (!kDebugMode) {
         FirebaseCrashlytics.instance.recordError(e, s,
             reason: 'MapStyle loading error', fatal: false);

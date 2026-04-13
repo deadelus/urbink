@@ -1,0 +1,123 @@
+import 'dart:convert';
+
+import 'package:sqflite/sqflite.dart';
+import 'package:urbink/features/sessions/models/session.dart';
+
+const _kDbName = 'urbink_local.db';
+const _kDbVersion = 1;
+const _kTable = 'local_sessions';
+
+/// Cache local sqflite pour les sessions en cours et non-synchronisées.
+///
+/// Source de vérité pour le crash recovery et le fallback offline.
+/// Firestore reste la source de vérité cloud.
+///
+/// [dbPath] est injectable pour les tests (ex: `inMemoryDatabasePath`).
+class SessionLocalCache {
+  final String dbPath;
+  Database? _db;
+
+  SessionLocalCache({this.dbPath = _kDbName});
+
+  Future<Database> _getDb() async {
+    _db ??= await openDatabase(
+      dbPath,
+      version: _kDbVersion,
+      onCreate: (db, version) => db.execute('''
+        CREATE TABLE IF NOT EXISTS $_kTable (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          session_start INTEGER NOT NULL,
+          session_end INTEGER,
+          mode TEXT NOT NULL DEFAULT 'walk',
+          street_ids TEXT NOT NULL DEFAULT '[]',
+          distance_meters REAL NOT NULL DEFAULT 0.0,
+          synced INTEGER NOT NULL DEFAULT 0
+        )
+      '''),
+    );
+    return _db!;
+  }
+
+  /// Insère une nouvelle session (session_end = null → session active).
+  Future<void> insertSession(Session session) async {
+    final db = await _getDb();
+    await db.insert(
+      _kTable,
+      session.toSqflite(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Met à jour une session existante (fin de session, métriques finales).
+  Future<void> updateSession(Session session) async {
+    final db = await _getDb();
+    await db.update(
+      _kTable,
+      {
+        'session_end': session.sessionEnd?.millisecondsSinceEpoch,
+        'mode': session.mode.firestoreValue,
+        'street_ids': jsonEncode(session.streetIds),
+        'distance_meters': session.distanceMeters,
+      },
+      where: 'id = ?',
+      whereArgs: [session.sessionId],
+    );
+  }
+
+  /// Retourne la session interrompue (session_end IS NULL AND synced = 0).
+  ///
+  /// Utilisé pour le crash recovery au lancement de l'app.
+  Future<Session?> getInterruptedSession() async {
+    final db = await _getDb();
+    final rows = await db.query(
+      _kTable,
+      where: 'session_end IS NULL AND synced = 0',
+      orderBy: 'session_start DESC',
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return Session.fromSqflite(rows.first);
+  }
+
+  /// Retourne toutes les sessions non-synchronisées avec Firestore.
+  Future<List<Session>> getUnsyncedSessions() async {
+    final db = await _getDb();
+    final rows = await db.query(
+      _kTable,
+      where: 'synced = 0 AND session_end IS NOT NULL',
+    );
+    return rows.map(Session.fromSqflite).toList();
+  }
+
+  /// Marque une session comme synchronisée avec Firestore.
+  Future<void> markSynced(String sessionId) async {
+    final db = await _getDb();
+    await db.update(
+      _kTable,
+      {'synced': 1},
+      where: 'id = ?',
+      whereArgs: [sessionId],
+    );
+  }
+
+  /// Marque une session interrompue comme abandonnée (session_end = now).
+  Future<void> markCancelled(String sessionId) async {
+    final db = await _getDb();
+    await db.update(
+      _kTable,
+      {
+        'session_end': DateTime.now().millisecondsSinceEpoch,
+        'synced': 1, // pas besoin de sync — session abandonnée
+      },
+      where: 'id = ?',
+      whereArgs: [sessionId],
+    );
+  }
+
+  /// Ferme la base de données (utile en test).
+  Future<void> close() async {
+    await _db?.close();
+    _db = null;
+  }
+}
