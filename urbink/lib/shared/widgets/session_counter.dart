@@ -109,7 +109,7 @@ class _SessionCounterState extends ConsumerState<SessionCounter>
                     '${metrics.streetCount} rues · '
                     '${metrics.distanceKm.toStringAsFixed(1)}km · '
                     '$timeStr',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 13,
                       fontFamily: UrbinkTypography.bodyFamily,
