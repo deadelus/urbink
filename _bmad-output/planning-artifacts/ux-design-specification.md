@@ -90,16 +90,50 @@ Pattern familier (GPS tracking, connu via Strava/Google Maps) + twist Urbink : *
 
 ### 2.5 Experience Mechanics
 
-**Initiation :** Bouton FAB central "Démarrer" dans la bottom nav — un tap. Le bouton passe immédiatement de Vert Sauge ▶ (repos) à Ocre ⏸ (session active), et un bouton Arrêter rouge circulaire apparaît en haut à droite.
+## Modèle de tracking — deux couches indépendantes
+
+> **Décision architecturale fondamentale (2026-04-13)**
+
+### Couche 1 — Tracking passif (toujours actif, mode invité inclus)
+
+Le GPS colorie les rues **en permanence dès que l'app est lancée**, sans aucune action requise. C'est le comportement de base d'Urbink — ouvrir l'app suffit pour que la carte s'enrichisse. Pas besoin de "démarrer" quoi que ce soit.
+
+- Coloration des rues via snap to road (Nominatim) — même sans session
+- Zones explorées visibles via le **toggle persistant bas-gauche** (`🟢 Zones ON/OFF`) — accessible depuis n'importe quel état de l'app
+- **Mode invité complet** : l'utilisateur ouvre l'app, se balade, voit ses rues colorées. Zéro friction, zéro compte requis.
+- Le modèle économique n'est pas encore défini — cette couche est conçue pour rester gratuite / sans barrière quelle que soit la stratégie future.
+
+### Couche 2 — Session enregistrée (opt-in) — Circuit libre uniquement
+
+L'utilisateur **choisit** de démarrer une session circuit libre pour enregistrer explicitement son parcours avec stats et historique. Il déroule le bottom sheet et tape "▶ Démarrer la sortie".
+
+**Initiation :** Bottom sheet "Carte & Sorties" → section "Démarrer une sortie" → deux options : Circuit libre (par défaut, enregistrement stats) et Itinéraire (mode GPS, pas d'enregistrement). Tap "▶ Démarrer la sortie" = démarre selon le mode choisi.
+
+**Circuit libre (mode par défaut — avec enregistrement) :** Pas de parcours défini. POI sélectionnable comme cap → flèche directionnelle, pas de tracé. Stats enregistrées (distance, durée, rues nouvelles).
+
+**Mode de déplacement — auto-détection :** Détecté via vitesse GPS (< 7 km/h = marche, < 30 km/h = vélo, au-dessus = voiture). Pas de sélection manuelle. Affiché dans la `SessionStatusBar` comme info contextuelle.
+
+**Itinéraire (mode GPS uniquement — sans enregistrement) :** Sub-slide dans le sheet (animation latérale) → liste des itinéraires sauvegardés + bouton "Créer". Création = écran dédié (GoRouter push) : POIs ordonnés, option boucle. Transport auto-détecté.
+- Mode GPS : les étapes et check-points de l'itinéraire sont mémorisés pour permettre des itérations (ex. refaire l'itinéraire en suivant sa progression passée).
+- Progression réinitialisable (bouton Reset itinéraire visible en session).
+- Les zones explorées (rues colorées, couche 1) ne sont **jamais reset** — elles sont indépendantes de l'itinéraire.
+- **Sélecteur de navigation** : au tap "Démarrer cet itinéraire", un bottom modal propose le choix : 🗺️ GPS intégré Urbink (recommandé) · 🍎 Plans Apple · 📍 Google Maps · 🚗 Waze (voiture uniquement).
+
+**Session active :** `SessionStatusBar` (44px) en haut — Terra Cotta (#A84E2C) circuit libre, Ocre (#B8832E) itinéraire — avec distance/chrono (circuit libre) ou étape en cours (itinéraire). Bouton Arrêter (52×52px rouge, bas-droite, zone pouce). Toggle plein écran (bas-gauche, hors toggle zones).
+
+**Toggle zones explorées :** Pill `🟢 Zones ON/OFF` en position absolue bas-gauche — **permanent, visible quelle que soit la couche active** (avec ou sans session enregistrée). Ce bouton est le seul contrôle de la couche 1.
+
+**Mode plein écran :** Toggle qui masque le bottom sheet et la bottom nav. Seuls la StatusBar de session, le bouton Arrêter et le toggle de sortie restent visibles.
 
 **Interaction :** L'utilisateur marche, l'app tourne en arrière-plan. Toutes les 10 mètres, Nominatim snappe la position GPS à la rue OSM la plus proche. La rue se colorie progressivement — comme un surligneur qui suit l'utilisateur avec un léger délai naturel.
 
 **Feedback :**
 - Visuel : la rue se colorie en temps réel sur la carte
-- Compteur discret en haut : "12 rues explorées" mis à jour en continu
+- `SessionStatusBar` : distance + chrono mis à jour en continu
+- Monuments/POIs croisés dans un rayon de 50m → auto-marqués "visité" (pulse Vert Sauge sur la carte)
 - Aucun son ni vibration pendant l'exploration normale
 
-**Complétion :** L'utilisateur appuie sur "Arrêter". Session sauvegardée. Si badge ou quartier déclenché → animation célébration plein écran. Sinon → retour carte avec nouvelles rues colorées visibles.
+**Complétion :** Bouton Arrêter → modale (Pause / Arrêter définitivement). Session sauvegardée. Si badge ou quartier déclenché → animation célébration plein écran. Sinon → retour carte avec nouvelles rues colorées visibles.
 
 ---
 
@@ -387,35 +421,43 @@ Sept directions visuelles ont été explorées et documentées dans le fichier i
 
 ### Chosen Direction
 
-**Direction retenue : architecture 5 onglets avec bottom navigation Strava-style**, combinant les meilleures pratiques des 7 directions explorées :
+**Direction retenue : architecture 5 onglets avec bottom navigation**, combinant les meilleures pratiques des 7 directions explorées :
 
 | Onglet | Icône | Contenu |
 |---|---|---|
-| **Accueil** | 🏠 | Fil social des activités des personnes suivies |
-| **Carte** | 🗺️ | Création d'itinéraire + itinéraires enregistrés + recherche lieux |
-| **Démarrer** | ▶ (bouton central surélevé) | Choix parcours libre ou itinéraire, sélection mode transport |
-| **Challenges** | 🏆 | Objectifs disponibles, badges à débloquer, parcours thématiques |
-| **Vous** | 👤 | Historique personnel : graphe semaine + sorties vue simple ou feed |
+| **Carte** | 🗺️ | Carte plein écran + chips filtres POI (scroll horizontal) sous searchbar + bottom sheet "Carte & Sorties" : recherche, démarrer une sortie (circuit libre par défaut / itinéraire), toggles couches + bouton toggle zones persistent |
+| **Parcours** | 🧭 | Itinéraires sauvegardés, parcours thématiques, génération automatique |
+| **Social** | 👥 | Fil d'activités des personnes suivies, pins communautaires |
+| **Badges** | 🏆 | Objectifs disponibles, badges à débloquer, progression quartiers |
+| **Profil** | 👤 | Historique personnel : graphe semaine + sorties vue simple ou feed |
 
-Le bouton **Démarrer** est central et surélevé — identifiant visuel fort, accessible au pouce, action primaire de l'app.
+> ⚠️ **Décision v2 (2026-04-13)** : Le bouton FAB central "Démarrer" (onglet dédié, surélevé) est **supprimé**. Le démarrage de session est intégré dans le bottom sheet de l'onglet Carte, section "Démarrer une sortie". Cette décision consolide la carte comme surface unique d'exploration et de planification, élimine un niveau de navigation et respecte le principe "La carte parle d'abord".
 
 ### Design Rationale
 
-**Séparation Carte / Démarrer** : La carte est un espace de consultation et de planification (voir ses itinéraires, rechercher des lieux). Démarrer est l'action. Les séparer évite la confusion entre "je consulte" et "je suis en train d'explorer".
+**Carte unifiée** : La carte est à la fois l'espace de consultation, de planification ET de démarrage de session. Le bottom sheet `DraggableScrollableSheet` avec états collapsed/peek/expanded permet d'accéder aux actions sans quitter la carte. Moins de navigation = moins de friction.
 
-**Feed social en Accueil** : Le fil des amis comme première vue crée une boucle de motivation quotidienne même sans sortie personnelle — on voit les explorations des autres, ça donne envie. Pattern éprouvé (Strava, Instagram).
+**"Démarrer une sortie" dans le sheet** : Deux cards côte à côte — Circuit libre et Itinéraire — accessibles en état Peek (260px). Le sub-slide Itinéraire s'anime dans le sheet (pas de push navigation), évitant la profondeur de navigation.
 
-**Vous = Historique** : Vue personnelle centrée sur le bilan : graphe hebdomadaire + liste des sorties. Deux modes (vue simple / vue feed) pour deux usages — coup d'œil rapide vs consultation narrative d'une sortie.
+**Feed social en Social** : Le fil des contacts crée une boucle de motivation quotidienne même sans sortie personnelle. Pattern éprouvé (Strava, Instagram).
 
-**Esthétique cohérente** : Fond carte warm-off-white (#FAFAF7), rues explorées en Vert Sauge (#5A7A5A), badges et accents en Ocre Chaud (#B8832E), typographie Crimson Pro / Inter — direction "cartes illustrées début XXème siècle" maintenue sur tous les écrans.
+**Profil = Historique** : Vue personnelle centrée sur le bilan : graphe hebdomadaire + liste des sorties. Deux modes (vue simple / vue feed) pour deux usages — coup d'œil rapide vs consultation narrative.
+
+**Esthétique cohérente** : Fond carte warm-off-white (#FAFAF7), rues explorées en Vert Sauge (#5A7A5A), badges et accents en Ocre Chaud (#B8832E), typographie Playfair Display / Inter — direction "cartes illustrées début XXème siècle" maintenue sur tous les écrans.
 
 ### Implementation Approach
 
-1. **Bottom nav sticky** — `position:fixed` bas d'écran, hauteur 60px + safe area iOS (34px). Bouton Démarrer surélevé de 12px avec ombre légère.
-2. **Carte plein écran** — onglet Carte et session Démarrer utilisent 100% de la surface. Overlays (search pill, bottom sheet, compteur session) flottent en `position:absolute` avec `overflow:hidden` sur le conteneur parent.
-3. **Bottom sheets** — hauteur variable (snap à 40% / 70%), swipe to dismiss. Utilisés sur Carte (mes itinéraires), Démarrer (choix mode), Challenges (détail objectif).
-4. **Feed social** — liste scrollable verticale (RecyclerView / ListView), chaque item : avatar + stats + tracé miniature SVG + badges + réactions. Même structure pour Vous en mode feed.
-5. **Célébrations** — animations plein écran au déblocage badge et complétion quartier, implémentées en Lottie avec fallback fade si "Réduire les animations" iOS activé.
+1. **Bottom nav sticky** — hauteur 60px + safe area iOS (34px). Aucun bouton surélevé.
+2. **Carte plein écran** — 100% de la surface. `DraggableScrollableSheet` en overlay avec 3 snap points (72px / 260px / 65%). `SessionStatusBar` (44px) en position absolue top. Bouton Arrêter (52px) et toggle plein écran en position absolue bottom.
+3. **Bottom sheet états** — collapsed (72px, handle visible) / peek (260px, section Démarrer visible) / expanded (65%, tout + scroll). Masqué en mode plein écran.
+4. **Sub-slide Itinéraires** — animated swap dans le sheet (AnimatedSwitcher ou PageView interne), pas de GoRouter push, pour éviter la perte du contexte carte.
+5. **Écran Créer itinéraire** — GoRouter push depuis le sheet (seul push justifié : formulaire complet avec AppBar et validation).
+6. **Chips filtres POI** — scroll horizontal sous la searchbar : 4–5 types courants (Monuments, Parcs, Marchés, Restos, Cafés) + bouton "Voir plus →" (GoRouter push vers écran Filtres complet). État actif = fond coloré + bordure colorée. Filtres persistants en local (SharedPreferences).
+7. **Écran Filtres POI complets** — AppBar avec "Réinitialiser", chips de filtres actifs en haut, catégories : Patrimoine / Nature / Vie locale / Exploration, bouton "Appliquer (N)" en bas.
+8. **Toggle zones explorées** — pill `🟢 Zones ON/OFF` en position absolue bas-gauche, persistent même hors session. Remplace le toggle dans le sheet pour un accès immédiat.
+9. **Toggles couches** — `SwitchListTile` dans la section Affichage du sheet expanded : Monuments visités (OFF par défaut), Quartiers, Photos épinglées. (Rues explorées = géré par le toggle bas-gauche persistent.)
+7. **Feed social** — liste scrollable verticale, chaque item : avatar + stats + tracé miniature SVG + badges + réactions.
+8. **Célébrations** — animations plein écran au déblocage badge et complétion quartier, avec fallback fade si "Réduire les animations" iOS activé.
 
 ---
 
@@ -423,7 +465,7 @@ Le bouton **Démarrer** est central et surélevé — identifiant visuel fort, a
 
 ### Journey 1 · Première exploration (Onboarding → Moment "aha")
 
-**Contexte :** Utilisateur vient d'installer l'app. Objectif : voir sa première rue se colorier en moins de 60 secondes.
+**Contexte :** Utilisateur vient d'installer l'app. Objectif : voir sa première rue se colorier en moins de 60 secondes — **sans aucune action requise**. Le tracking passif démarre automatiquement, aucun "Démarrer" nécessaire.
 
 **Points de friction identifiés :** permission GPS, attente signal, orientation initiale.
 
@@ -435,122 +477,120 @@ flowchart TD
     D -- Refus --> E[Message : 'GPS requis pour colorier tes rues'\nLien → Réglages]
     E --> D
     D -- Accordé --> F
-    C -- Oui --> F[Carte centrée sur position actuelle\n± 200m zoom]
-    F --> G[Bouton flottant 'Démarrer'\nen bas d'écran — animation pulse]
-    G --> H{L'utilisateur\ntappe Démarrer ?}
-    H -- Oui --> I[État session 'En cours'\nBouton rouge + compteur 0 rue]
-    H -- Non, explore l'app --> J[Peut naviguer les onglets\nBouton Démarrer reste accessible]
+    C -- Oui --> F[Carte centrée sur position actuelle\n± 200m zoom\nTracking passif démarre silencieusement]
+    F --> G[Bottom sheet collapsed\nToggle Zones bas-gauche visible]
+    G --> H[Utilisateur marche — rien à faire]
+    H --> I{GPS snappe\nune rue OSM ?}
+    I -- Non, signal faible --> J[Indicateur GPS subtil\nAttente silencieuse]
     J --> H
-    I --> K[Utilisateur marche]
-    K --> L{GPS snappe\nune rue OSM ?}
-    L -- Non, signal faible --> M[Compteur en attente\nAnimation GPS subtile]
-    M --> K
-    L -- Oui --> N[🎉 Première rue colorée\n— Vert Sauge sur la carte]
-    N --> O[Toast discret : '1ère rue explorée !'\n+ micro-vibration]
-    O --> P[Utilisateur continue à marcher\nRues s'accumulent]
+    I -- Oui --> K[🎉 Première rue colorée\n— Vert Sauge sur la carte\nSANS avoir tapé Démarrer]
+    K --> L[Toast discret : '1ère rue explorée !'\n+ micro-vibration]
+    L --> M[Utilisateur continue à marcher\nRues s'accumulent passivement]
+    M --> N{L'utilisateur veut\nenregistrer sa session ?}
+    N -- Non, juste explorer --> M
+    N -- Oui → dérouille sheet --> O[Section 'Démarrer une sortie'\nTap ▶ Démarrer]
+    O --> P[SessionStatusBar apparaît\nSession enregistrée démarre]
     P --> Q{Arrêt session ?}
-    Q -- Oui --> R[Résumé session\nN rues · X km · Y min]
-    R --> S{Badge ou quartier\ndéclenché ?}
-    S -- Oui --> T[Animation célébration\nplein écran]
-    T --> U[Retour carte\nNouvelles rues colorées visibles]
-    S -- Non --> U
+    Q -- Oui --> R[Bouton Arrêter → modale\nPause / Arrêter définitivement]
+    R -- Arrêter --> S[Résumé session\nN rues · X km · Y min]
+    S --> T{Badge ou quartier\ndéclenché ?}
+    T -- Oui --> U[Animation célébration\nplein écran]
+    U --> V[Retour carte\nNouvelles rues colorées visibles]
+    T -- Non --> V
 ```
 
 **Optimisations :**
 - Authentification Firebase anonyme silencieuse au premier lancement — zéro formulaire
-- Si GPS < 3 satellites : message "Signal en cours..." plutôt que rien
+- Si GPS < 3 satellites : message "Signal en cours..." dans la StatusBar plutôt que rien
 - Premier toast intentionnellement unique ("1ère rue !") — ne réapparaît jamais
 
 ---
 
-### Journey 2 · Démarrer une session (Parcours libre ou Itinéraire)
+### Journey 2 · Démarrer une session (Circuit libre ou Itinéraire)
 
-**Contexte :** Utilisateur actif, veut explorer. Onglet Démarrer = choix du mode.
+**Contexte :** Utilisateur actif, veut explorer. Entrée = bottom sheet de l'onglet Carte, section "Démarrer une sortie".
 
 ```mermaid
 flowchart TD
-    A([Tape l'onglet Démarrer]) --> B[Bottom sheet s'élève\n2 cartes : Parcours libre / Itinéraire]
+    A([Tape l'onglet Carte]) --> B[Carte plein écran\nBottom sheet en état Peek\nSection 'Démarrer une sortie' visible]
     B --> C{Quel mode ?}
 
-    C -- Parcours libre --> D[Sélecteur mode transport\n🚶 🚴 🚗]
-    D --> E[Bouton 'Démarrer' actif\nIndicateur GPS vert]
-    E --> F{GPS prêt ?}
-    F -- Non --> G[Indicateur GPS orange\n'Acquisition signal...']
-    G --> F
-    F -- Oui --> H[Session active lancée]
-    H --> I[Compteur flottant\nRues · km · durée]
-    I --> J[Bouton 📷 pour épingler\nBouton ⏹ pour arrêter]
-    J --> K{Action ?}
-    K -- 📷 --> L[Ouvre appareil photo\n→ Journey 7 · Pin communautaire]
-    K -- ⏹ --> M[Confirmation 'Arrêter ?'\n2 boutons : Continuer / Arrêter]
-    M -- Continuer --> J
+    C -- Circuit libre\nou tap direct ▶ --> D[Sheet se collapse\nSessionStatusBar Terra Cotta\nTransport auto-détecté via GPS]
+    D --> E{GPS prêt ?}
+    E -- Non --> F[StatusBar : 'Acquisition GPS...'\nTracking démarre dès signal]
+    F --> E
+    E -- Oui --> G[Session active — rues se colorient\nMode détecté affiché dans StatusBar]
+    G --> H{POI sélectionné ?}
+    H -- Oui --> I[Flèche directionnelle\nvers le POI — pas de tracé]
+    H -- Non --> G
+    I --> G
+    G --> J{Action utilisateur ?}
+    J -- Toggle plein écran --> K[Bottom nav + sheet masqués\nSeuls StatusBar + Arrêter visibles]
+    K --> J
+    J -- 📷 épingler --> L[Ouvre appareil photo\n→ Journey 7 · Pin communautaire]
+    J -- Arrêter --> M[Modale : Pause / Arrêter définitivement]
+    M -- Pause --> G
     M -- Arrêter --> N[Résumé session]
     N --> O{Badge / quartier ?}
     O -- Oui --> P[Animation célébration]
     P --> Q[Retour carte]
     O -- Non --> Q
 
-    C -- Itinéraire --> R{Itinéraires\nenregistrés ?}
-    R -- Oui --> S[Liste mes itinéraires\nsauvegardés]
-    S --> T[Sélectionne un itinéraire\n→ Aperçu sur carte]
-    T --> U[CTA 'Démarrer cet itinéraire']
-    U --> V[Navigation guidée\nProchain point mis en avant]
-    V --> W{Point atteint ?}
-    W -- Oui --> X[Rue colorée\nProgression itinéraire +1]
+    C -- Itinéraire --> R[Sub-slide Itinéraires\nouvre dans le sheet — animation latérale]
+    R --> S{Itinéraires\nexistants ?}
+    S -- Oui --> T[Liste des itinéraires sauvegardés\ncards scrollables]
+    T --> U[Tap ▶ sur un itinéraire]
+    U --> V[Sheet collapse\nSessionStatusBar fond Ocre\nTracé affiché sur carte]
+    V --> W{POI atteint ?}
+    W -- Oui --> X[Rue colorée\nProgression +1\nNotif discrète next POI]
     X --> W
     W -- Itinéraire terminé --> Y[🎉 'Itinéraire complété !'\n% rues nouvelles explorées]
     Y --> N
-    R -- Non --> Z[Redirection vers onglet Carte\n'Crée ton premier itinéraire']
+    S -- Non --> Z[État vide : 'Aucun itinéraire'\nBouton + Créer mis en avant]
+    Z --> AA[→ Journey 3 · Créer itinéraire]
 ```
 
 **Optimisations :**
-- Bottom sheet Démarrer fermable d'un swipe bas — revenir à la carte sans rien faire
-- Mode transport mémorisé pour la prochaine session (UserDefaults)
-- Si itinéraire en cours non terminé : proposition de le reprendre au tap suivant sur Démarrer
+- Sheet dismissable d'un swipe bas depuis peek — revenir à la carte sans rien faire
+- Circuit libre = mode par défaut, tap ▶ Démarrer suffit (zéro sélection requise)
+- Transport auto-détecté via vitesse GPS — affiché comme info dans la StatusBar, pas bloquant
+- Si session en cours non terminée : StatusBar toujours visible au retour sur l'onglet Carte
 
 ---
 
-### Journey 3 · Créer & sauvegarder un itinéraire (Onglet Carte)
+### Journey 3 · Créer & sauvegarder un itinéraire
 
-**Contexte :** Utilisateur veut planifier un circuit à l'avance ou retrouver un itinéraire sauvegardé.
+**Contexte :** Utilisateur veut planifier un circuit. Entrée = bouton "Créer" dans le sub-slide Itinéraires (depuis l'onglet Carte) ou depuis l'onglet Parcours.
 
 ```mermaid
 flowchart TD
-    A([Tape l'onglet Carte]) --> B[Carte plein écran\nSearch pill en haut + bottom sheet bas]
-    B --> C{Action souhaitée ?}
+    A([Tape 'Créer un itinéraire'\ndepuis sub-slide ou onglet Parcours]) --> B[Écran dédié\n← AppBar 'Créer un itinéraire' + bouton Créer disabled]
 
-    C -- Rechercher un lieu --> D[Tape dans la search pill\nRésultats Nominatim en liste]
-    D --> E[Sélectionne un lieu\nMarqueur sur carte]
-    E --> F[Option : 'Ajouter à un itinéraire']
-    F --> G[Lien vers création]
+    B --> C[Section Étapes — pas de sélection transport\nAuto-détecté pendant la session]
+    C --> D[Départ en premier]
 
-    C -- Voir itinéraires enregistrés --> H[Bottom sheet : Mes itinéraires\nListe scrollable]
-    H --> I{Itinéraires existants ?}
-    I -- Oui --> J[Tape un itinéraire\nTracé affiché sur carte en ocre]
-    J --> K[CTA 'Démarrer' + 'Modifier' + 'Supprimer']
-    K -- Démarrer --> L[→ Journey 2 mode itinéraire]
-    K -- Modifier --> M[Éditeur itinéraire]
-    K -- Supprimer --> N[Confirmation 'Supprimer ?' y/n]
-    I -- Non --> O['Crée ton premier itinéraire'\nBouton '+']
+    D --> E[Tap 'Départ'\n→ Carte en mode sélection\nbannière 'Tap pour placer le départ']
+    E --> F[Tap sur carte → point placé\nRetour écran création]
 
-    C -- Créer un itinéraire --> P[Mode création activé\nCurseur + sur carte]
-    O --> P
-    P --> Q[Tape des points sur la carte\nLigne se trace entre les points]
-    Q --> R{Assez de points ?}
-    R -- Non --> Q
-    R -- Oui --> S[Aperçu de l'itinéraire\nDistance estimée + durée]
-    S --> T[Champ nom : 'Mon itinéraire'\nClavier iOS]
-    T --> U[Bouton 'Sauvegarder']
-    U --> V[Itinéraire sauvegardé\nApparaît dans Mes itinéraires]
-    V --> W{Démarrer maintenant ?}
-    W -- Oui --> L
-    W -- Non --> B
+    F --> G[Tap '+ Ajouter une étape'\nou tap sur carte en mode sélection]
+    G --> H[Étape ajoutée avec nom du lieu\nReorderableListView — drag ≡ + suppr ✕]
+    H --> I{Assez d'étapes ?}
+    I -- Non --> G
+    I -- Oui --> J[Section Fin de parcours\nRevenir au départ ? Oui / Non]
+
+    J --> K[Bouton 'Créer' devient actif\n≥ 1 étape + mode sélectionné]
+    K --> L[Tap 'Créer'\nItinéraire sauvegardé]
+    L --> M[Retour sub-slide Itinéraires\nNouvel itinéraire en tête de liste]
+    M --> N{Démarrer maintenant ?}
+    N -- Oui --> O[Tap ▶ → → Journey 2 mode itinéraire]
+    N -- Non --> P[Reste sur la carte]
 ```
 
 **Optimisations :**
-- Snap automatique des points sur les rues OSM lors de la création
-- Limite 20 points par itinéraire en MVP
-- Nom auto-généré si vide : "Itinéraire du [date]"
+- Snap automatique des points sélectionnés sur les rues OSM
+- Limite 20 étapes par itinéraire en MVP
+- Nom auto-généré si vide : "Sortie du [date]"
+- Transport auto-détecté pendant la session — pas de champ dans le formulaire
 
 ---
 

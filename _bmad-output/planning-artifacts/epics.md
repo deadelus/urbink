@@ -1,6 +1,10 @@
 ---
 stepsCompleted: [1, 2, 3, 4]
 status: complete
+lastEdited: '2026-04-13'
+editHistory:
+  - date: '2026-04-13'
+    changes: 'v2 — Nav v4 (5 onglets plats, FAB Démarrer supprimé) ; UX-DR9 obsolète (TransportModeSelector) ; UX-DR10 mis à jour ; Story 1.3 ACs refondus ; Story 2.4 → SessionStatusBar + auto-détection ; Story 2.5 flow depuis bottom sheet ; Story 2.6 refs SessionStatusBar ; Stories 2.8 (tracking passif) et 2.9 (bottom sheet Carte & Sorties) ajoutées ; FR Coverage Map mis à jour (FR0, FR1b, FR10b, FR10c, FR23b)'
 inputDocuments:
   - '_bmad-output/planning-artifacts/prd.md'
   - '_bmad-output/planning-artifacts/architecture.md'
@@ -112,33 +116,38 @@ NFR20 : AVSpeechSynthesizer TTS natif iOS — sans coût externe
 
 UX-DR1 : Implémenter le design system Material 3 avec tokens Urbink — palette (Ocre #B8832E, Vert Sauge #5A7A5A, Brun profond #1E1610, fond #FAFAF7), typographie (Crimson Pro / Inter), espacements (base 4px, grille 8px) dans `shared/constants/colors.dart`, `typography.dart`, `spacing.dart`
 UX-DR2 : Créer le composant custom `MapStreetOverlay` — couche flutter_map affichant les polylines de rues explorées (Vert Sauge #5A7A5A opacité 0.75), rue en cours animée (#6A9A6A), marqueurs pins 📷 cliquables — 4 états : idle / recording / playback / creation
-UX-DR3 : Créer le composant custom `SessionCounter` — pill semi-transparent top-center pendant session active, affichant N rues · km · HH:MM avec indicateur GPS animé (vert/orange) — 3 états : acquiring / active / paused
+UX-DR3 : *(done — Story 2.4)* Créer le composant custom `SessionCounter` — pill semi-transparent top-center pendant session active, affichant N rues · km · HH:MM avec indicateur GPS animé (vert/orange) — 3 états : acquiring / active / paused
+UX-DR3b : *(Story 2.10)* Remplacer `SessionCounter` par `SessionStatusBar` — barre 44px position absolue haut de carte, fond Terra Cotta #A84E2C (circuit libre) ou Ocre #B8832E (itinéraire), auto-détection transport, suppression `TransportModeSelector`
 UX-DR4 : Créer le composant custom `CelebrationOverlay` — overlay plein écran Lottie pour badge monument (2-3s), quartier complété (3-4s, secret local révélé), itinéraire terminé (2s) — accessibilityAnnouncement + reducedMotion fallback fade 150ms
 UX-DR5 : Créer le composant custom `FeedActivityItem` — item feed social avec header avatar + stats row + RouteMapPreview + chips badges/photos + réactions bar (🔥💬🗺️) — variantes compact (vue simple) et full (feed Accueil/Vous)
 UX-DR6 : Créer le composant custom `WeekHistogram` — histogramme 7 barres L-D, hauteur proportionnelle aux rues explorées, jour actuel en Ocre, jours vides en fantôme #F0EDE8 — 3 états : empty / partial / full
 UX-DR7 : Créer le composant custom `BadgeGrid` — grille 4 colonnes monuments / 3 colonnes quartiers, badges débloqués en couleur + scale-in au premier affichage, badges verrouillés opacité 40% + indice texte + CTA "Voir sur carte"
 UX-DR8 : Créer le composant custom `RouteMapPreview` — carte miniature SVG schématique avec polyline tracé (Vert Sauge = sorties, Ocre = itinéraires planifiés) — 3 variantes : small 176×85px / medium full-width 16:9 / thumbnail 48×48px
-UX-DR9 : Créer le composant custom `TransportModeSelector` — 3 chips segmentés 🚶🚴🚗, chip actif fond Ocre + texte blanc, inactif fond #F4F2ED, mémorisation du dernier choix via UserDefaults/SharedPreferences
-UX-DR10 : Implémenter la bottom navigation 5 onglets (Accueil 🏠 · Carte 🗺️ · Démarrer ▶ · Challenges 🏆 · Vous 👤) — bouton Démarrer central surélevé +12px avec ombre M3, onglet actif Ocre + underline 2px, tab persistence état/position par onglet
+UX-DR9 : ~~OBSOLÈTE — `TransportModeSelector` supprimé~~ Le mode de déplacement est auto-détecté via la vitesse GPS (marche < 7 km/h · vélo < 30 km/h · voiture au-dessus) — aucun composant de sélection manuelle à implémenter ; le mode est affiché en lecture seule dans la `SessionStatusBar`
+UX-DR10 : Implémenter la bottom navigation 5 onglets plats (Carte 🗺️ · Parcours 🧭 · Social 👥 · Badges 🏆 · Profil 👤) — **pas de bouton central surélevé** (FAB Démarrer supprimé en v4) ; onglet actif Ocre #B8832E + underline 2px, inactifs #8C7B6A ; tab persistence état/position par onglet
 UX-DR11 : Implémenter les bottom sheets conformément aux specs UX — snap 40% (aperçu) / 70% (détail), pill de drag 4×32px, scrim #1E1610 @40%, swipe-to-dismiss, focus piégé à l'intérieur tant qu'ouvert
 UX-DR12 : Implémenter la hiérarchie des boutons Urbink — Primaire (Ocre #B8832E, hauteur 52px, radius 12px), Secondaire (contour Ocre), Ghost (texte seul), Destructif (rouge #C0392B) — état loading : spinner blanc inline, jamais 2 primaires sur le même écran
 UX-DR13 : Implémenter les feedback patterns — SnackBar custom 4 types (succès #2D5A2D / info #1E1610 / erreur #8B2020 / warning #7A5A1E), 2.5s dismiss, icône gauche — feedback haptique léger/moyen/fort selon l'action
 UX-DR14 : Implémenter les empty states pour tous les contextes vides (feed sans follows, itinéraires vides, historique vierge) — illustration emoji + message chaleureux ≤ 2 lignes + CTA si action directe disponible
 UX-DR15 : Implémenter le support WCAG 2.1 AA — Semantics Flutter sur tous les éléments interactifs, zones tactiles minimum 44×44pt, Dynamic Type iOS jusqu'à xxxLarge, reducedMotion (MediaQuery.disableAnimations), lien Réglages iOS pour erreurs GPS
-UX-DR16 : Implémenter la gestion des safe areas iOS — safeAreaTop pour SessionCounter et search pill, safeAreaBottom + 60pt pour bottom nav, zone pouce 120pt depuis le bas pour toutes les actions primaires
+UX-DR16 : Implémenter la gestion des safe areas iOS — safeAreaTop pour `SessionStatusBar` et search pill, safeAreaBottom + 60pt pour bottom nav, zone pouce 120pt depuis le bas pour toutes les actions primaires (bouton Arrêter ■ bas-droite compris)
 
 ### FR Coverage Map
 
-FR1 → Epic 2 · Sessions GPS — Démarrage session temps réel
-FR2 → Epic 2 · Sessions GPS — Snap to road Nominatim + coloration
-FR3 → Epic 2 · Sessions GPS — Affichage rues colorées temps réel (MapStreetOverlay)
-FR4 → Epic 2 · Sessions GPS — Détection automatique mode déplacement
-FR5 → Epic 2 · Sessions GPS — Arrêt et reprise de session
-FR6 → Epic 2 · Sessions GPS — Sauvegarde session avec horodatage et mode
+FR0 → Epic 2 · Carte & Exploration — Tracking passif toujours actif (sans session)
+FR1 → Epic 2 · Carte & Exploration — Démarrage session circuit libre enregistrée (depuis bottom sheet)
+FR1b → Epic 5 · Parcours — Mode itinéraire GPS pur (check-points, reset progression)
+FR2 → Epic 2 · Carte & Exploration — Snap to road Nominatim + coloration
+FR3 → Epic 2 · Carte & Exploration — Affichage rues colorées temps réel (MapStreetOverlay)
+FR4 → Epic 2 · Carte & Exploration — Détection automatique mode déplacement
+FR5 → Epic 2 · Carte & Exploration — Arrêt et reprise de session circuit libre
+FR6 → Epic 2 · Carte & Exploration — Sauvegarde session avec horodatage et mode
 FR7 → Epic 3 · Historique & Filtrage — Agrégation toutes sessions
 FR8 → Epic 3 · Historique & Filtrage — Filtrage temporel
 FR9 → Epic 3 · Historique & Filtrage — Pourcentage complétion par quartier
-FR10 → Epic 2 · Sessions GPS — Carte Paris toujours visible
+FR10 → Epic 2 · Carte & Exploration — Carte Paris toujours visible
+FR10b → Epic 2 · Carte & Exploration — Toggle zones explorées persistant bas-gauche
+FR10c → Epic 6 · Points d'Intérêt — Chips POI filtres inline + écran filtres complets
 FR11 → Epic 6 · Points d'Intérêt — Liste POI à proximité
 FR12 → Epic 6 · Points d'Intérêt — Description textuelle monument (Wikidata)
 FR13 → Epic 6 · Points d'Intérêt — Lecture audio TTS
@@ -150,9 +159,10 @@ FR18 → Epic 4 · Gamification — Badge monument débloqué par proximité
 FR19 → Epic 4 · Gamification — Consultation badges et progression
 FR20 → Epic 4 · Gamification — Activation et suivi objectif thématique
 FR21 → Epic 5 · Parcours — Génération parcours automatique 1-tap
-FR22 → Epic 5 · Parcours — Création parcours personnalisé
-FR23 → Epic 5 · Parcours — Guidage temps réel
-FR24 → Epic 5 · Parcours — Coloration progressive pendant parcours
+FR22 → Epic 5 · Parcours — Création itinéraire personnalisé (POIs ordonnés + option boucle)
+FR23 → Epic 5 · Parcours — Guidage itinéraire GPS temps réel
+FR23b → Epic 5 · Parcours — Sélecteur navigation externe (Waze/Plans/Google Maps/GPS intégré)
+FR24 → Epic 5 · Parcours — Coloration passive pendant progression itinéraire
 FR25 → Epic 8 · Communauté & Pins — Création pin (photo + texte + GPS)
 FR26 → Epic 8 · Communauté & Pins — Modération IA + sanctions progressives
 FR27 → Epic 8 · Communauté & Pins — Affichage pins sur carte
@@ -182,13 +192,13 @@ FR47 → Epic 2 · Sessions GPS — Crédits OpenStreetMap (ODbL)
 
 UX-DR1 → Epic 1 · Fondation — Design tokens Material 3 + Urbink
 UX-DR2 → Epic 2 · Sessions GPS — Composant MapStreetOverlay
-UX-DR3 → Epic 2 · Sessions GPS — Composant SessionCounter
+UX-DR3 → Epic 2 · Carte & Exploration — Composant SessionStatusBar
 UX-DR4 → Epic 4 · Gamification — Composant CelebrationOverlay
 UX-DR5 → Epic 9 · Partage & Social — Composant FeedActivityItem
 UX-DR6 → Epic 3 · Historique & Filtrage — Composant WeekHistogram
 UX-DR7 → Epic 4 · Gamification — Composant BadgeGrid
 UX-DR8 → Epic 5 · Parcours — Composant RouteMapPreview
-UX-DR9 → Epic 2 · Sessions GPS — Composant TransportModeSelector
+UX-DR9 → ~~OBSOLÈTE~~ — auto-détection transport intégrée dans Epic 2 (pas de composant séparé)
 UX-DR10 → Epic 1 · Fondation — Bottom navigation 5 onglets
 UX-DR11 → Epic 1 · Fondation — Bottom sheets conformes UX
 UX-DR12 → Epic 1 · Fondation — Hiérarchie boutons Urbink
@@ -205,9 +215,9 @@ Setup projet Flutter, Firebase multi-env, CI/CD, design system Material 3 + toke
 **UX-DRs couverts :** UX-DR1, UX-DR10, UX-DR11, UX-DR12, UX-DR13, UX-DR14, UX-DR15, UX-DR16
 
 ### Epic 2 : Carte & Exploration GPS
-Les utilisateurs voient Paris, marchent, et leurs rues se colorient en temps réel — le moment "aha" du produit.
-**FRs couverts :** FR1, FR2, FR3, FR4, FR5, FR6, FR10, FR47
-**UX-DRs couverts :** UX-DR2, UX-DR3, UX-DR9
+Les utilisateurs voient Paris, marchent, et leurs rues se colorient en temps réel (couche passive) — le moment "aha" du produit. La session circuit libre enregistrée est opt-in depuis le bottom sheet Carte & Sorties.
+**FRs couverts :** FR0, FR1, FR1b (partiel), FR2, FR3, FR4, FR5, FR6, FR10, FR10b, FR47
+**UX-DRs couverts :** UX-DR2, UX-DR3 (→ SessionStatusBar)
 
 ### Epic 3 : Historique & Filtrage Temporel
 Les utilisateurs visualisent toute leur exploration agrégée, filtrée par période, et suivent leur progression dans l'onglet Vous.
@@ -311,7 +321,9 @@ Afin que tous les composants de l'app aient une apparence cohérente sans duplic
 
 ---
 
-### Story 1.3 : Bottom navigation 5 onglets + bottom sheets conformes UX
+### Story 1.3 : Bottom navigation 5 onglets + bottom sheets conformes UX *(done)*
+
+> **Status : done — PR#2 mergée.** Ce qui a été implémenté : nav Accueil/Carte/Démarrer/Challenges/Vous avec bouton Démarrer central surélevé. La v4 (nav plate, onglets renommés, FAB supprimé) est couverte par **Story 1.7**.
 
 En tant qu'**utilisateur**,
 Je veux naviguer entre les 5 sections de l'app via une navigation claire en bas d'écran,
@@ -329,23 +341,19 @@ Afin d'accéder rapidement à toutes les fonctionnalités depuis n'importe quel 
 
 **Given** l'état de chaque onglet
 **When** l'utilisateur navigue entre onglets puis revient
-**Then** chaque onglet mémorise sa position de scroll et son état — revenir sur Carte retrouve la même position/zoom
+**Then** chaque onglet mémorise sa position de scroll et son état — `StatefulShellRoute.indexedStack` assure un Navigator dédié par branche
 
-**Given** un bottom sheet déclenché
+**Given** un bottom sheet déclenché via `showUrbinkBottomSheet()`
 **When** il s'élève depuis le bas
-**Then** il snape à 40% (aperçu) ou 70% (détail), affiche une pill de drag 4×32px en #D4C8B4, un scrim #1E1610 à 40%, et se ferme par swipe bas ou tap sur le scrim — le focus VoiceOver est piégé à l'intérieur
+**Then** il snape à 40% (aperçu) ou 70% (détail), affiche une pill de drag 4×32px en #D4C8B4, un scrim #1E1610 à 40%, et se ferme par swipe bas ou tap sur le scrim — focus VoiceOver piégé à l'intérieur
 
 **Given** aucune session active
 **When** l'utilisateur tape le bouton Démarrer ▶
-**Then** le bouton passe en Ocre #B8832E avec icône ⏸ (pause), et un bouton « Arrêter » circulaire rouge #C0392B 44px apparaît en haut à droite
-
-**Given** une session active
-**When** l'utilisateur tape le bouton ⏸ (pause central)
-**Then** le bouton repasse en Vert Sauge #5A7A5A avec icône ▶ — le bouton Arrêter reste visible
+**Then** le bouton passe en Ocre #B8832E avec icône ⏸, et un bouton Arrêter rouge #C0392B 44px apparaît en haut à droite
 
 **Given** une session active ou en pause
 **When** l'utilisateur tape le bouton Arrêter (top right)
-**Then** la session s'arrête côté UI : le bouton Démarrer retrouve son état initial Vert Sauge ▶, le bouton Arrêter disparaît — la modale de confirmation et l'écran récapitulatif sont implémentés en Story 2.5
+**Then** la session s'arrête côté UI : bouton Démarrer → Vert Sauge ▶, bouton Arrêter disparaît — modale de confirmation + écran récapitulatif implémentés en Story 2.5
 
 ---
 
@@ -435,6 +443,34 @@ Afin de détecter les régressions rapidement et publier sur l'App Store en conf
 
 ---
 
+### Story 1.7 : Refactoring navigation v4 — 5 onglets plats, suppression FAB Démarrer *(remplace Story 1.3)*
+
+> **Dépendance :** Story 1.3 done. Cette story migre la navigation vers la v4. Elle est à implémenter après les Stories 2.8 et 2.9 (tracking passif + bottom sheet) qui fournissent le point d'entrée de remplacement du FAB.
+
+En tant qu'**utilisateur**,
+Je veux une navigation plate en 5 onglets sans bouton central surélevé,
+Afin d'avoir plus d'espace carte et accéder aux sorties via le bottom sheet dédié.
+
+**Acceptance Criteria :**
+
+**Given** le fichier `urbink_bottom_nav.dart` existant (Story 1.3)
+**When** la migration v4 est appliquée
+**Then** la bottom nav affiche 5 onglets plats : Carte 🗺️ · Parcours 🧭 · Social 👥 · Badges 🏆 · Profil 👤 — hauteur uniforme, `_StartButton` et `_StopButton` supprimés, `isSessionActive` retiré du contrat du widget
+
+**Given** l'app avec session active
+**When** l'utilisateur est sur l'onglet Carte
+**Then** aucun bouton dans la bottom nav ne change d'état — la `SessionStatusBar` (Story 2.10) et le bouton Arrêter ■ (Story 2.10) sont les seuls indicateurs visuels de session
+
+**Given** les routes GoRouter existantes pointant vers les 5 onglets
+**When** la migration est appliquée
+**Then** les routes `Accueil`, `Challenges`, `Vous` sont renommées `Social`, `Badges`, `Profil` — les routes carte et parcours inchangées ; tous les tests de navigation mis à jour
+
+**Given** les Semantics VoiceOver existants (Story 1.3)
+**When** la migration est appliquée
+**Then** les annonces sont mises à jour : "Carte, onglet 1 sur 5" / "Parcours, onglet 2 sur 5" etc. — aucune référence à "Démarrer"
+
+---
+
 ## Epic 2 : Carte & Exploration GPS
 
 L'utilisateur ouvre l'app, voit la carte complète de Paris, marche, et ses rues se colorient en temps réel — c'est le moment "aha" fondateur d'Urbink.
@@ -517,7 +553,9 @@ Afin de visualiser mon territoire personnel d'exploration.
 
 ---
 
-### Story 2.4 : Composant SessionCounter + TransportModeSelector — UI session active
+### Story 2.4 : Composant SessionCounter + TransportModeSelector — UI session active *(done)*
+
+> **Status : done — PR#10 mergée.** Ce qui a été implémenté : `SessionCounter` pill top-center + `TransportModeSelector` 3 chips manuels. La v4 (SessionStatusBar 44px + auto-détection, suppression du sélecteur) est couverte par **Story 2.10**.
 
 En tant qu'**utilisateur**,
 Je veux voir mes métriques de session en temps réel et choisir mon mode de déplacement,
@@ -543,21 +581,21 @@ Afin de suivre ma progression pendant que j'explore.
 
 ---
 
-### Story 2.5 : Démarrage / arrêt / reprise de session + sauvegarde Firestore
+### Story 2.5 : Démarrage / arrêt / reprise de session circuit libre + sauvegarde Firestore *(v4)*
 
 En tant qu'**utilisateur**,
-Je veux démarrer, arrêter et reprendre une session d'exploration, et que ma progression soit sauvegardée sans perte,
+Je veux démarrer une session circuit libre depuis l'écran Carte, l'arrêter, et que ma progression soit sauvegardée sans perte,
 Afin de ne jamais perdre mes rues explorées même si l'app est fermée brutalement.
 
 **Acceptance Criteria :**
 
-**Given** l'onglet Démarrer ouvert
-**When** l'utilisateur tape le bouton Démarrer
-**Then** la session démarre en ≤ 1 seconde — le bottom sheet se ferme, `SessionCounter` apparaît, le bouton Démarrer passe à l'état "session en cours" (FR1)
+**Given** l'onglet Carte ouvert, bottom sheet déroulé (peek ou expanded)
+**When** l'utilisateur tape "▶ Démarrer la sortie" en mode Circuit libre
+**Then** la session démarre en ≤ 1 seconde — le bottom sheet se collapse, `SessionStatusBar` Terra Cotta apparaît, le bouton Arrêter ■ 52×52px s'affiche bas-droite (FR1)
 
-**Given** une session en cours
-**When** l'utilisateur tape le bouton Arrêter rouge top-right (posé par Story 1.3)
-**Then** un Dialog de confirmation s'affiche ("Arrêter la session ?") — si confirmé, la session est sauvegardée dans Firestore avec `sessionStart`, `sessionEnd`, `mode`, `streetIds[]`, puis un écran récapitulatif affiche le tracé, les stats (rues/km/durée) et les badges débloqués (FR5, FR6)
+**Given** une session circuit libre en cours
+**When** l'utilisateur tape le bouton Arrêter ■ bas-droite (posé par Story 1.3)
+**Then** un Dialog de confirmation s'affiche ("Arrêter la session ?") — si confirmé, la session est sauvegardée dans Firestore avec `sessionStart`, `sessionEnd`, `mode`, `streetIds[]`, `distanceMeters`, puis un écran récapitulatif affiche le tracé, les stats (rues/km/durée) et les badges débloqués (FR5, FR6)
 
 **Given** une session sauvegardée dans Firestore
 **When** la sauvegarde échoue (réseau absent)
@@ -579,15 +617,15 @@ Afin de ne pas avoir à configurer manuellement mon mode avant chaque session.
 
 **Given** une session active en mode "Auto-detect"
 **When** la vitesse GPS est < 7 km/h en moyenne sur 30 secondes
-**Then** le mode est classifié `marche` — l'icône dans `SessionCounter` affiche 🚶
+**Then** le mode est classifié `marche` — l'icône dans `SessionStatusBar` affiche 🚶
 
 **Given** une session active
 **When** la vitesse GPS est entre 7 et 30 km/h
-**Then** le mode est classifié `vélo` — l'icône affiche 🚴
+**Then** le mode est classifié `vélo` — l'icône dans `SessionStatusBar` affiche 🚴
 
 **Given** une session active
 **When** la vitesse GPS est > 30 km/h
-**Then** le mode est classifié `voiture` — l'icône affiche 🚗
+**Then** le mode est classifié `voiture` — l'icône dans `SessionStatusBar` affiche 🚗
 
 **Given** un changement de mode détecté en cours de session
 **When** le mode bascule (ex : marche → voiture dans un bus)
@@ -618,6 +656,90 @@ Afin de démarrer l'app en confiance et en conformité RGPD.
 **Given** Firebase Anonymous Auth
 **When** l'app se lance pour la première fois (après acceptation politique)
 **Then** `signInAnonymously()` est appelé silencieusement — un UID Firestore est créé sans aucune action utilisateur requise (FR32)
+
+---
+
+### Story 2.8 : Tracking passif toujours actif — couche 1 (FR0)
+
+En tant qu'**utilisateur** (y compris invité),
+Je veux que les rues se colorient automatiquement dès que j'ouvre l'app et que je marche, sans aucune action de ma part,
+Afin de voir mon territoire exploré se construire librement, même sans créer de compte ou démarrer une session.
+
+**Acceptance Criteria :**
+
+**Given** l'app lancée et la permission GPS accordée
+**When** l'utilisateur se déplace (même sans session démarrée)
+**Then** `gps_tracking_service.dart` émet des positions et le système snap-to-road colorie les rues via `MapStreetOverlay` — le tracking passif est actif indépendamment de toute session enregistrée (FR0)
+
+**Given** un utilisateur en mode invité (Anonymous Auth)
+**When** il marche avec l'app ouverte
+**Then** les rues colorées sont sauvegardées sous son UID anonyme Firestore — la progression est conservée si l'utilisateur crée un compte ultérieurement via `linkWithCredential()`
+
+**Given** le toggle "Zones ON/OFF" (FR10b)
+**When** l'utilisateur tape le pill 🟢 Zones bas-gauche
+**Then** l'affichage des rues colorées est activé/désactivé sur la carte — le tracking passif continue en arrière-plan indépendamment de l'état du toggle
+
+**Given** l'app mise en arrière-plan
+**When** l'utilisateur marche téléphone en poche
+**Then** le tracking passif continue (background location iOS) et les rues se colorient au retour au premier plan
+
+---
+
+### Story 2.9 : Bottom sheet "Carte & Sorties" — DraggableScrollableSheet (FR1, FR1b)
+
+En tant qu'**utilisateur**,
+Je veux accéder aux options de sortie (circuit libre ou itinéraire) en déroulant un panneau depuis l'écran Carte,
+Afin de démarrer une sortie enregistrée ou lancer un itinéraire sans quitter la vue carte.
+
+**Acceptance Criteria :**
+
+**Given** l'écran Carte affiché
+**When** l'utilisateur tire vers le haut depuis le bas de l'écran
+**Then** un `DraggableScrollableSheet` s'élève avec 3 snap points : 72px (collapsed — handle + hint "↑ Dérouler pour démarrer une sortie") / ~260px (peek — section Démarrer une sortie visible) / 65% écran (expanded — contenu complet)
+
+**Given** le sheet en état peek ou expanded
+**When** la section "Démarrer une sortie" est visible
+**Then** deux cards sont affichées côte à côte : "Circuit libre 🚶 · ✓ Par défaut" (fond Vert Sauge léger, bordure Vert Sauge) et "Itinéraire 🗺️ · Mode GPS →" (fond #F4F2ED) ; une info-chip "🤖 Mode auto-détecté · GPS prêt" est affichée sous les cards ; le bouton "▶ Démarrer la sortie" (fond Vert Sauge) lance la session en mode sélectionné
+
+**Given** l'utilisateur tape la card "Itinéraire"
+**When** la card est sélectionnée
+**Then** le sheet anime un sub-slide (AnimatedSwitcher) vers la vue liste d'itinéraires avec bouton "← Retour" et bouton "+ Créer" — **pas de GoRouter push** à cette étape ; seul le bouton "Créer" déclenche un push vers l'écran dédié
+
+**Given** une session circuit libre active
+**When** elle est en cours
+**Then** le sheet est collapsed et non déroulable — seuls la `SessionStatusBar` et le bouton Arrêter ■ sont accessibles
+
+---
+
+### Story 2.10 : Refactoring UI session — SessionStatusBar + suppression TransportModeSelector *(remplace Story 2.4)*
+
+> **Dépendance :** Story 2.4 done (SessionCounter + TransportModeSelector implémentés). Cette story remplace les deux composants par la v4. À implémenter après Story 2.9 (bottom sheet).
+
+En tant qu'**utilisateur**,
+Je veux voir l'état de ma session dans une barre contextuelle en haut de la carte, sans saisir mon mode de déplacement,
+Afin d'avoir un retour clair sans friction et sans encombrer l'écran avec des chips de sélection.
+
+**Acceptance Criteria :**
+
+**Given** `SessionCounter` pill top-center existant (Story 2.4)
+**When** la migration v4 est appliquée
+**Then** `SessionCounter` est supprimé du widget tree ; `SessionStatusBar` (44px, `AbsolutePositioned` sous la status bar iOS, fond Terra Cotta #A84E2C) le remplace pendant une session circuit libre — `TransportModeSelector` est entièrement retiré de l'app (widget + provider + SharedPreferences key)
+
+**Given** `SessionStatusBar` en session circuit libre active
+**When** elle est affichée
+**Then** elle affiche `● X.Xkm · N rues · HH:MM` + icône mode auto-détecté (🚶/🚴/🚗) — le point ● pulse en orange pendant l'acquisition GPS, passe vert fixe dès signal acquis
+
+**Given** un itinéraire GPS actif (Story 2.9)
+**When** il est en cours
+**Then** `SessionStatusBar` Ocre #B8832E affiche `étape X/N · [Nom POI suivant] · X.Xkm` — pas de distance totale ni de compteur de rues (pas d'enregistrement)
+
+**Given** le bouton Arrêter de Story 1.3 (top-right, 44px)
+**When** la migration v4 est appliquée
+**Then** il est repositionné bas-droite 52×52px rounded rect — `sessionActiveProvider` reste le point d'accroche ; la logique de confirmation (Story 2.5) est inchangée
+
+**Given** le mode de déplacement qui change en cours de session
+**When** la vitesse GPS franchit un seuil (7 km/h ou 30 km/h)
+**Then** l'icône dans `SessionStatusBar` se met à jour silencieusement — aucun toast, aucune confirmation requise (Story 2.6 inchangée)
 
 ---
 
@@ -903,7 +1025,7 @@ Afin d'explorer efficacement sans avoir à planifier. (FR21)
 
 **Acceptance Criteria :**
 
-**Given** l'onglet Démarrer → sélection "Itinéraire automatique"
+**Given** l'onglet Parcours → section "Parcours automatique" (ou depuis le bottom sheet Carte & Sorties → Itinéraire → Générer automatiquement)
 **When** l'utilisateur choisit une durée cible (15 / 30 / 45 / 60 min) et tape "Générer"
 **Then** la Cloud Function `generate_parcours.go` est appelée — elle retourne un circuit en ≤ 3 secondes (NFR3)
 
@@ -961,7 +1083,7 @@ Afin de ne pas me perdre et de voir mes progrès sur le parcours. (FR23, FR24)
 
 **Given** le guidage actif
 **When** l'utilisateur atteint un point du parcours (dans un rayon de 30m)
-**Then** le point est coché dans `SessionCounter` Extended (X/N points) — le prochain point devient la cible
+**Then** le point est coché — la `SessionStatusBar` Ocre met à jour l'étape (X/N points) et le prochain POI devient la cible
 
 **Given** les rues traversées pendant le parcours guidé
 **When** elles sont parcourues
@@ -1192,7 +1314,7 @@ Afin de partager ce que j'ai trouvé avec la communauté des explorateurs. (FR25
 **Acceptance Criteria :**
 
 **Given** une session active et une zone explorée (rue colorée)
-**When** l'utilisateur tape le bouton 📷 dans `SessionCounter`
+**When** l'utilisateur tape le bouton 📷 flottant sur la carte (visible pendant session active)
 **Then** l'appareil photo iOS s'ouvre — la photo prise est pré-positionnée à la position GPS actuelle (FR25)
 
 **Given** une zone non explorée
@@ -1489,7 +1611,7 @@ Afin de maintenir l'habitude d'exploration sans me sentir harcelé. (FR37)
 
 **Given** la notification rappel envoyée
 **When** elle est reçue par l'utilisateur
-**Then** tap → l'app s'ouvre sur l'onglet Démarrer
+**Then** tap → l'app s'ouvre sur l'onglet Carte, bottom sheet en état peek (section "Démarrer une sortie" visible)
 
 **Given** la fréquence des rappels
 **When** le système calcule le prochain envoi

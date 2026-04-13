@@ -1,10 +1,14 @@
 ---
-stepsCompleted: ['step-01-init', 'step-02-discovery', 'step-02b-vision', 'step-02c-executive-summary', 'step-03-success', 'step-04-journeys', 'step-05-domain', 'step-06-innovation', 'step-07-project-type', 'step-08-scoping', 'step-09-functional', 'step-10-nonfunctional', 'step-11-polish']
+stepsCompleted: ['step-01-init', 'step-02-discovery', 'step-02b-vision', 'step-02c-executive-summary', 'step-03-success', 'step-04-journeys', 'step-05-domain', 'step-06-innovation', 'step-07-project-type', 'step-08-scoping', 'step-09-functional', 'step-10-nonfunctional', 'step-11-polish', 'step-e-01-discovery', 'step-e-02-review', 'step-e-03-edit']
 inputDocuments:
   - '_bmad-output/planning-artifacts/product-brief-projet-carte-touristique-gamifie.md'
   - '_bmad-output/planning-artifacts/product-brief-projet-carte-touristique-gamifie-distillate.md'
   - '_bmad-output/brainstorming/brainstorming-session-2026-04-04-1400.md'
 workflowType: 'prd'
+lastEdited: '2026-04-13'
+editHistory:
+  - date: '2026-04-13'
+    changes: 'v2 — Modèle deux couches (tracking passif toujours actif + session opt-in) ; FR0 (passif) + FR1b (itinéraire GPS) ajoutés ; FR10b (toggle zones) + FR10c (chips POI filtres) + FR23b (sélecteur navigation) ajoutés ; FR21-FR24 mis à jour parcours/navigation ; Journey 2 mis à jour ; UX-DRs dans epics.md (pas dans PRD)'
 ---
 
 # Product Requirements Document — Urbink
@@ -16,7 +20,11 @@ workflowType: 'prd'
 
 ## Résumé Exécutif
 
-Urbink est une application mobile iOS qui transforme la carte de n'importe quelle ville en empreinte personnelle d'exploration. Les rues se colorient progressivement via GPS au fil des déplacements — à pied, à vélo ou en voiture. La carte reste toujours entièrement visible : pas de fog of war, juste un surligneur personnel qui révèle ce que l'utilisateur a déjà parcouru. Chaque session d'exploration est sauvegardée individuellement. La carte affiche l'agrégation de toutes les sessions — les rues colorées représentent l'union de tous les parcours effectués. L'utilisateur peut filtrer l'agrégation par période (aujourd'hui / semaine / mois / tout l'historique) pour visualiser sa progression sans noyer l'historique.
+Urbink est une application mobile iOS qui transforme la carte de n'importe quelle ville en empreinte personnelle d'exploration. Les rues se colorient progressivement via GPS au fil des déplacements — à pied, à vélo ou en voiture. La carte reste toujours entièrement visible : pas de fog of war, juste un surligneur personnel qui révèle ce que l'utilisateur a déjà parcouru.
+
+**Modèle deux couches :** Le tracking GPS opère en deux couches indépendantes. La **couche passive** (toujours active, mode invité inclus) colorie les rues dès l'ouverture de l'app — sans aucune action requise, sans compte, sans session. La **couche session** (opt-in, via bottom sheet) permet à l'utilisateur d'enregistrer explicitement un parcours avec stats et historique. Ces deux couches sont indépendantes : les zones explorées de la couche passive ne sont jamais réinitialisées par une session ou un itinéraire.
+
+La carte affiche l'agrégation de toutes les rues colorées. L'utilisateur peut filtrer l'affichage par période (aujourd'hui / semaine / mois / tout l'historique). Deux modes de sortie enregistrée sont proposés : **Circuit libre** (exploration sans tracé défini, stats enregistrées) et **Itinéraire** (mode GPS pur — guidage sans enregistrement, check-points mémorisés pour itérations).
 
 Cible : tout curieux urbain de 25 à 55 ans — touriste de passage ou habitant de longue date — qui se retrouve à repasser dans les mêmes rues sans s'en rendre compte. Gratuit, sans publicité, sans modèle freemium.
 
@@ -108,7 +116,7 @@ Le lendemain, elle ouvre l'app au réveil. Elle voit que le layer "aujourd'hui" 
 
 **Scène d'ouverture :** Marcus crée un compte dès l'installation — il veut que sa progression soit sauvegardée. Il voit sa carte de Paris : entièrement blanche. Légèrement honteux. *"12 ans ici et j'ai jamais mis les pieds dans le 19ème."*
 
-**Action montante :** Marcus utilise l'app chaque matin pour aller au bureau en changeant de chemin. Le filtre "aujourd'hui" lui montre sa route quotidienne. Au bout d'une semaine, le filtre "semaine" révèle un réseau de rues colorées dans le 11ème. Il active l'objectif thématique *"Tous les squares et jardins de Paris"* — il en a fait 3 sur 47.
+**Action montante :** Marcus utilise l'app chaque matin pour aller au bureau en changeant de chemin. Les rues se colorient automatiquement dès qu'il marche — sans démarrer de session. Quand il veut enregistrer une sortie avec ses stats, il déroule le bottom sheet et tape "▶ Démarrer la sortie". Le filtre "aujourd'hui" lui montre sa route quotidienne. Au bout d'une semaine, le filtre "semaine" révèle un réseau de rues colorées dans le 11ème. Il active l'objectif thématique *"Tous les squares et jardins de Paris"* — il en a fait 3 sur 47.
 
 **Climax :** Un samedi, Marcus décide de compléter le quartier Belleville. Il lui manque 8 rues. Il crée un parcours personnalisé pour les couvrir toutes. Quand la dernière rue se colorie, l'app affiche : *"Quartier Belleville complété — secret local débloqué."* Le secret : une fresque murale cachée dans une impasse que seuls les habitués connaissent.
 
@@ -326,12 +334,14 @@ Activées par défaut au MVP, désactivables dans les paramètres :
 
 ### Exploration & Coloration GPS
 
-- **FR1 :** L'utilisateur peut démarrer une session d'exploration qui enregistre son tracé GPS en temps réel
+- **FR0 :** Le système active automatiquement le tracking GPS passif dès l'ouverture de l'app, sans aucune action requise — les rues se colorient pour tout utilisateur, y compris en mode invité, sans session enregistrée
+- **FR1 :** L'utilisateur peut démarrer une session d'exploration enregistrée (circuit libre) depuis le bottom sheet de l'écran Carte — la session enregistre les stats (distance, durée, rues nouvelles) en plus du tracking passif déjà actif
+- **FR1b :** L'utilisateur peut démarrer un itinéraire (mode GPS pur) depuis le bottom sheet — le guidage fonctionne sans enregistrement de stats ; les check-points de progression sont mémorisés pour permettre de futures itérations sur le même itinéraire ; la progression de l'itinéraire est réinitialisable ; les zones explorées (couche passive) ne sont pas affectées
 - **FR2 :** Le système fait correspondre le tracé GPS aux rues du réseau OSM (map matching) et les colorie
-- **FR3 :** L'utilisateur voit ses rues explorées colorées sur la carte en temps réel pendant une session
-- **FR4 :** Le système détecte automatiquement le mode de déplacement (marche / vélo / voiture) sans intervention
-- **FR5 :** L'utilisateur peut arrêter et reprendre une session d'exploration
-- **FR6 :** Chaque session est sauvegardée individuellement avec horodatage et mode de déplacement
+- **FR3 :** L'utilisateur voit ses rues explorées colorées sur la carte en temps réel (couche passive toujours active)
+- **FR4 :** Le système détecte automatiquement le mode de déplacement (marche < 7 km/h · vélo < 30 km/h · voiture au-dessus) sans intervention
+- **FR5 :** L'utilisateur peut arrêter et reprendre une session de circuit libre enregistrée
+- **FR6 :** Chaque session circuit libre est sauvegardée individuellement avec horodatage et mode de déplacement détecté
 
 ### Agrégation & Filtrage Temporel
 
@@ -342,6 +352,8 @@ Activées par défaut au MVP, désactivables dans les paramètres :
 ### Carte & Points d'Intérêt
 
 - **FR10 :** L'utilisateur voit la carte complète de Paris en tout temps (aucune zone masquée)
+- **FR10b :** L'utilisateur peut afficher ou masquer les zones explorées via un toggle persistant (pill "🟢 Zones ON/OFF") visible en permanence bas-gauche de la carte, quelle que soit la couche active
+- **FR10c :** L'utilisateur peut filtrer les POI par type via des chips défilables horizontalement sous la searchbar (Monuments, Parcs, Marchés, Restos…) ; un bouton "Voir plus →" ouvre un écran de filtres complets organisé en 4 catégories (Patrimoine, Nature, Vie locale, Exploration) avec persistance des préférences
 - **FR11 :** L'utilisateur peut consulter la liste des points d'intérêt à proximité de sa position
 - **FR12 :** L'utilisateur peut lire la description textuelle d'un monument ou point d'intérêt
 - **FR13 :** L'utilisateur peut écouter la description audio d'un monument (TTS à la demande)
@@ -356,12 +368,13 @@ Activées par défaut au MVP, désactivables dans les paramètres :
 - **FR19 :** L'utilisateur peut consulter tous ses badges obtenus et leur progression
 - **FR20 :** L'utilisateur peut activer un objectif thématique et suivre sa progression
 
-### Parcours
+### Parcours & Navigation
 
 - **FR21 :** L'utilisateur peut générer en un tap un parcours automatique couvrant le maximum de rues non explorées avec une durée cible
-- **FR22 :** L'utilisateur peut créer un parcours personnalisé en traçant manuellement un itinéraire sur la carte
-- **FR23 :** L'utilisateur peut suivre un parcours en temps réel avec guidage visuel
-- **FR24 :** Les rues se colorient au fur et à mesure de la progression sur un parcours
+- **FR22 :** L'utilisateur peut créer un itinéraire personnalisé (POIs ordonnés : Départ → POI 1 → … → Fin, option boucle) depuis le bottom sheet ou l'onglet Parcours
+- **FR23 :** L'utilisateur peut suivre un itinéraire en temps réel en mode GPS pur (sans enregistrement stats) — la progression par check-point est mémorisée et réinitialisable
+- **FR23b :** Au démarrage d'un itinéraire, l'utilisateur choisit l'application de navigation : GPS intégré Urbink (recommandé) · Plans Apple · Google Maps · Waze (voiture uniquement)
+- **FR24 :** Les rues se colorient (couche passive) au fur et à mesure de la progression physique, indépendamment du mode itinéraire
 
 ### Communauté & Pins
 
