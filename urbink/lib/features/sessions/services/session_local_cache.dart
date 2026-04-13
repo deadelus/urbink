@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:path/path.dart' show join;
 import 'package:sqflite/sqflite.dart';
 import 'package:urbink/features/sessions/models/session.dart';
 
@@ -13,29 +14,35 @@ const _kTable = 'local_sessions';
 /// Firestore reste la source de vérité cloud.
 ///
 /// [dbPath] est injectable pour les tests (ex: `inMemoryDatabasePath`).
+/// En production, le chemin absolu est construit via [getDatabasesPath()].
 class SessionLocalCache {
-  final String dbPath;
+  final String? dbPath;
   Database? _db;
 
-  SessionLocalCache({this.dbPath = _kDbName});
+  SessionLocalCache({this.dbPath});
 
   Future<Database> _getDb() async {
-    _db ??= await openDatabase(
-      dbPath,
-      version: _kDbVersion,
-      onCreate: (db, version) => db.execute('''
-        CREATE TABLE IF NOT EXISTS $_kTable (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          session_start INTEGER NOT NULL,
-          session_end INTEGER,
-          mode TEXT NOT NULL DEFAULT 'walk',
-          street_ids TEXT NOT NULL DEFAULT '[]',
-          distance_meters REAL NOT NULL DEFAULT 0.0,
-          synced INTEGER NOT NULL DEFAULT 0
-        )
-      '''),
-    );
+    if (_db == null) {
+      // Construire le chemin absolu si aucun chemin explicite n'est fourni.
+      // Évite les comportements non-déterministes de sqflite avec un nom seul.
+      final resolvedPath = dbPath ?? join(await getDatabasesPath(), _kDbName);
+      _db = await openDatabase(
+        resolvedPath,
+        version: _kDbVersion,
+        onCreate: (db, version) => db.execute('''
+          CREATE TABLE IF NOT EXISTS $_kTable (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            session_start INTEGER NOT NULL,
+            session_end INTEGER,
+            mode TEXT NOT NULL DEFAULT 'walk',
+            street_ids TEXT NOT NULL DEFAULT '[]',
+            distance_meters REAL NOT NULL DEFAULT 0.0,
+            synced INTEGER NOT NULL DEFAULT 0
+          )
+        '''),
+      );
+    }
     return _db!;
   }
 

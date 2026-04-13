@@ -59,7 +59,12 @@ void main() {
   }) {
     return ProviderContainer(
       overrides: [
-        sessionLocalCacheProvider.overrideWithValue(cache ?? SessionLocalCache(dbPath: inMemoryDatabasePath)),
+        sessionLocalCacheProvider.overrideWith((ref) {
+          if (cache != null) return cache;
+          final c = SessionLocalCache(dbPath: inMemoryDatabasePath);
+          ref.onDispose(c.close);
+          return c;
+        }),
         sessionRepositoryProvider.overrideWithValue(repo ?? FakeSessionRepository()),
         // Pas de SharedPreferences en test — mode fixe walking
         transportModeProvider.overrideWith(() => _FakeTransportModeNotifier()),

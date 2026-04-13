@@ -23,24 +23,38 @@ class SessionStatusBar extends ConsumerStatefulWidget {
 class _SessionStatusBarState extends ConsumerState<SessionStatusBar> {
   Timer? _timer;
 
-  @override
-  void initState() {
-    super.initState();
-    // Tick toutes les secondes pour mettre à jour la durée affichée
+  void _startTimer() {
+    if (_timer != null) return;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
   }
 
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void _syncTimer(SessionState sessionState) {
+    if (sessionState == SessionState.idle) {
+      _stopTimer();
+    } else {
+      _startTimer();
+    }
+  }
+
   @override
   void dispose() {
-    _timer?.cancel();
+    _stopTimer();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionStateProvider);
+    // Démarrer/arrêter le tick selon l'état — pas de rebuild inutile quand idle
+    _syncTimer(sessionState);
+
     if (sessionState == SessionState.idle) return const SizedBox.shrink();
 
     final metrics = ref.watch(sessionMetricsProvider);

@@ -85,6 +85,10 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.sessionSummary,
+      redirect: (context, state) {
+        if (state.extra is! Session) return AppRoutes.map;
+        return null;
+      },
       builder: (context, state) => SessionSummaryScreen(
         session: state.extra! as Session,
       ),
@@ -104,6 +108,10 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionState = ref.watch(sessionStateProvider);
+    // S'assurer que SessionLifecycleNotifier est instancié dès que le scaffold
+    // est monté — sans ce watch, le notifier n'est jamais construit et
+    // _startSession() n'est jamais appelé lors du passage à active.
+    ref.watch(sessionLifecycleProvider);
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     // Hauteur bottom nav Material 3 ≈ 56dp + safe area
     const bottomNavHeight = 56.0;

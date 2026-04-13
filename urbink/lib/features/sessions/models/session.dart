@@ -58,6 +58,11 @@ class Session {
   // Firestore
   // ---------------------------------------------------------------------------
 
+  /// Champs mutables mis à jour à chaque sauvegarde.
+  ///
+  /// `createdAt` est volontairement absent : il est écrit une seule fois
+  /// lors de la création initiale via [toFirestoreCreate], de façon à ne pas
+  /// être écrasé lors des resynchronisations offline.
   Map<String, dynamic> toFirestore() {
     return {
       'sessionStart': Timestamp.fromDate(sessionStart),
@@ -65,6 +70,14 @@ class Session {
       'mode': mode.firestoreValue,
       'streetIds': streetIds,
       'distanceMeters': distanceMeters,
+    };
+  }
+
+  /// Champs complets pour la création initiale du document Firestore.
+  /// Inclut `createdAt: serverTimestamp()` qui ne doit être écrit qu'une fois.
+  Map<String, dynamic> toFirestoreCreate() {
+    return {
+      ...toFirestore(),
       'createdAt': FieldValue.serverTimestamp(),
     };
   }
