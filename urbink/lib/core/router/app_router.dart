@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:urbink/features/map/screens/map_screen.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
+import 'package:urbink/shared/constants/spacing.dart';
+import 'package:urbink/shared/widgets/transport_mode_selector.dart';
 import 'package:urbink/shared/widgets/urbink_bottom_nav.dart';
+import 'package:urbink/shared/widgets/urbink_bottom_sheet.dart';
 
 // Routes nommées — éviter les chaînes magiques dans le code
 abstract final class AppRoutes {
@@ -118,17 +121,35 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
       bottomNavigationBar: UrbinkBottomNav(
         currentIndex: navigationShell.currentIndex,
         sessionState: sessionState,
-        onTabSelected: (index) {
+        onTabSelected: (index) async {
           if (index == 2) {
-            // Bouton Démarrer/Pause — navigue vers /start ET bascule l'état de session
+            final current = ref.read(sessionStateProvider);
+            if (current == SessionState.idle) {
+              // Première mise en route : afficher la sélection de mode avant de démarrer
+              if (!context.mounted) return;
+              final confirmed = await showUrbinkBottomSheet<bool>(
+                context: context,
+                child: const _StartSessionSheet(),
+              );
+              if (confirmed == true && context.mounted) {
+                ref.read(sessionStateProvider.notifier).state =
+                    SessionState.active;
+                navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
+                );
+              }
+              return;
+            }
+            // Session active/pause — bascule sans bottom sheet
+            ref.read(sessionStateProvider.notifier).state =
+                current == SessionState.active
+                    ? SessionState.paused
+                    : SessionState.active;
             navigationShell.goBranch(
               index,
-              // Retap sur l'onglet actif → retour à la route initiale (scroll to top UX)
               initialLocation: index == navigationShell.currentIndex,
             );
-            final current = ref.read(sessionStateProvider);
-            ref.read(sessionStateProvider.notifier).state =
-                current == SessionState.active ? SessionState.paused : SessionState.active;
             return;
           }
           navigationShell.goBranch(
@@ -174,6 +195,49 @@ class _StopSessionButton extends StatelessWidget {
           ),
           child: const Icon(Icons.stop_rounded, color: Colors.white, size: 22),
         ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bottom sheet sélection du mode de transport avant de démarrer une session
+// ---------------------------------------------------------------------------
+
+class _StartSessionSheet extends StatelessWidget {
+  const _StartSessionSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(UrbinkSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Mode de déplacement',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: UrbinkSpacing.md),
+          const Center(child: TransportModeSelector()),
+          const SizedBox(height: UrbinkSpacing.lg),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: UrbinkColors.secondary,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(
+                  double.infinity,
+                  UrbinkSpacing.minTapTarget,
+                ),
+              ),
+              child: const Text('Démarrer la session'),
+            ),
+          ),
+        ],
       ),
     );
   }

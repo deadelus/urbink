@@ -44,9 +44,9 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      // Déclencher l'initialisation puis attendre que _loadFromPrefs se termine
+      // Attente déterministe : on attend la Future exposée par le notifier
       container.read(transportModeProvider);
-      await Future.delayed(const Duration(milliseconds: 50));
+      await container.read(transportModeProvider.notifier).initialized;
 
       expect(container.read(transportModeProvider), TransportMode.cycling);
     });

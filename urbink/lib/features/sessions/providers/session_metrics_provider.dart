@@ -7,21 +7,27 @@ import 'package:urbink/features/sessions/session_state_provider.dart';
 class SessionMetricsNotifier extends Notifier<SessionMetrics> {
   var _disposed = false;
   Position? _lastPosition;
+  // Incrémenté à chaque reset session — invalide les réponses snap-to-road
+  // arrivées après un changement d'état (active→idle).
+  int _sessionToken = 0;
 
   @override
   SessionMetrics build() {
     _disposed = false;
     _lastPosition = null;
+    _sessionToken++;
     ref.onDispose(() => _disposed = true);
 
     ref.listen(sessionStateProvider, (previous, next) {
       if (previous == SessionState.idle && next == SessionState.active) {
         // Nouvelle session — réinitialiser avec un nouveau startTime
         _lastPosition = null;
+        _sessionToken++;
         state = SessionMetrics(sessionStartTime: DateTime.now());
       } else if (next == SessionState.idle) {
         // Session terminée — remettre à zéro
         _lastPosition = null;
+        _sessionToken++;
         state = const SessionMetrics();
       }
       // paused → active (reprise) : on conserve startTime et les métriques
@@ -35,6 +41,9 @@ class SessionMetricsNotifier extends Notifier<SessionMetrics> {
   }
 
   Future<void> _onPosition(Position position) async {
+    // Capture le token avant l'appel réseau
+    final token = _sessionToken;
+
     // Calcul de la distance depuis la dernière position connue
     final last = _lastPosition;
     final additionalDistance = last != null
@@ -51,7 +60,8 @@ class SessionMetricsNotifier extends Notifier<SessionMetrics> {
     final snapService = ref.read(snapToRoadServiceProvider);
     final streetId = await snapService.snapToRoad(position);
 
-    if (_disposed) return;
+    // Réponse obsolète : session réinitialisée entre-temps
+    if (_disposed || token != _sessionToken) return;
 
     final current = state;
     final updatedStreets = {...current.exploredStreetIds};

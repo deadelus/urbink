@@ -5,15 +5,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/sessions/providers/gps_tracking_provider.dart';
 import 'package:urbink/features/sessions/providers/session_metrics_provider.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
+import 'package:urbink/shared/constants/colors.dart';
+import 'package:urbink/shared/constants/typography.dart';
 
 /// Pill flottant top-center affichant les métriques de la session en cours.
 ///
 /// Affiché uniquement quand la session est active ou en pause.
-/// Fond #1E1610 @ 85% d'opacité, mis à jour toutes les secondes.
+/// Fond [UrbinkColors.onSurface] @ 85% d'opacité, mis à jour toutes les secondes.
 ///
 /// Indicateur GPS :
 ///   - Vert fixe → signal acquis
-///   - Orange pulsant → acquisition en cours
+///   - Orange pulsant → acquisition en cours (arrêté si `disableAnimations`)
 class SessionCounter extends ConsumerStatefulWidget {
   const SessionCounter({super.key});
 
@@ -34,9 +36,11 @@ class _SessionCounterState extends ConsumerState<SessionCounter>
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
-    // Mise à jour toutes les secondes pour le chronomètre HH:MM:SS
+    // Tick toutes les secondes — setState ignoré si la session est idle
     _tickSub = Stream<void>.periodic(const Duration(seconds: 1)).listen((_) {
-      if (mounted) setState(() {});
+      if (mounted && ref.read(sessionStateProvider) != SessionState.idle) {
+        setState(() {});
+      }
     });
   }
 
@@ -47,6 +51,19 @@ class _SessionCounterState extends ConsumerState<SessionCounter>
     super.dispose();
   }
 
+  /// Contrôle le pulse : arrêté quand le signal GPS est acquis ou que
+  /// l'utilisateur a activé "Réduire les animations".
+  void _updatePulseAnimation({
+    required bool hasSignal,
+    required bool disableAnimations,
+  }) {
+    if (hasSignal || disableAnimations) {
+      if (_pulseController.isAnimating) _pulseController.stop();
+    } else if (!_pulseController.isAnimating) {
+      _pulseController.repeat(reverse: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionStateProvider);
@@ -54,12 +71,18 @@ class _SessionCounterState extends ConsumerState<SessionCounter>
 
     final metrics = ref.watch(sessionMetricsProvider);
     final hasGpsSignal = ref.watch(gpsPositionStreamProvider).hasValue;
+    final disableAnimations = MediaQuery.of(context).disableAnimations;
 
+    _updatePulseAnimation(
+      hasSignal: hasGpsSignal,
+      disableAnimations: disableAnimations,
+    );
+
+    // Format HH:MM — conforme à la spec AC story 2.4
     final elapsed = metrics.elapsed;
-    final h = elapsed.inHours;
+    final h = elapsed.inHours.toString().padLeft(2, '0');
     final m = elapsed.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = elapsed.inSeconds.remainder(60).toString().padLeft(2, '0');
-    final timeStr = h > 0 ? '$h:$m:$s' : '$m:$s';
+    final timeStr = '$h:$m';
 
     return SafeArea(
       child: Align(
@@ -68,7 +91,7 @@ class _SessionCounterState extends ConsumerState<SessionCounter>
           padding: const EdgeInsets.only(top: 8),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1610).withValues(alpha: 0.85),
+              color: UrbinkColors.onSurface.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Padding(
@@ -86,10 +109,10 @@ class _SessionCounterState extends ConsumerState<SessionCounter>
                     '${metrics.streetCount} rues · '
                     '${metrics.distanceKm.toStringAsFixed(1)}km · '
                     '$timeStr',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 13,
-                      fontFamily: 'Inter',
+                      fontFamily: UrbinkTypography.bodyFamily,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -119,12 +142,15 @@ class _GpsSignalDot extends StatelessWidget {
         width: 8,
         height: 8,
         decoration: const BoxDecoration(
-          color: Color(0xFF5A7A5A), // Vert Sauge — signal acquis
+          color: UrbinkColors.streetExplored, // Vert Sauge — signal acquis
           shape: BoxShape.circle,
         ),
       );
     }
 
+    // Pulse orange — acquisition en cours
+    // Le controller est déjà arrêté par le parent si disableAnimations == true :
+    // on affiche alors un dot orange statique.
     return AnimatedBuilder(
       animation: pulseController,
       builder: (_, _) => Opacity(
@@ -133,7 +159,7 @@ class _GpsSignalDot extends StatelessWidget {
           width: 8,
           height: 8,
           decoration: const BoxDecoration(
-            color: Colors.orange, // Pulse orange — acquisition en cours
+            color: Colors.orange,
             shape: BoxShape.circle,
           ),
         ),

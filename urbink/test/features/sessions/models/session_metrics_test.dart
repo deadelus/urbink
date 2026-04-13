@@ -49,7 +49,4 @@ void main() {
     });
   });
 
-  group('TransportMode', () {
-    // Tests dans transport_mode_test.dart
-  });
 }
