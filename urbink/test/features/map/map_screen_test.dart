@@ -4,8 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:urbink/features/map/screens/map_screen.dart';
+import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 
 Widget _wrap(Widget child) => ProviderScope(
+      overrides: [
+        // Pas de Firebase en test — uid null → crash recovery skippé
+        currentUidProvider.overrideWithValue(null),
+      ],
       child: MaterialApp(home: Scaffold(body: child)),
     );
 

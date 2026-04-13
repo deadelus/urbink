@@ -16,6 +16,11 @@ import 'package:uuid/uuid.dart';
 
 const _uuid = Uuid();
 
+/// UID de l'utilisateur courant — injectable en test pour éviter Firebase.initializeApp().
+final currentUidProvider = Provider<String?>((ref) {
+  return FirebaseAuth.instance.currentUser?.uid;
+});
+
 /// Provider du repository Firestore (injectable en test).
 final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
   return FirestoreSessionRepository();
@@ -72,7 +77,7 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
     if (_isStarting) return;
     _isStarting = true;
 
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = ref.read(currentUidProvider);
     if (uid == null) {
       _isStarting = false;
       return;
@@ -184,7 +189,7 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
     if (_isSyncing) return;
     _isSyncing = true;
     try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final uid = ref.read(currentUidProvider);
       if (uid == null) return;
 
       final cache = ref.read(sessionLocalCacheProvider);

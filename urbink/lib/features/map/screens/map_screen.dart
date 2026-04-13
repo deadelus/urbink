@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +51,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     // Crash recovery — vérification au premier rendu
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final uid = ref.read(currentUidProvider);
       if (uid == null) return;
       final crashService = ref.read(crashRecoveryServiceProvider);
       final interrupted = await crashService.checkForInterruptedSession(uid);
