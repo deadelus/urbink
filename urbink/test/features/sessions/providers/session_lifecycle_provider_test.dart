@@ -163,7 +163,7 @@ void main() {
       // Session retournée malgré l'échec Firestore
       expect(result, isNotNull);
       // Elle est dans sqflite (non-syncée)
-      final unsynced = await cache.getUnsyncedSessions();
+      final unsynced = await cache.getUnsyncedSessions('user-test');
       expect(unsynced, hasLength(1));
       expect(unsynced.first.sessionId, 'offline-id');
     });
@@ -192,7 +192,7 @@ void main() {
           .read(sessionLifecycleProvider.notifier)
           .cancelInterrupted('crash-id');
 
-      expect(await cache.getInterruptedSession(), isNull);
+      expect(await cache.getInterruptedSession('user-test'), isNull);
     });
   });
 

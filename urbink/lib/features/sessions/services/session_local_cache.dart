@@ -72,14 +72,17 @@ class SessionLocalCache {
     );
   }
 
-  /// Retourne la session interrompue (session_end IS NULL AND synced = 0).
+  /// Retourne la session interrompue de l'utilisateur [userId]
+  /// (session_end IS NULL AND synced = 0).
   ///
-  /// Utilisé pour le crash recovery au lancement de l'app.
-  Future<Session?> getInterruptedSession() async {
+  /// Filtrage par userId pour éviter d'afficher une session d'un autre
+  /// compte sur un device partagé (logout/login).
+  Future<Session?> getInterruptedSession(String userId) async {
     final db = await _getDb();
     final rows = await db.query(
       _kTable,
-      where: 'session_end IS NULL AND synced = 0',
+      where: 'session_end IS NULL AND synced = 0 AND user_id = ?',
+      whereArgs: [userId],
       orderBy: 'session_start DESC',
       limit: 1,
     );
@@ -87,12 +90,16 @@ class SessionLocalCache {
     return Session.fromSqflite(rows.first);
   }
 
-  /// Retourne toutes les sessions non-synchronisées avec Firestore.
-  Future<List<Session>> getUnsyncedSessions() async {
+  /// Retourne toutes les sessions non-synchronisées de [userId].
+  ///
+  /// Filtrage par userId pour éviter de re-syncer des sessions
+  /// appartenant à un ancien compte après un logout/login.
+  Future<List<Session>> getUnsyncedSessions(String userId) async {
     final db = await _getDb();
     final rows = await db.query(
       _kTable,
-      where: 'synced = 0 AND session_end IS NOT NULL',
+      where: 'synced = 0 AND session_end IS NOT NULL AND user_id = ?',
+      whereArgs: [userId],
     );
     return rows.map(Session.fromSqflite).toList();
   }

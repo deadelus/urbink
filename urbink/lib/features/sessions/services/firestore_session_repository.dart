@@ -13,13 +13,23 @@ class FirestoreSessionRepository implements SessionRepository {
 
   @override
   Future<void> saveSession(Session session) async {
-    // Première écriture — inclut createdAt (serverTimestamp) pour dater la création.
-    await _firestore
+    final ref = _firestore
         .collection('users')
         .doc(session.userId)
         .collection('sessions')
-        .doc(session.sessionId)
-        .set(session.toFirestoreCreate());
+        .doc(session.sessionId);
+
+    // Transaction : inclut createdAt (serverTimestamp) uniquement à la création.
+    // Si le document existe déjà (ex: appelé au stop après un save au démarrage),
+    // on merge sans toucher à createdAt.
+    await _firestore.runTransaction((txn) async {
+      final snap = await txn.get(ref);
+      if (snap.exists) {
+        txn.set(ref, session.toFirestore(), SetOptions(merge: true));
+      } else {
+        txn.set(ref, session.toFirestoreCreate());
+      }
+    });
   }
 
   @override

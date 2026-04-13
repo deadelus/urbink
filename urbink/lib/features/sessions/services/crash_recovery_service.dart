@@ -10,8 +10,8 @@ class CrashRecoveryService {
 
   CrashRecoveryService(this._cache);
 
-  /// Retourne la session interrompue si elle existe, `null` sinon.
-  Future<Session?> checkForInterruptedSession() async {
-    return _cache.getInterruptedSession();
+  /// Retourne la session interrompue de [userId] si elle existe, `null` sinon.
+  Future<Session?> checkForInterruptedSession(String userId) async {
+    return _cache.getInterruptedSession(userId);
   }
 }

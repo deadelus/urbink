@@ -41,7 +41,7 @@ void main() {
       final active = makeSession();
       await cache.insertSession(active);
 
-      final interrupted = await cache.getInterruptedSession();
+      final interrupted = await cache.getInterruptedSession('user-abc');
       expect(interrupted, isNotNull);
       expect(interrupted!.sessionId, 'sess-1');
       expect(interrupted.sessionEnd, isNull);
@@ -51,7 +51,7 @@ void main() {
       final done = makeSession(end: DateTime(2026, 4, 14, 10, 30));
       await cache.insertSession(done);
 
-      final interrupted = await cache.getInterruptedSession();
+      final interrupted = await cache.getInterruptedSession('user-abc');
       expect(interrupted, isNull);
     });
 
@@ -65,7 +65,7 @@ void main() {
       await cache.insertSession(old);
       await cache.insertSession(recent);
 
-      final interrupted = await cache.getInterruptedSession();
+      final interrupted = await cache.getInterruptedSession('user-abc');
       expect(interrupted!.sessionId, 'sess-recent');
     });
   });
@@ -84,7 +84,7 @@ void main() {
       await cache.updateSession(updated);
 
       // Après update, session_end != null → plus retournée par getInterruptedSession
-      final interrupted = await cache.getInterruptedSession();
+      final interrupted = await cache.getInterruptedSession('user-abc');
       expect(interrupted, isNull);
     });
   });
@@ -95,12 +95,12 @@ void main() {
       final done = makeSession(end: end);
       await cache.insertSession(done);
 
-      final beforeSync = await cache.getUnsyncedSessions();
+      final beforeSync = await cache.getUnsyncedSessions('user-abc');
       expect(beforeSync.length, 1);
 
       await cache.markSynced('sess-1');
 
-      final afterSync = await cache.getUnsyncedSessions();
+      final afterSync = await cache.getUnsyncedSessions('user-abc');
       expect(afterSync, isEmpty);
     });
   });
@@ -112,7 +112,7 @@ void main() {
 
       await cache.markCancelled('sess-1');
 
-      final interrupted = await cache.getInterruptedSession();
+      final interrupted = await cache.getInterruptedSession('user-abc');
       expect(interrupted, isNull);
     });
   });
@@ -127,7 +127,7 @@ void main() {
       await cache.insertSession(active);
       await cache.insertSession(done);
 
-      final unsynced = await cache.getUnsyncedSessions();
+      final unsynced = await cache.getUnsyncedSessions('user-abc');
       expect(unsynced.length, 1);
       expect(unsynced.first.sessionId, 'done');
     });

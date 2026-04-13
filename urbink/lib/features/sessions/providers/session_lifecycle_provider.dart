@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -31,10 +33,14 @@ final connectivityChangesProvider =
 /// State : [Session?] — null si aucune session active.
 class SessionLifecycleNotifier extends Notifier<Session?> {
   var _disposed = false;
+  var _isStarting = false;
+  var _isSyncing = false;
 
   @override
   Session? build() {
     _disposed = false;
+    _isStarting = false;
+    _isSyncing = false;
     ref.onDispose(() => _disposed = true);
 
     // Écoute sessionStateProvider : idle→active → démarrer la session
@@ -62,8 +68,15 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
   // ---------------------------------------------------------------------------
 
   Future<void> _startSession(TransportMode mode) async {
+    // Verrou ré-entrance : idle→active→paused→active rapide ne crée qu'une session.
+    if (_isStarting) return;
+    _isStarting = true;
+
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
+    if (uid == null) {
+      _isStarting = false;
+      return;
+    }
 
     final sessionId = _uuid.v4();
     final session = Session(
@@ -78,6 +91,7 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
     // Persistance locale immédiate (NFR6)
     final cache = ref.read(sessionLocalCacheProvider);
     await cache.insertSession(session);
+    _isStarting = false;
     if (_disposed) return;
 
     state = session;
@@ -113,8 +127,9 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
 
     state = null;
 
-    // Tentative Firestore (avec marquage synced si succès)
-    await _saveToFirestoreAndMark(completed);
+    // Tentative Firestore en arrière-plan — ne bloque pas la transition UI vers le récap.
+    // Si l'appel échoue, synced=0 dans sqflite → sera re-synced à la reconnexion.
+    unawaited(_saveToFirestoreAndMark(completed));
 
     return completed;
   }
@@ -165,9 +180,15 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
   }
 
   Future<void> _syncPending() async {
+    // Verrou anti-rafale : un seul appel de sync actif à la fois.
+    if (_isSyncing) return;
+    _isSyncing = true;
     try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
       final cache = ref.read(sessionLocalCacheProvider);
-      final unsynced = await cache.getUnsyncedSessions();
+      final unsynced = await cache.getUnsyncedSessions(uid);
       if (unsynced.isEmpty || _disposed) return;
 
       final repo = ref.read(sessionRepositoryProvider);
@@ -179,6 +200,8 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
       }
     } catch (e) {
       debugPrint('SessionLifecycle: sync pending failed: $e');
+    } finally {
+      _isSyncing = false;
     }
   }
 }
