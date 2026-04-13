@@ -8,6 +8,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/map/providers/map_state_provider.dart';
 import 'package:urbink/shared/constants/map_constants.dart';
+import 'package:urbink/shared/widgets/map_street_overlay.dart';
 import 'package:urbink/shared/widgets/urbink_snack_bar.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
 
@@ -109,6 +110,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             theme: _mapStyle!.theme,
             sprites: _mapStyle!.sprites,
           ),
+          const MapStreetOverlay(),
           Align(
             alignment: Alignment.bottomRight,
             child: Padding(
