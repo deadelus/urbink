@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/map/providers/map_state_provider.dart';
 import 'package:urbink/shared/constants/map_constants.dart';
 import 'package:urbink/shared/widgets/map_street_overlay.dart';
+import 'package:urbink/shared/widgets/session_counter.dart';
 import 'package:urbink/shared/widgets/urbink_snack_bar.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
 
@@ -96,37 +97,42 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
 
     return Scaffold(
-      body: FlutterMap(
-        mapController: _mapController,
-        options: const MapOptions(
-          initialCenter: MapConstants.initialCenter,
-          initialZoom: MapConstants.initialZoom,
-          minZoom: MapConstants.minZoom,
-          maxZoom: MapConstants.maxZoom,
-        ),
+      body: Stack(
         children: [
-          VectorTileLayer(
-            tileProviders: _mapStyle!.providers,
-            theme: _mapStyle!.theme,
-            sprites: _mapStyle!.sprites,
-          ),
-          const MapStreetOverlay(),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 4, bottom: 4),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                  child: Text('© MapTiler © OSM', style: TextStyle(fontSize: 9)),
+          FlutterMap(
+            mapController: _mapController,
+            options: const MapOptions(
+              initialCenter: MapConstants.initialCenter,
+              initialZoom: MapConstants.initialZoom,
+              minZoom: MapConstants.minZoom,
+              maxZoom: MapConstants.maxZoom,
+            ),
+            children: [
+              VectorTileLayer(
+                tileProviders: _mapStyle!.providers,
+                theme: _mapStyle!.theme,
+                sprites: _mapStyle!.sprites,
+              ),
+              const MapStreetOverlay(),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 4, bottom: 4),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      child: Text('© MapTiler © OSM', style: TextStyle(fontSize: 9)),
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
+          const SessionCounter(),
         ],
       ),
     );
