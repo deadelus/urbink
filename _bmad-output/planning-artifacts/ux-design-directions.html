@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Urbink — Design Directions v3 · Strava-like</title>
+<title>Urbink — Design Directions v4 · Carte Unifiée</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -235,24 +235,25 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
 <div class="hdr">
   <div>
     <div class="hdr-logo">Urbink</div>
-    <div class="hdr-sub">Design Directions v3 · Ergonomie Strava · Carte monde</div>
+    <div class="hdr-sub">Design Directions v4 · Carte Unifiée · Session depuis bottom sheet</div>
   </div>
-  <div class="hdr-tag">5 Écrans · Bottom nav Strava</div>
+  <div class="hdr-tag">5 Onglets · Carte &amp; Sorties intégrés</div>
 </div>
 
 <!-- TABS -->
 <div class="tabs">
-  <div class="tab active" onclick="show(1,this)">D1 · Accueil (Feed social)</div>
-  <div class="tab" onclick="show(2,this)">D2 · Carte &amp; Itinéraires</div>
-  <div class="tab" onclick="show(3,this)">D3 · Démarrer</div>
-  <div class="tab" onclick="show(4,this)">D4 · Challenges</div>
-  <div class="tab" onclick="show(5,this)">D5 · Vous (Historique)</div>
-  <div class="tab" onclick="show(6,this)">D6 · 📷</div>
-  <div class="tab" onclick="show(7,this)">↔ Navigation</div>
+  <div class="tab active" onclick="show(2,this)">🗺️ Carte</div>
+  <div class="tab" onclick="show(3,this)">▶ Session active</div>
+  <div class="tab" onclick="show(8,this)">🔍 Filtres POI</div>
+  <div class="tab" onclick="show(1,this)">👥 Social</div>
+  <div class="tab" onclick="show(4,this)">🏆 Badges</div>
+  <div class="tab" onclick="show(5,this)">👤 Profil</div>
+  <div class="tab" onclick="show(6,this)">📷 Pins</div>
+  <div class="tab" onclick="show(7,this)">↔ Navigation v4</div>
 </div>
 
-<!-- ═══════════════════════════ D1 · ACCUEIL ═══════════════════════════ -->
-<div class="scr active" id="s1">
+<!-- ═══════════════════════════ D1 · SOCIAL ═══════════════════════════ -->
+<div class="scr" id="s1">
   <div class="scr-num">Direction 01</div>
   <div class="scr-title">Accueil — Fil d'actu des gens suivis</div>
   <div class="scr-desc">Accueil = feed social chronologique des activités des personnes suivies. Chaque sortie d'un ami : avatar, titre, mini-carte du tracé, stats (rues/km/durée), badges débloqués, photos épinglées, et réactions. Comme Strava feed.</div>
@@ -372,15 +373,15 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
           </div>
 
           <div class="bnav">
+            <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
             <div class="bni active">
               <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
-              <div class="bni-icon">🏠</div>
-              <div class="bni-label" style="color:#B8832E;">Accueil</div>
+              <div class="bni-icon">👥</div>
+              <div class="bni-label" style="color:#B8832E;">Social</div>
             </div>
-            <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
-            <div class="bni-center"><div class="bni-center-btn">▶</div><div class="bni-center-label">Démarrer</div></div>
-            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
-            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
           </div>
         </div>
       </div>
@@ -408,11 +409,11 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
   </div>
 </div>
 
-<!-- ═══════════════════════════ D2 · CARTE MONDE ═══════════════════════════ -->
-<div class="scr" id="s2">
-  <div class="scr-num">Direction 02</div>
-  <div class="scr-title">Carte — Recherche &amp; Itinéraires</div>
-  <div class="scr-desc">Onglet Carte : la carte monde toujours plein écran. En haut : barre de recherche translucide (lieux, adresses, monuments). En bas : panneau "Mes itinéraires" partiellement visible avec itinéraires enregistrés + bouton "Créer un itinéraire". Tap sur un itinéraire = tracé affiché sur la carte.</div>
+<!-- ═══════════════════════════ D2 · CARTE ═══════════════════════════ -->
+<div class="scr active" id="s2">
+  <div class="scr-num">Direction 02 — v4</div>
+  <div class="scr-title">Carte — Mode passif (invité) + Filtres POI</div>
+  <div class="scr-desc">L'app <strong>track et colorie les rues passivement dès le lancement</strong> — aucun "Démarrer" requis. Mode invité complet : ouvrir = explorer = voir ses zones. <strong>Toggle Zones</strong> bas-gauche toujours visible (avec ou sans session). Chips filtres POI sous la searchbar. Bottom sheet = opt-in pour enregistrer une session avec stats.</div>
 
   <div class="phones">
 
@@ -424,62 +425,37 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
           <div class="notch" style="background:#1E1610;"></div>
           <div class="map-wrap">
             <svg width="100%" height="100%" viewBox="0 0 220 476" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;">
-              <!-- Ocean / world bg -->
-              <rect width="220" height="476" fill="#D4DEEA"/>
-              <!-- Europe continent simplified -->
-              <path d="M60 80 L90 70 L130 65 L160 75 L170 95 L175 120 L165 145 L150 155 L140 170 L125 165 L110 175 L95 165 L80 160 L65 150 L55 130 L52 105 Z" fill="#E8E4DA" stroke="#D0C8BC" stroke-width="0.5"/>
-              <!-- Iberian peninsula -->
-              <path d="M65 150 L55 130 L50 145 L45 165 L55 175 L72 172 L80 160 Z" fill="#E8E4DA" stroke="#D0C8BC" stroke-width="0.5"/>
-              <!-- France highlight -->
-              <path d="M80 120 L100 112 L118 118 L122 135 L115 148 L100 155 L85 148 L78 135 Z" fill="#DDD6C8" stroke="#C8C0B0" stroke-width="0.8"/>
-              <!-- UK -->
-              <path d="M85 88 L95 83 L100 92 L95 102 L85 98 Z" fill="#E8E4DA" stroke="#D0C8BC" stroke-width="0.5"/>
-              <!-- Germany/central Europe -->
-              <path d="M115 95 L135 90 L145 105 L140 120 L125 122 L112 112 Z" fill="#E8E4DA" stroke="#D0C8BC" stroke-width="0.5"/>
-              <!-- Scandinavia -->
-              <path d="M110 65 L125 60 L132 72 L126 82 L115 80 L108 72 Z" fill="#E8E4DA" stroke="#D0C8BC" stroke-width="0.5"/>
-              <!-- Italy -->
-              <path d="M118 138 L125 122 L135 128 L138 148 L130 162 L120 155 L116 145 Z" fill="#E8E4DA" stroke="#D0C8BC" stroke-width="0.5"/>
-              <!-- Afrique du nord -->
-              <path d="M45 195 L90 188 L130 192 L175 200 L180 230 L160 240 L120 238 L80 235 L45 228 Z" fill="#E0D8CA" stroke="#C8C0B0" stroke-width="0.5"/>
-              <!-- Mediterranean sea -->
-              <path d="M55 175 L80 168 L118 155 L140 162 L165 160 L175 175 L180 195 L175 200 L130 192 L90 188 L55 195 Z" fill="#C8D8E8" opacity="0.7"/>
-              <!-- North Africa label -->
-
-              <!-- Paris marker area -->
-              <circle cx="98" cy="130" r="6" fill="rgba(184,131,46,0.3)" stroke="#B8832E" stroke-width="1.5"/>
-              <circle cx="98" cy="130" r="3" fill="#B8832E"/>
-
-              <!-- Paris label -->
-              <rect x="88" y="118" width="28" height="10" rx="3" fill="rgba(250,250,247,0.9)"/>
-              <text x="102" y="126" text-anchor="middle" font-size="6" font-weight="600" fill="#1E1610">Paris</text>
-              <text x="102" y="138" text-anchor="middle" font-size="5" fill="#5A7A5A">284 rues ✓</text>
-
-              <!-- Other cities dots -->
-              <circle cx="118" cy="100" r="2" fill="rgba(90,90,90,0.4)"/>
-              <text x="122" y="103" font-size="4.5" fill="#6B6B6B">Berlin</text>
-              <circle cx="91" cy="96" r="2" fill="rgba(90,90,90,0.4)"/>
-              <text x="83" y="93" font-size="4.5" fill="#6B6B6B">Londres</text>
-              <circle cx="125" cy="140" r="2" fill="rgba(90,90,90,0.4)"/>
-              <text x="128" y="143" font-size="4.5" fill="#6B6B6B">Rome</text>
-              <circle cx="75" cy="155" r="2" fill="rgba(90,90,90,0.4)"/>
-              <text x="62" y="153" font-size="4.5" fill="#6B6B6B">Madrid</text>
-
-              <!-- North America (far left, partial) -->
-              <path d="M0 100 L30 90 L35 120 L25 155 L10 160 L0 145 Z" fill="#E0D8CA" stroke="#C8C0B0" stroke-width="0.4" opacity="0.7"/>
-              <!-- Middle East partial -->
-              <path d="M175 140 L200 138 L210 160 L205 180 L185 175 L172 162 Z" fill="#DDD6C8" stroke="#C8C0B0" stroke-width="0.4" opacity="0.8"/>
-
-              <!-- Grid lines (latitude/longitude subtle) -->
-              <line x1="0" y1="120" x2="220" y2="120" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
-              <line x1="0" y1="180" x2="220" y2="180" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
-              <line x1="0" y1="240" x2="220" y2="240" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
-              <line x1="70" y1="0" x2="70" y2="476" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
-              <line x1="140" y1="0" x2="140" y2="476" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
-
+              <!-- Paris street map — niveau rue -->
+              <rect width="220" height="476" fill="#EEE9E1"/>
+              <!-- Blocs bâtiments -->
+              <rect x="10" y="40" width="50" height="38" rx="3" fill="#DDD8CE"/>
+              <rect x="68" y="34" width="68" height="46" rx="3" fill="#DDD8CE"/>
+              <rect x="144" y="40" width="70" height="40" rx="3" fill="#DDD8CE"/>
+              <rect x="10" y="96" width="38" height="52" rx="3" fill="#DDD8CE"/>
+              <rect x="56" y="90" width="80" height="50" rx="3" fill="#DDD8CE"/>
+              <rect x="144" y="94" width="70" height="54" rx="3" fill="#DDD8CE"/>
+              <rect x="10" y="162" width="56" height="46" rx="3" fill="#DDD8CE"/>
+              <rect x="74" y="155" width="62" height="55" rx="3" fill="#DDD8CE"/>
+              <rect x="144" y="160" width="70" height="48" rx="3" fill="#DDD8CE"/>
+              <rect x="10" y="228" width="48" height="50" rx="3" fill="#DDD8CE"/>
+              <rect x="66" y="222" width="74" height="58" rx="3" fill="#DDD8CE"/>
+              <rect x="148" y="228" width="66" height="50" rx="3" fill="#DDD8CE"/>
+              <!-- Rues -->
+              <rect x="0" y="80" width="220" height="10" fill="#FAFAF7"/>
+              <rect x="0" y="148" width="220" height="9" fill="#FAFAF7"/>
+              <rect x="0" y="218" width="220" height="9" fill="#FAFAF7"/>
+              <rect x="56" y="0" width="10" height="300" fill="#FAFAF7"/>
+              <rect x="138" y="0" width="10" height="300" fill="#FAFAF7"/>
+              <!-- Rues explorées (tracking passif) -->
+              <rect x="0" y="80" width="148" height="10" fill="#5A7A5A" opacity="0.60"/>
+              <rect x="56" y="0" width="10" height="90" fill="#5A7A5A" opacity="0.55"/>
+              <rect x="138" y="0" width="10" height="85" fill="#5A7A5A" opacity="0.52"/>
+              <!-- Position GPS -->
+              <circle cx="84" cy="84" r="7" fill="#B8832E"/>
+              <circle cx="84" cy="84" r="14" fill="#B8832E" opacity="0.18"/>
               <!-- Zoom indicator -->
-              <rect x="8" y="340" width="40" height="12" rx="4" fill="rgba(250,250,247,0.85)"/>
-              <text x="28" y="349" text-anchor="middle" font-size="6" font-weight="500" fill="#4A3D30">Europe</text>
+              <rect x="8" y="340" width="50" height="12" rx="4" fill="rgba(250,250,247,0.85)"/>
+              <text x="33" y="349" text-anchor="middle" font-size="6" font-weight="500" fill="#4A3D30">Paris · zoom 15</text>
             </svg>
           </div>
 
@@ -495,43 +471,126 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
             <span style="font-size:11px;color:#8C7B6A;flex:1;">Rechercher un lieu, monument…</span>
           </div>
 
-          <!-- Bottom panel: Mes itinéraires -->
-          <div style="position:absolute;bottom:74px;left:0;right:0;background:rgba(250,250,247,.97);backdrop-filter:blur(16px);border-radius:16px 16px 0 0;border-top:1px solid rgba(212,200,180,.6);padding:10px 14px 8px;z-index:20;">
-            <div style="width:36px;height:4px;background:#D4C8B4;border-radius:2px;margin:0 auto 10px;"></div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <div style="font-size:12px;font-weight:700;color:#1E1610;">Mes itinéraires</div>
-              <div style="font-size:10px;font-weight:600;color:#B8832E;">＋ Créer</div>
+          <!-- POI filter chips -->
+          <div style="position:absolute;top:88px;left:0;right:0;z-index:19;display:flex;gap:6px;padding:0 10px;overflow-x:auto;">
+            <div style="flex-shrink:0;background:rgba(184,131,46,.15);border:1.5px solid #B8832E;border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:4px;">
+              <span style="font-size:11px;">🏛️</span><span style="font-size:9px;font-weight:600;color:#B8832E;white-space:nowrap;">Monuments</span>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#F4F2ED;border-radius:10px;margin-bottom:6px;">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#B8832E,#D4A848);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">⛪</div>
-              <div style="flex:1;"><div style="font-size:11px;font-weight:600;color:#1E1610;">Tour des Églises</div><div style="font-size:9px;color:#8C7B6A;">24 étapes · 4,2km</div></div>
-              <span style="font-size:10px;color:#B8832E;font-weight:600;">▶</span>
+            <div style="flex-shrink:0;background:rgba(250,250,247,.88);border:1px solid rgba(212,200,180,.7);border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:4px;">
+              <span style="font-size:11px;">🌿</span><span style="font-size:9px;font-weight:500;color:#4A3D30;white-space:nowrap;">Parcs</span>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#F4F2ED;border-radius:10px;">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#5A7A5A,#3D5C3D);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🌿</div>
-              <div style="flex:1;"><div style="font-size:11px;font-weight:600;color:#1E1610;">Parcs du 5ème</div><div style="font-size:9px;color:#8C7B6A;">8 étapes · 2,8km</div></div>
-              <span style="font-size:10px;color:#B8832E;font-weight:600;">▶</span>
+            <div style="flex-shrink:0;background:rgba(250,250,247,.88);border:1px solid rgba(212,200,180,.7);border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:4px;">
+              <span style="font-size:11px;">🏪</span><span style="font-size:9px;font-weight:500;color:#4A3D30;white-space:nowrap;">Marchés</span>
+            </div>
+            <div style="flex-shrink:0;background:rgba(250,250,247,.88);border:1px solid rgba(212,200,180,.7);border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:4px;">
+              <span style="font-size:11px;">🍽️</span><span style="font-size:9px;font-weight:500;color:#4A3D30;white-space:nowrap;">Restos</span>
+            </div>
+            <div style="flex-shrink:0;background:rgba(30,22,16,.75);border-radius:20px;padding:4px 10px;display:flex;align-items:center;gap:3px;">
+              <span style="font-size:9px;font-weight:600;color:#FAFAF7;white-space:nowrap;">Voir plus →</span>
             </div>
           </div>
 
+          <!-- Toggle zones explorées — persistant bas-gauche -->
+          <div style="position:absolute;bottom:148px;left:10px;z-index:20;background:rgba(90,122,90,.9);backdrop-filter:blur(8px);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+            <span style="font-size:12px;">🟢</span>
+            <span style="font-size:9px;font-weight:600;color:#FAFAF7;">Zones explorées</span>
+          </div>
+
+          <!-- Bottom sheet collapsed — juste le handle visible -->
+          <div style="position:absolute;bottom:74px;left:0;right:0;background:rgba(250,250,247,.96);backdrop-filter:blur(12px);border-radius:16px 16px 0 0;border-top:1px solid rgba(212,200,180,.6);padding:8px 14px 6px;z-index:20;">
+            <div style="width:36px;height:4px;background:#D4C8B4;border-radius:2px;margin:0 auto 6px;"></div>
+            <div style="font-size:9px;color:#8C7B6A;text-align:center;">↑ Dérouler pour démarrer une sortie</div>
+          </div>
+
           <div class="bnav">
-            <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
             <div class="bni active">
               <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
               <div class="bni-icon">🗺️</div>
               <div class="bni-label" style="color:#B8832E;">Carte</div>
             </div>
-            <div class="bni-center"><div class="bni-center-btn">▶</div><div class="bni-center-label">Démarrer</div></div>
-            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
-            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Carte avec itinéraire affiché -->
+    <!-- Sheet déroulé — Enregistrer une sortie (opt-in) -->
     <div class="pw">
-      <div class="pc">Itinéraire sélectionné sur carte</div>
+      <div class="pc">Sheet déroulé — Démarrer une sortie</div>
+      <div class="phone">
+        <div class="ph">
+          <div class="notch" style="background:#1E1610;"></div>
+          <div class="map-wrap">
+            <svg width="100%" height="100%" viewBox="0 0 220 476" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;">
+              <rect width="220" height="476" fill="#EEE9E1"/>
+              <rect x="10" y="40" width="50" height="38" rx="3" fill="#DDD8CE"/>
+              <rect x="68" y="34" width="68" height="46" rx="3" fill="#DDD8CE"/>
+              <rect x="144" y="40" width="70" height="40" rx="3" fill="#DDD8CE"/>
+              <rect x="10" y="96" width="38" height="52" rx="3" fill="#DDD8CE"/>
+              <rect x="56" y="90" width="80" height="50" rx="3" fill="#DDD8CE"/>
+              <rect x="0" y="80" width="220" height="10" fill="#FAFAF7"/>
+              <rect x="0" y="148" width="220" height="9" fill="#FAFAF7"/>
+              <rect x="56" y="0" width="10" height="220" fill="#FAFAF7"/>
+              <rect x="138" y="0" width="10" height="220" fill="#FAFAF7"/>
+              <!-- Rues déjà colorées (tracking passif) -->
+              <rect x="0" y="80" width="110" height="10" fill="#5A7A5A" opacity="0.65"/>
+              <rect x="56" y="0" width="10" height="90" fill="#5A7A5A" opacity="0.60"/>
+              <circle cx="84" cy="84" r="7" fill="#B8832E"/>
+              <circle cx="84" cy="84" r="14" fill="#B8832E" opacity="0.18"/>
+            </svg>
+          </div>
+          <div class="sb">
+            <div class="sb-t" style="color:#1E1610;">9:41</div>
+            <div class="sb-i" style="color:#1E1610;">📶🔋</div>
+          </div>
+          <!-- Toggle zones visible même sans session -->
+          <div style="position:absolute;bottom:226px;left:10px;z-index:20;background:rgba(90,122,90,.9);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+            <span style="font-size:10px;">🟢</span><span style="font-size:8px;font-weight:600;color:#FAFAF7;">Zones ON</span>
+          </div>
+          <!-- Sheet déroulé — peek -->
+          <div style="position:absolute;bottom:74px;left:0;right:0;background:rgba(250,250,247,.98);backdrop-filter:blur(16px);border-radius:16px 16px 0 0;border-top:1px solid rgba(212,200,180,.6);padding:10px 14px 10px;z-index:20;">
+            <div style="width:36px;height:4px;background:#D4C8B4;border-radius:2px;margin:0 auto 10px;"></div>
+            <div style="font-size:9px;font-weight:700;color:#8C7B6A;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Démarrer une sortie</div>
+            <div style="display:flex;gap:7px;margin-bottom:10px;">
+              <div style="flex:1;background:rgba(90,122,90,.14);border:2px solid #5A7A5A;border-radius:12px;padding:10px 6px;text-align:center;">
+                <div style="font-size:18px;margin-bottom:3px;">🚶</div>
+                <div style="font-size:10px;font-weight:700;color:#1E1610;">Circuit libre</div>
+                <div style="font-size:8px;color:#5A7A5A;font-weight:600;margin-top:2px;">✓ Par défaut</div>
+              </div>
+              <div style="flex:1;background:#F4F2ED;border:1.5px solid #D4C8B4;border-radius:12px;padding:10px 6px;text-align:center;">
+                <div style="font-size:18px;margin-bottom:3px;">🗺️</div>
+                <div style="font-size:10px;font-weight:700;color:#1E1610;">Itinéraire</div>
+                <div style="font-size:8px;color:#8C7B6A;margin-top:2px;">Mode GPS →</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;background:#F4F2ED;border-radius:8px;padding:6px 10px;margin-bottom:8px;">
+              <span style="font-size:10px;">🤖</span>
+              <span style="font-size:9px;color:#6B5D4F;">Mode détecté automatiquement · GPS prêt</span>
+              <div style="width:6px;height:6px;border-radius:3px;background:#5A7A5A;margin-left:auto;"></div>
+            </div>
+            <div style="background:#5A7A5A;border-radius:12px;padding:11px;text-align:center;font-size:12px;font-weight:700;color:white;box-shadow:0 3px 12px rgba(90,122,90,.4);">▶ Démarrer la sortie</div>
+          </div>
+          <div class="bnav">
+            <div class="bni active">
+              <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
+              <div class="bni-icon">🗺️</div>
+              <div class="bni-label" style="color:#B8832E;">Carte</div>
+            </div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte avec itinéraire affiché + sélecteur navigation -->
+    <div class="pw">
+      <div class="pc">Itinéraire → Sélecteur navigation</div>
       <div class="phone">
         <div class="ph">
           <div class="notch" style="background:#1E1610;"></div>
@@ -599,17 +658,61 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
             <span style="font-size:16px;">▶</span>
             <span style="font-size:13px;font-weight:700;color:white;">Démarrer cet itinéraire</span>
           </div>
+          <!-- Overlay sélecteur navigation — s'affiche au tap sur Démarrer -->
+          <div style="position:absolute;inset:0;background:rgba(30,22,16,.45);z-index:30;border-radius:inherit;"></div>
+          <div style="position:absolute;bottom:74px;left:0;right:0;background:#FAFAF7;border-radius:18px 18px 0 0;padding:14px 16px 10px;z-index:35;">
+            <div style="width:36px;height:4px;background:#D4C8B4;border-radius:2px;margin:0 auto 12px;"></div>
+            <div style="font-size:10px;font-weight:700;color:#1E1610;margin-bottom:4px;">Naviguer avec…</div>
+            <div style="font-size:8px;color:#8C7B6A;margin-bottom:10px;">Tour des Églises · 4,2 km · mode vélo détecté</div>
+            <!-- Option GPS intégré -->
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:rgba(184,131,46,.10);border:1.5px solid #B8832E;border-radius:10px;margin-bottom:6px;">
+              <span style="font-size:20px;">🗺️</span>
+              <div style="flex:1;">
+                <div style="font-size:10px;font-weight:700;color:#1E1610;">GPS intégré Urbink</div>
+                <div style="font-size:8px;color:#5A7A5A;">Rues colorées en temps réel · recommandé</div>
+              </div>
+              <div style="width:14px;height:14px;border-radius:7px;border:2px solid #B8832E;background:#B8832E;display:flex;align-items:center;justify-content:center;"><div style="width:6px;height:6px;border-radius:3px;background:white;"></div></div>
+            </div>
+            <!-- Option Plans -->
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:#F4F2ED;border:1px solid #D4C8B4;border-radius:10px;margin-bottom:6px;">
+              <span style="font-size:20px;">🍎</span>
+              <div style="flex:1;">
+                <div style="font-size:10px;font-weight:600;color:#1E1610;">Plans Apple</div>
+                <div style="font-size:8px;color:#8C7B6A;">Marche · vélo · voiture</div>
+              </div>
+              <div style="width:14px;height:14px;border-radius:7px;border:1.5px solid #D4C8B4;"></div>
+            </div>
+            <!-- Option Google Maps -->
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:#F4F2ED;border:1px solid #D4C8B4;border-radius:10px;margin-bottom:6px;">
+              <span style="font-size:20px;">📍</span>
+              <div style="flex:1;">
+                <div style="font-size:10px;font-weight:600;color:#1E1610;">Google Maps</div>
+                <div style="font-size:8px;color:#8C7B6A;">Marche · vélo · voiture</div>
+              </div>
+              <div style="width:14px;height:14px;border-radius:7px;border:1.5px solid #D4C8B4;"></div>
+            </div>
+            <!-- Option Waze — voiture uniquement -->
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:#F4F2ED;border:1px solid #D4C8B4;border-radius:10px;margin-bottom:10px;">
+              <span style="font-size:20px;">🚗</span>
+              <div style="flex:1;">
+                <div style="font-size:10px;font-weight:600;color:#1E1610;">Waze</div>
+                <div style="font-size:8px;color:#A84E2C;">Voiture uniquement</div>
+              </div>
+              <div style="width:14px;height:14px;border-radius:7px;border:1.5px solid #D4C8B4;opacity:.5;"></div>
+            </div>
+            <div style="background:#B8832E;border-radius:10px;padding:10px;text-align:center;font-size:11px;font-weight:700;color:white;">C'est parti ▶</div>
+          </div>
 
           <div class="bnav">
-            <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
             <div class="bni active">
               <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
               <div class="bni-icon">🗺️</div>
               <div class="bni-label" style="color:#B8832E;">Carte</div>
             </div>
-            <div class="bni-center"><div class="bni-center-btn">▶</div><div class="bni-center-label">Démarrer</div></div>
-            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
-            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
           </div>
         </div>
       </div>
@@ -618,36 +721,38 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
   </div>
 
   <div class="panel">
-    <div class="panel-title">Carte — Recherche &amp; Itinéraires</div>
+    <div class="panel-title">Carte — Modèle passif + opt-in session</div>
     <div class="pgrid">
-      <div class="pi">🔍 Barre de recherche translucide en haut (lieux, adresses, monuments)</div>
-      <div class="pi">📋 Panneau bas "Mes itinéraires" partiellement visible — swipe up pour dérouler</div>
-      <div class="pi">➕ Bouton "Créer un itinéraire" dans le panneau bas</div>
-      <div class="pi">🗺️ Tap sur itinéraire enregistré = tracé rouge affiché sur la carte</div>
-      <div class="pi">🌍 Carte monde contexte géo réel — pas d'île Paris isolée</div>
-      <div class="pi">📷 Bouton 📷 flottant sur la carte pendant session active</div>
+      <div class="pi">🟢 <strong>Tracking passif toujours actif</strong> — les rues se colorient sans aucune action. Mode invité complet.</div>
+      <div class="pi">🔘 Toggle "Zones ON/OFF" bas-gauche — persistant, visible même sans session enregistrée</div>
+      <div class="pi">🔍 Searchbar + chips filtres POI scroll horizontal + "Voir plus →" (écran filtres complets)</div>
+      <div class="pi">↑ Bottom sheet collapsed par défaut — "Dérouler pour démarrer une sortie"</div>
+      <div class="pi">▶ Sheet déroulé : Circuit libre (enregistrement stats) ou Itinéraire (mode GPS, pas d'enregistrement) · Transport auto-détecté</div>
+      <div class="pi">🗺️ Itinéraire = GPS uniquement — check-points mémorisés (itérations), progression réinitialisable, zones explorées jamais reset</div>
+      <div class="pi">🚗 Sélecteur navigation : GPS intégré / Waze (voiture uniquement) / Plans / Google Maps</div>
     </div>
     <div class="tags">
-      <div class="tag hl">Recherche lieux</div>
-      <div class="tag hl">Mes itinéraires</div>
-      <div class="tag">Créer itinéraire</div>
-      <div class="tag">Carte monde</div>
-      <div class="tag">Panneau bas</div>
+      <div class="tag hl">Tracking passif toujours</div>
+      <div class="tag hl">Toggle zones persistent</div>
+      <div class="tag hl">Session = opt-in</div>
+      <div class="tag">Chips POI filtres</div>
+      <div class="tag">Transport auto-détecté</div>
+      <div class="tag">Nav externe optionnelle</div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════ D3 · DÉMARRER ═══════════════════════════ -->
+<!-- ═══════════════════════════ D3 · SESSION ACTIVE ═══════════════════════════ -->
 <div class="scr" id="s3">
-  <div class="scr-num">Direction 03</div>
-  <div class="scr-title">Démarrer — Libre ou Itinéraire</div>
-  <div class="scr-desc">Tap sur le bouton central "Démarrer" → bottom sheet avec deux choix clairs : Parcours libre (explorer sans destination, GPS colorie tout) ou Suivre un itinéraire (choisir parmi ses itinéraires enregistrés). Choix du mode de transport dans les deux cas.</div>
+  <div class="scr-num">Direction 03 — v4</div>
+  <div class="scr-title">Carte — Session active (Circuit libre &amp; Itinéraire)</div>
+  <div class="scr-desc">⚠️ v4 : <strong>Circuit libre</strong> = mode par défaut, enregistre les stats (rues, distance, durée). <strong>Itinéraire</strong> = mode GPS uniquement (comme un GPS classique) — pas d'enregistrement ; les check-points sont mémorisés pour les itérations, la progression est réinitialisable. Les <strong>zones explorées (rues colorées) ne sont jamais reset</strong>. Transport auto-détecté (vitesse GPS). SessionStatusBar Terra Cotta (circuit libre) ou Ocre (itinéraire). Bouton Arrêter 52px bas-droite. <strong>Sélecteur de navigation uniquement en mode itinéraire</strong> — GPS intégré ou app externe (Waze voiture uniquement · Plans · Google Maps) ; circuit libre n'a pas de navigation externe.</div>
 
   <div class="phones">
 
-    <!-- Choix libre vs itinéraire -->
+    <!-- Circuit libre par défaut — sheet peek avec bouton démarrer -->
     <div class="pw">
-      <div class="pc">Choix : Libre ou Itinéraire</div>
+      <div class="pc">Circuit libre — démarrage direct</div>
       <div class="phone">
         <div class="ph">
           <div class="notch" style="background:#1E1610;"></div>
@@ -679,61 +784,51 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
             <div class="sb-i" style="color:#1E1610;">📶🔋</div>
           </div>
 
-          <!-- Bottom sheet Démarrer -->
+          <!-- Bottom sheet: Carte & Sorties — Circuit libre sélectionné par défaut -->
           <div style="position:absolute;bottom:74px;left:0;right:0;background:rgba(250,250,247,.98);backdrop-filter:blur(16px);border-radius:18px 18px 0 0;border-top:1px solid rgba(212,200,180,.6);padding:12px 16px 10px;z-index:25;">
-            <div style="width:36px;height:4px;background:#D4C8B4;border-radius:2px;margin:0 auto 14px;"></div>
-            <div style="font-size:14px;font-weight:700;color:#1E1610;margin-bottom:12px;">Démarrer une sortie</div>
+            <div style="width:36px;height:4px;background:#D4C8B4;border-radius:2px;margin:0 auto 10px;"></div>
+            <div style="font-size:9px;font-weight:600;color:#8C7B6A;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Démarrer une sortie</div>
 
-            <!-- 2 choix principaux -->
-            <div style="display:flex;gap:8px;margin-bottom:12px;">
-              <!-- Parcours libre -->
-              <div style="flex:1;background:rgba(184,131,46,.1);border:2px solid #B8832E;border-radius:14px;padding:12px 8px;text-align:center;">
-                <div style="font-size:24px;margin-bottom:4px;">🚶</div>
-                <div style="font-size:11px;font-weight:700;color:#1E1610;">Parcours libre</div>
-                <div style="font-size:9px;color:#6B5D4F;margin-top:2px;line-height:1.4;">Explorer sans destination imposée</div>
+            <!-- Circuit libre sélectionné (vert) — Itinéraire secondaire -->
+            <div style="display:flex;gap:7px;margin-bottom:10px;">
+              <div style="flex:1;background:rgba(90,122,90,.14);border:2px solid #5A7A5A;border-radius:12px;padding:10px 6px;text-align:center;">
+                <div style="font-size:20px;margin-bottom:3px;">🚶</div>
+                <div style="font-size:10px;font-weight:700;color:#1E1610;">Circuit libre</div>
+                <div style="font-size:8px;color:#5A7A5A;font-weight:600;margin-top:2px;">✓ Par défaut</div>
               </div>
-              <!-- Suivre itinéraire -->
-              <div style="flex:1;background:#F4F2ED;border:1.5px solid #D4C8B4;border-radius:14px;padding:12px 8px;text-align:center;">
-                <div style="font-size:24px;margin-bottom:4px;">📋</div>
-                <div style="font-size:11px;font-weight:700;color:#1E1610;">Itinéraire</div>
-                <div style="font-size:9px;color:#6B5D4F;margin-top:2px;line-height:1.4;">Suivre un itinéraire enregistré</div>
+              <div style="flex:1;background:#F4F2ED;border:1.5px solid #D4C8B4;border-radius:12px;padding:10px 6px;text-align:center;">
+                <div style="font-size:20px;margin-bottom:3px;">🗺️</div>
+                <div style="font-size:10px;font-weight:700;color:#1E1610;">Itinéraire</div>
+                <div style="font-size:8px;color:#8C7B6A;margin-top:2px;">Choisir →</div>
               </div>
             </div>
 
-            <!-- Mode de transport -->
-            <div style="display:flex;gap:6px;margin-bottom:12px;">
-              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(184,131,46,.12);border:1.5px solid #B8832E;border-radius:10px;padding:8px 0;">
-                <span style="font-size:18px;">🚶</span>
-                <span style="font-size:9px;font-weight:600;color:#B8832E;">Marche</span>
-              </div>
-              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:#F4F2ED;border:1px solid #D4C8B4;border-radius:10px;padding:8px 0;">
-                <span style="font-size:18px;">🚴</span>
-                <span style="font-size:9px;color:#6B5D4F;">Vélo</span>
-              </div>
-              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:#F4F2ED;border:1px solid #D4C8B4;border-radius:10px;padding:8px 0;">
-                <span style="font-size:18px;">🚗</span>
-                <span style="font-size:9px;color:#6B5D4F;">Voiture</span>
-              </div>
+            <!-- Transport auto-détecté (info, pas de choix) -->
+            <div style="display:flex;align-items:center;gap:6px;background:#F4F2ED;border-radius:8px;padding:7px 10px;margin-bottom:10px;">
+              <span style="font-size:12px;">🤖</span>
+              <span style="font-size:9px;color:#6B5D4F;">Mode auto-détecté · GPS prêt</span>
+              <div style="width:6px;height:6px;border-radius:3px;background:#5A7A5A;margin-left:auto;box-shadow:0 0 0 2px rgba(90,122,90,.2);"></div>
             </div>
 
-            <!-- GPS + Start -->
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
-              <div style="width:8px;height:8px;border-radius:4px;background:#5A7A5A;flex-shrink:0;box-shadow:0 0 0 3px rgba(90,122,90,.2);"></div>
-              <span style="font-size:10px;color:#5A7A5A;font-weight:500;">GPS prêt · Paris, France</span>
-            </div>
-            <div style="background:#B8832E;border-radius:14px;padding:13px;text-align:center;font-size:14px;font-weight:700;color:white;box-shadow:0 4px 16px rgba(184,131,46,.4);">▶ Démarrer</div>
+            <div style="background:#5A7A5A;border-radius:14px;padding:12px;text-align:center;font-size:13px;font-weight:700;color:white;box-shadow:0 4px 14px rgba(90,122,90,.4);">▶ Démarrer</div>
+          </div>
+
+          <!-- Toggle zones explorées — persistant bas-gauche -->
+          <div style="position:absolute;bottom:152px;left:10px;z-index:20;background:rgba(90,122,90,.9);backdrop-filter:blur(8px);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+            <span style="font-size:10px;">🟢</span>
+            <span style="font-size:8px;font-weight:600;color:#FAFAF7;">Zones ON</span>
           </div>
 
           <div class="bnav">
-            <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
-            <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
-            <div class="bni-center">
-              <!-- Repos → Vert Sauge #5A7A5A + ▶ -->
-              <div class="bni-center-btn">▶</div>
-              <div class="bni-center-label">Démarrer</div>
+            <div class="bni active">
+              <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
+              <div class="bni-icon">🗺️</div>
+              <div class="bni-label" style="color:#B8832E;">Carte</div>
             </div>
-            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
-            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
           </div>
         </div>
       </div>
@@ -780,32 +875,33 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
             <div class="sb-i" style="color:#1E1610;">📶🔋</div>
           </div>
 
-          <!-- Float counter session -->
-          <div class="float-counter">
-            <div class="fc-left">
-              <div class="fc-pulse"></div>
-              <div>
-                <div class="fc-label">Session · Libre · Paris</div>
-                <div class="fc-value">12 rues explorées</div>
-              </div>
-            </div>
-            <div class="fc-time">28:14</div>
+          <!-- SessionStatusBar — Terra Cotta, haut de carte -->
+          <div style="position:absolute;top:40px;left:0;right:0;background:#A84E2C;height:44px;display:flex;align-items:center;padding:0 12px;gap:8px;z-index:25;">
+            <div style="width:7px;height:7px;border-radius:50%;background:#FAFAF7;opacity:.8;animation:pulse 1.4s infinite;flex-shrink:0;"></div>
+            <span style="font-size:10px;font-weight:600;color:#FAFAF7;flex:1;">Circuit libre · 12 rues · 0,8 km</span>
+            <span style="font-size:10px;font-weight:700;color:rgba(250,250,247,.9);">28:14</span>
           </div>
           <!-- Photo button -->
           <div class="float-cam">📷</div>
-          <!-- Bouton Arrêter session — top-right, rouge, visible uniquement pendant une session -->
-          <div class="stop-btn">⏹</div>
+          <!-- Bouton Arrêter — bas-droite, 52px, zone pouce -->
+          <div style="position:absolute;bottom:82px;right:10px;width:52px;height:52px;border-radius:14px;background:#C0392B;display:flex;align-items:center;justify-content:center;font-size:18px;color:white;z-index:20;box-shadow:0 4px 12px rgba(192,57,43,.45);">■</div>
+          <!-- Toggle zones explorées — bas-gauche persistant -->
+          <div style="position:absolute;bottom:90px;left:10px;z-index:20;background:rgba(90,122,90,.9);backdrop-filter:blur(8px);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+            <span style="font-size:10px;">🟢</span>
+            <span style="font-size:8px;font-weight:600;color:#FAFAF7;">Zones ON</span>
+          </div>
 
           <div class="bnav">
-            <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
-            <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
-            <div class="bni-center">
-              <!-- Session active → Ocre #B8832E + ⏸ (pause) -->
-              <div class="bni-center-btn" style="background:#B8832E;box-shadow:0 4px 14px rgba(184,131,46,.45);">⏸</div>
-              <div class="bni-center-label" style="color:#B8832E;">Pause</div>
+            <!-- v4: session active — nav plate, StatusBar en haut, bouton Arrêter bas-droite -->
+            <div class="bni active">
+              <div style="width:20px;height:2px;background:#A84E2C;border-radius:1px;margin-bottom:2px;"></div>
+              <div class="bni-icon">🗺️</div>
+              <div class="bni-label" style="color:#A84E2C;">Carte</div>
             </div>
-            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
-            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
           </div>
         </div>
       </div>
@@ -814,22 +910,25 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
   </div>
 
   <div class="panel">
-    <div class="panel-title">Démarrer — Parcours libre ou Itinéraire</div>
+    <div class="panel-title">Session active — v4 Décisions clés</div>
     <div class="pgrid">
-      <div class="pi">▶ Tap bouton central → bottom sheet avec 2 choix principaux</div>
-      <div class="pi">🚶 Parcours libre : GPS colorie les rues, sans destination imposée</div>
-      <div class="pi">📋 Suivre un itinéraire : liste des itinéraires enregistrés</div>
-      <div class="pi">🚶🚴🚗 Mode de transport (marche/vélo/voiture) dans les deux cas</div>
-      <div class="pi">🟢 GPS ready indicator avant de démarrer</div>
-      <div class="pi">⏸ Session active : bouton central passe en Ocre #B8832E + icône pause ⏸</div>
-      <div class="pi">🔴 Bouton Arrêter (⏹) rouge #C0392B apparaît top-right pendant la session</div>
+      <div class="pi">🚶 Circuit libre = mode par défaut — enregistre stats (distance, temps, rues) · tap ▶ suffit</div>
+      <div class="pi">🗺️ Itinéraire = mode GPS uniquement — <strong>pas d'enregistrement</strong>, check-points mémorisés pour itérations futures, progression réinitialisable</div>
+      <div class="pi">🟢 Zones explorées (rues colorées) = <strong>jamais reset</strong> — indépendantes du mode et de la progression itinéraire</div>
+      <div class="pi">🤖 Transport auto-détecté via vitesse GPS (marche &lt;7km/h · vélo &lt;30km/h · voiture au-dessus)</div>
+      <div class="pi">🟩 SessionStatusBar 44px Terra Cotta #A84E2C (circuit libre) ou Ocre #B8832E (itinéraire GPS)</div>
+      <div class="pi">■ Bouton Arrêter 52×52px rouge bas-droite — rounded rect, zone pouce, modale Pause / Stop</div>
+      <div class="pi">🟢 Toggle "Zones explorées" persistent bas-gauche — visible même hors session</div>
+      <div class="pi">↗ Circuit libre : flèche directionnelle vers POI sélectionné (pas de tracé)</div>
+      <div class="pi">🚗 Itinéraire : GPS intégré ou app externe (Waze voiture / Plans / Google Maps)</div>
     </div>
     <div class="tags">
-      <div class="tag hl">Parcours libre</div>
-      <div class="tag hl">Suivre itinéraire</div>
-      <div class="tag">Choix 2 modes</div>
-      <div class="tag">GPS ready</div>
-      <div class="tag">Bouton Arrêter top-right</div>
+      <div class="tag hl">Circuit libre = enregistrement</div>
+      <div class="tag hl">Itinéraire = GPS seul</div>
+      <div class="tag hl">Zones explorées jamais reset</div>
+      <div class="tag">Transport auto-détecté</div>
+      <div class="tag">SessionStatusBar 44px</div>
+      <div class="tag">Nav externe Waze/Plans/Maps</div>
     </div>
   </div>
 </div>
@@ -933,15 +1032,15 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
           </div>
 
           <div class="bnav">
-            <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
             <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
-            <div class="bni-center"><div class="bni-center-btn">▶</div><div class="bni-center-label">Démarrer</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
             <div class="bni active">
               <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
               <div class="bni-icon">🏆</div>
-              <div class="bni-label" style="color:#B8832E;">Challenges</div>
+              <div class="bni-label" style="color:#B8832E;">Badges</div>
             </div>
-            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
           </div>
         </div>
       </div>
@@ -1030,15 +1129,15 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
           </div>
 
           <div class="bnav">
-            <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
             <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
-            <div class="bni-center"><div class="bni-center-btn">▶</div><div class="bni-center-label">Démarrer</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
             <div class="bni active">
               <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
               <div class="bni-icon">🏆</div>
-              <div class="bni-label" style="color:#B8832E;">Challenges</div>
+              <div class="bni-label" style="color:#B8832E;">Badges</div>
             </div>
-            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
           </div>
         </div>
       </div>
@@ -1188,10 +1287,10 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
           </div>
 
           <div class="bnav">
-            <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
             <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
-            <div class="bni-center"><div class="bni-center-btn">▶</div><div class="bni-center-label">Démarrer</div></div>
-            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
             <div class="bni active">
               <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
               <div class="bni-icon">👤</div>
@@ -1275,10 +1374,10 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
           </div>
 
           <div class="bnav">
-            <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
             <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
-            <div class="bni-center"><div class="bni-center-btn">▶</div><div class="bni-center-label">Démarrer</div></div>
-            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
             <div class="bni active">
               <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
               <div class="bni-icon">👤</div>
@@ -1465,15 +1564,15 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
           </div>
 
           <div class="bnav">
-            <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
             <div class="bni active">
               <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
               <div class="bni-icon">🗺️</div>
               <div class="bni-label" style="color:#B8832E;">Carte</div>
             </div>
-            <div class="bni-center"><div class="bni-center-btn">▶</div><div class="bni-center-label">Démarrer</div></div>
-            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
-            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
           </div>
         </div>
       </div>
@@ -1503,9 +1602,9 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
 
 <!-- ═══════════════════════════ D7 · NAVIGATION ═══════════════════════════ -->
 <div class="scr" id="s7">
-  <div class="scr-num">Navigation</div>
-  <div class="scr-title">Bottom Nav — Anatomie Strava</div>
-  <div class="scr-desc">La bottom nav Strava adaptée Urbink : 5 onglets, bouton central proéminent. Repos : bouton Vert Sauge #5A7A5A ▶. Session active : bouton Ocre #B8832E ⏸ (pause) + bouton Arrêter rouge ⏹ top-right.</div>
+  <div class="scr-num">Navigation v4</div>
+  <div class="scr-title">Bottom Nav — Carte Unifiée (v4)</div>
+  <div class="scr-desc">⚠️ v4 : Le bouton central "Démarrer" est supprimé. La bottom nav est plate : 5 onglets égaux — Carte 🗺️, Parcours 🧭, Social 👥, Badges 🏆, Profil 👤. La session se gère depuis le bottom sheet de l'onglet Carte. Session active : SessionStatusBar (44px) en haut de la carte + bouton Arrêter (52px) bas-droite.</div>
 
   <div class="phones">
 
@@ -1539,15 +1638,15 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
             </div>
           </div>
           <div class="bnav">
+            <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
             <div class="bni active">
               <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
-              <div class="bni-icon">🏠</div>
-              <div class="bni-label" style="color:#B8832E;">Accueil</div>
+              <div class="bni-icon">👥</div>
+              <div class="bni-label" style="color:#B8832E;">Social</div>
             </div>
-            <div class="bni"><div class="bni-icon">🗺️</div><div class="bni-label">Carte</div></div>
-            <div class="bni-center"><div class="bni-center-btn">▶</div><div class="bni-center-label">Démarrer</div></div>
-            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
-            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
           </div>
         </div>
       </div>
@@ -1575,19 +1674,15 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
             </div>
           </div>
           <div class="bnav">
-            <div class="bni"><div class="bni-icon">🏠</div><div class="bni-label">Accueil</div></div>
             <div class="bni active">
-              <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
+              <div style="width:20px;height:2px;background:#A84E2C;border-radius:1px;margin-bottom:2px;"></div>
               <div class="bni-icon">🗺️</div>
-              <div class="bni-label" style="color:#B8832E;">Carte</div>
+              <div class="bni-label" style="color:#A84E2C;">Carte</div>
             </div>
-            <div class="bni-center">
-              <!-- Session active → Ocre #B8832E + ⏸ -->
-              <div class="bni-center-btn" style="background:#B8832E;box-shadow:0 4px 14px rgba(184,131,46,.45);">⏸</div>
-              <div class="bni-center-label" style="color:#B8832E;">Pause</div>
-            </div>
-            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Challenges</div></div>
-            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Vous</div></div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
           </div>
         </div>
       </div>
@@ -1596,28 +1691,213 @@ body { font-family:'Inter',sans-serif; background:#E8E5E0; color:#1E1610; }
   </div>
 
   <div class="panel">
-    <div class="panel-title">Bottom Nav — Décisions finales</div>
+    <div class="panel-title">Bottom Nav — Décisions v4</div>
     <div class="pgrid">
-      <div class="pi">🏠 Accueil · 🗺️ Carte · ▶ Démarrer · 🏆 Challenges · 👤 Vous</div>
-      <div class="pi">⭕ Bouton central : 44px, -18px margin-top, cercle proéminent</div>
-      <div class="pi">🟢 Repos : bouton Vert Sauge #5A7A5A ▶ · Session : Ocre #B8832E ⏸</div>
-      <div class="pi">🔴 Bouton Arrêter ⏹ rouge #C0392B — top-right, visible pendant session seulement</div>
+      <div class="pi">🗺️ Carte · 🧭 Parcours · 👥 Social · 🏆 Badges · 👤 Profil</div>
+      <div class="pi">❌ Bouton central supprimé — nav plate 5 onglets égaux, zone pouce optimisée</div>
+      <div class="pi">🟩 Session : SessionStatusBar 44px Terra Cotta (circuit libre) ou Ocre (itinéraire) en haut</div>
+      <div class="pi">🔴 Bouton Arrêter ■ rouge #C0392B — 52px · bas-droite · zone pouce · pendant session seulement</div>
       <div class="pi">📏 Nav height : 74px · Fond blanc chaud 97% · Backdrop blur</div>
-      <div class="pi">📷 Pas de tab 📷 — accessible uniquement via la carte</div>
-      <div class="pi">🌐 Menu overlay accessible depuis le bouton sur la carte (si nécessaire)</div>
+      <div class="pi">⤢ Toggle plein écran bas-gauche — masque nav + bottom sheet (session active seulement)</div>
+      <div class="pi">📷 Pas de tab 📷 — accessible via bouton flottant pendant session active</div>
     </div>
     <div class="tags">
-      <div class="tag hl">5 onglets Strava</div>
-      <div class="tag hl">Challenges (ex-Groupes)</div>
-      <div class="tag">Vous = sorties</div>
-      <div class="tag">Timer live session</div>
+      <div class="tag hl">5 onglets plats v4</div>
+      <div class="tag hl">SessionStatusBar 44px</div>
+      <div class="tag">Carte = hub principal</div>
+      <div class="tag">Arrêter bas-droite 52px</div>
       <div class="tag">74px height</div>
     </div>
   </div>
 </div>
 
+<!-- ═══════════════════════════ S8 · FILTRES POI ═══════════════════════════ -->
+<div class="scr" id="s8">
+  <div class="scr-num">Écran annexe — Filtres POI</div>
+  <div class="scr-title">Filtres POI — Affichage rapide &amp; Écran complet</div>
+  <div class="scr-desc">Deux niveaux de filtres. <strong>Niveau 1 (inline)</strong> : chips scroll horizontal sous la searchbar — 4–5 types courants visibles + bouton "Voir plus →". <strong>Niveau 2 (écran)</strong> : modal/push navigation avec tous les filtres organisés en catégories, multi-sélection, chips de réinitialisation. Tap "Voir plus →" ou swipe depuis les chips ouvre l'écran complet.</div>
+
+  <div class="phones">
+
+    <!-- Niveau 1 : chips inline sur la carte -->
+    <div class="pw">
+      <div class="pc">Chips POI rapides (inline)</div>
+      <div class="phone">
+        <div class="ph">
+          <div class="notch" style="background:#1E1610;"></div>
+          <!-- Carte derrière -->
+          <div class="map-wrap">
+            <svg width="100%" height="100%" viewBox="0 0 220 476" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;">
+              <rect width="220" height="476" fill="#EEE9E1"/>
+              <rect x="10" y="40" width="50" height="38" rx="3" fill="#DDD8CE"/>
+              <rect x="68" y="34" width="68" height="46" rx="3" fill="#DDD8CE"/>
+              <rect x="144" y="40" width="70" height="40" rx="3" fill="#DDD8CE"/>
+              <rect x="10" y="96" width="38" height="52" rx="3" fill="#DDD8CE"/>
+              <rect x="56" y="90" width="80" height="50" rx="3" fill="#DDD8CE"/>
+              <rect x="144" y="94" width="70" height="54" rx="3" fill="#DDD8CE"/>
+              <rect x="10" y="162" width="56" height="46" rx="3" fill="#DDD8CE"/>
+              <rect x="74" y="155" width="62" height="55" rx="3" fill="#DDD8CE"/>
+              <rect x="144" y="160" width="70" height="48" rx="3" fill="#DDD8CE"/>
+              <rect x="0" y="80" width="220" height="10" fill="#FAFAF7"/>
+              <rect x="0" y="148" width="220" height="9" fill="#FAFAF7"/>
+              <rect x="56" y="0" width="10" height="220" fill="#FAFAF7"/>
+              <rect x="138" y="0" width="10" height="220" fill="#FAFAF7"/>
+              <!-- POI markers -->
+              <circle cx="84" cy="120" r="5" fill="#B8832E"/>
+              <text x="84" y="124" text-anchor="middle" font-size="6" fill="white">🏛️</text>
+              <circle cx="138" cy="100" r="5" fill="#5A7A5A"/>
+              <text x="138" y="104" text-anchor="middle" font-size="6" fill="white">🌿</text>
+              <circle cx="60" cy="160" r="5" fill="#A84E2C"/>
+              <text x="60" y="164" text-anchor="middle" font-size="6" fill="white">🏪</text>
+            </svg>
+          </div>
+          <div class="sb">
+            <div class="sb-t" style="color:#1E1610;">9:41</div>
+            <div class="sb-i" style="color:#1E1610;">📶🔋</div>
+          </div>
+          <!-- Search bar -->
+          <div style="position:absolute;top:48px;left:10px;right:10px;background:rgba(250,250,247,.92);backdrop-filter:blur(12px);border-radius:22px;padding:9px 14px;display:flex;align-items:center;gap:8px;z-index:20;border:1px solid rgba(212,200,180,.5);box-shadow:0 4px 16px rgba(0,0,0,.12);">
+            <span style="font-size:14px;color:#8C7B6A;">🔍</span>
+            <span style="font-size:11px;color:#8C7B6A;flex:1;">Rechercher un lieu, monument…</span>
+          </div>
+          <!-- Chips scroll -->
+          <div style="position:absolute;top:88px;left:0;right:0;z-index:19;display:flex;gap:6px;padding:0 10px;overflow-x:auto;scrollbar-width:none;">
+            <div style="flex-shrink:0;background:rgba(184,131,46,.18);border:2px solid #B8832E;border-radius:20px;padding:5px 11px;display:flex;align-items:center;gap:4px;">
+              <span style="font-size:11px;">🏛️</span><span style="font-size:9px;font-weight:700;color:#B8832E;white-space:nowrap;">Monuments</span>
+            </div>
+            <div style="flex-shrink:0;background:rgba(90,122,90,.15);border:2px solid #5A7A5A;border-radius:20px;padding:5px 11px;display:flex;align-items:center;gap:4px;">
+              <span style="font-size:11px;">🌿</span><span style="font-size:9px;font-weight:700;color:#5A7A5A;white-space:nowrap;">Parcs</span>
+            </div>
+            <div style="flex-shrink:0;background:rgba(250,250,247,.88);border:1px solid rgba(212,200,180,.7);border-radius:20px;padding:5px 11px;display:flex;align-items:center;gap:4px;">
+              <span style="font-size:11px;">🏪</span><span style="font-size:9px;font-weight:500;color:#4A3D30;white-space:nowrap;">Marchés</span>
+            </div>
+            <div style="flex-shrink:0;background:rgba(250,250,247,.88);border:1px solid rgba(212,200,180,.7);border-radius:20px;padding:5px 11px;display:flex;align-items:center;gap:4px;">
+              <span style="font-size:11px;">🍽️</span><span style="font-size:9px;font-weight:500;color:#4A3D30;white-space:nowrap;">Restos</span>
+            </div>
+            <div style="flex-shrink:0;background:rgba(250,250,247,.88);border:1px solid rgba(212,200,180,.7);border-radius:20px;padding:5px 11px;display:flex;align-items:center;gap:4px;">
+              <span style="font-size:11px;">☕</span><span style="font-size:9px;font-weight:500;color:#4A3D30;white-space:nowrap;">Cafés</span>
+            </div>
+            <div style="flex-shrink:0;background:rgba(30,22,16,.82);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(0,0,0,.18);">
+              <span style="font-size:9px;font-weight:700;color:#FAFAF7;white-space:nowrap;">Voir plus →</span>
+            </div>
+          </div>
+          <!-- Toggle zones -->
+          <div style="position:absolute;bottom:148px;left:10px;z-index:20;background:rgba(90,122,90,.9);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.2);">
+            <span style="font-size:10px;">🟢</span><span style="font-size:8px;font-weight:600;color:#FAFAF7;">Zones ON</span>
+          </div>
+          <div class="bnav">
+            <div class="bni active">
+              <div style="width:20px;height:2px;background:#B8832E;border-radius:1px;margin-bottom:2px;"></div>
+              <div class="bni-icon">🗺️</div>
+              <div class="bni-label" style="color:#B8832E;">Carte</div>
+            </div>
+            <div class="bni"><div class="bni-icon">🧭</div><div class="bni-label">Parcours</div></div>
+            <div class="bni"><div class="bni-icon">👥</div><div class="bni-label">Social</div></div>
+            <div class="bni"><div class="bni-icon">🏆</div><div class="bni-label">Badges</div></div>
+            <div class="bni"><div class="bni-icon">👤</div><div class="bni-label">Profil</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Niveau 2 : écran complet Filtres POI -->
+    <div class="pw">
+      <div class="pc">Écran Filtres complets</div>
+      <div class="phone">
+        <div class="ph" style="background:#F0EDE8;">
+          <div class="notch" style="background:#1E1610;"></div>
+          <div style="position:absolute;inset:0;overflow-y:auto;padding-bottom:74px;">
+            <!-- AppBar -->
+            <div style="background:#FAFAF7;padding:40px 14px 10px;border-bottom:1px solid #E8E2DA;display:flex;align-items:center;gap:10px;">
+              <span style="font-size:16px;color:#4A3D30;">←</span>
+              <span style="font-size:14px;font-weight:700;color:#1E1610;flex:1;">Filtres POI</span>
+              <span style="font-size:10px;font-weight:600;color:#B8832E;">Réinitialiser</span>
+            </div>
+
+            <!-- Sélection active chips -->
+            <div style="background:#FAFAF7;padding:8px 12px;border-bottom:1px solid #E8E2DA;display:flex;gap:5px;overflow-x:auto;">
+              <div style="flex-shrink:0;background:rgba(184,131,46,.15);border:1.5px solid #B8832E;border-radius:16px;padding:3px 9px;font-size:8px;font-weight:700;color:#B8832E;display:flex;align-items:center;gap:3px;">🏛️ Monuments ✕</div>
+              <div style="flex-shrink:0;background:rgba(90,122,90,.15);border:1.5px solid #5A7A5A;border-radius:16px;padding:3px 9px;font-size:8px;font-weight:700;color:#5A7A5A;display:flex;align-items:center;gap:3px;">🌿 Parcs ✕</div>
+            </div>
+
+            <!-- Catégorie : Patrimoine -->
+            <div style="padding:10px 12px 6px;">
+              <div style="font-size:9px;font-weight:700;color:#8C7B6A;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Patrimoine</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                <div style="background:rgba(184,131,46,.15);border:1.5px solid #B8832E;border-radius:16px;padding:5px 10px;font-size:9px;font-weight:600;color:#B8832E;">🏛️ Monuments</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">⛪ Églises</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">🎭 Théâtres</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">🖼️ Musées</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">🏰 Châteaux</div>
+              </div>
+            </div>
+
+            <!-- Catégorie : Nature -->
+            <div style="padding:10px 12px 6px;border-top:1px solid #E8E2DA;">
+              <div style="font-size:9px;font-weight:700;color:#8C7B6A;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Nature</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                <div style="background:rgba(90,122,90,.15);border:1.5px solid #5A7A5A;border-radius:16px;padding:5px 10px;font-size:9px;font-weight:600;color:#5A7A5A;">🌿 Parcs</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">🌳 Jardins</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">💧 Fontaines</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">🌊 Quais</div>
+              </div>
+            </div>
+
+            <!-- Catégorie : Commerce & Vie locale -->
+            <div style="padding:10px 12px 6px;border-top:1px solid #E8E2DA;">
+              <div style="font-size:9px;font-weight:700;color:#8C7B6A;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Vie locale</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">🏪 Marchés</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">🍽️ Restaurants</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">☕ Cafés</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">🍺 Bars</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">🛒 Boutiques</div>
+              </div>
+            </div>
+
+            <!-- Catégorie : Exploration -->
+            <div style="padding:10px 12px 6px;border-top:1px solid #E8E2DA;">
+              <div style="font-size:9px;font-weight:700;color:#8C7B6A;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Exploration</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">📍 Pins communautaires</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">🔍 Secrets locaux</div>
+                <div style="background:#F4F2ED;border:1px solid #D4C8B4;border-radius:16px;padding:5px 10px;font-size:9px;color:#4A3D30;">🏆 Badges</div>
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <div style="padding:14px 12px;">
+              <div style="background:#B8832E;border-radius:14px;padding:13px;text-align:center;font-size:12px;font-weight:700;color:white;box-shadow:0 4px 14px rgba(184,131,46,.4);">Appliquer les filtres (2)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Filtres POI — Architecture à 2 niveaux</div>
+    <div class="pgrid">
+      <div class="pi">📌 Niveau 1 : chips scroll horizontal sous la searchbar — 4–5 types courants + "Voir plus →"</div>
+      <div class="pi">📋 Niveau 2 : écran dédié (GoRouter push depuis "Voir plus") avec tous les filtres organisés en catégories</div>
+      <div class="pi">✅ Chips actifs = fond coloré + bordure colorée. Chips inactifs = fond #F4F2ED + bordure sable</div>
+      <div class="pi">🔢 Bouton "Appliquer (N)" affiche le nombre de filtres actifs. "Réinitialiser" dans l'AppBar</div>
+      <div class="pi">🏷️ Catégories : Patrimoine · Nature · Vie locale · Exploration</div>
+      <div class="pi">🗺️ Filtres persistants — état sauvegardé en local (UserDefaults) entre les sessions</div>
+    </div>
+    <div class="tags">
+      <div class="tag hl">Chips inline rapides</div>
+      <div class="tag hl">Écran filtres complets</div>
+      <div class="tag">Multi-sélection</div>
+      <div class="tag">Persistant local</div>
+      <div class="tag">4 catégories</div>
+    </div>
+  </div>
+</div>
+
 <div style="background:#1E1610;color:#3A2E1A;padding:18px 48px;text-align:center;font-size:11px;margin-top:28px;">
-  <span style="color:#B8832E;">Urbink</span> · Design v3 · Ergonomie Strava · Carte Monde · 📷s · Challenges
+  <span style="color:#B8832E;">Urbink</span> · Design v4 · Carte Unifiée · Session depuis Bottom Sheet · 5 Onglets plats
 </div>
 
 <script>
