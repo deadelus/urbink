@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:urbink/features/map/screens/map_screen.dart';
 
@@ -9,6 +10,11 @@ Widget _wrap(Widget child) => ProviderScope(
     );
 
 void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
   group('MapScreen', () {
     testWidgets('se construit sans erreur (smoke test)', (tester) async {
       await tester.pumpWidget(_wrap(const MapScreen()));
