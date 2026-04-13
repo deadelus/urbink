@@ -7,10 +7,13 @@ import 'package:urbink/features/sessions/session_state_provider.dart';
 
 class MapStreetOverlayNotifier extends Notifier<MapStreetOverlayState> {
   var _disposed = false;
+  // Séquence pour ignorer les réponses réseau arrivées hors ordre
+  int _callSeq = 0;
 
   @override
   MapStreetOverlayState build() {
     _disposed = false;
+    _callSeq = 0;
     ref.onDispose(() => _disposed = true);
 
     // Écoute le stream GPS — chaque nouvelle position déclenche snap to road
@@ -29,23 +32,23 @@ class MapStreetOverlayNotifier extends Notifier<MapStreetOverlayState> {
   }
 
   Future<void> _onPosition(Position position) async {
+    // Capture la séquence avant l'appel réseau pour détecter les réponses tardives
+    final seq = ++_callSeq;
     final snapService = ref.read(snapToRoadServiceProvider);
     final streetId = await snapService.snapToRoad(position);
 
-    if (_disposed) return;
+    // Réponse obsolète : une position plus récente a déjà été traitée
+    if (_disposed || seq != _callSeq) return;
+
+    // Pas de snap disponible : conserver l'état courant sans rebuild inutile
+    if (streetId == null) return;
 
     final point = LatLng(position.latitude, position.longitude);
     final current = state;
 
-    // Copie profonde pour immutabilité
-    final updated = {
-      for (final e in current.exploredStreets.entries)
-        e.key: List<LatLng>.from(e.value),
-    };
-
-    if (streetId != null) {
-      (updated[streetId] ??= []).add(point);
-    }
+    // Copie superficielle du Map + copie profonde uniquement de la rue concernée
+    final updated = Map<String, List<LatLng>>.of(current.exploredStreets);
+    updated[streetId] = List<LatLng>.from(updated[streetId] ?? [])..add(point);
 
     state = MapStreetOverlayState(
       exploredStreets: updated,
@@ -54,7 +57,10 @@ class MapStreetOverlayNotifier extends Notifier<MapStreetOverlayState> {
   }
 
   /// Réinitialise l'overlay (ex: nouvelle session).
-  void clear() => state = const MapStreetOverlayState();
+  void clear() {
+    _callSeq++; // invalide tout appel réseau en cours
+    state = const MapStreetOverlayState();
+  }
 }
 
 final mapStreetOverlayProvider =
