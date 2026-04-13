@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urbink/features/map/screens/map_screen.dart';
+import 'package:urbink/features/sessions/models/session.dart';
+import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
+import 'package:urbink/features/sessions/providers/session_metrics_provider.dart';
+import 'package:urbink/features/sessions/screens/session_summary_screen.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
+import 'package:urbink/shared/widgets/session_status_bar.dart';
 import 'package:urbink/shared/widgets/transport_mode_selector.dart';
 import 'package:urbink/shared/widgets/urbink_bottom_nav.dart';
 import 'package:urbink/shared/widgets/urbink_bottom_sheet.dart';
@@ -16,15 +21,12 @@ abstract final class AppRoutes {
   static const String start = '/start';
   static const String challenges = '/challenges';
   static const String profile = '/profile';
+  static const String sessionSummary = '/session-summary';
 }
 
 final GoRouter appRouter = GoRouter(
-  // La carte est l'écran principal — ouvrir directement sur l'onglet Carte.
-  // Conformément à l'UX spec : "Carte comme écran principal permanent".
   initialLocation: AppRoutes.map,
   routes: [
-    // StatefulShellRoute préserve le Navigator (et donc l'état de scroll)
-    // de chaque onglet indépendamment — conformité AC Story 1.3 "mémorise sa position".
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
           _ScaffoldWithBottomNav(navigationShell: navigationShell),
@@ -81,11 +83,21 @@ final GoRouter appRouter = GoRouter(
         ),
       ],
     ),
+    GoRoute(
+      path: AppRoutes.sessionSummary,
+      redirect: (context, state) {
+        if (state.extra is! Session) return AppRoutes.map;
+        return null;
+      },
+      builder: (context, state) => SessionSummaryScreen(
+        session: state.extra! as Session,
+      ),
+    ),
   ],
 );
 
 // ---------------------------------------------------------------------------
-// Scaffold principal avec bottom nav + bouton Arrêter session (top-right)
+// Scaffold principal avec bottom nav + SessionStatusBar + bouton Arrêter
 // ---------------------------------------------------------------------------
 
 class _ScaffoldWithBottomNav extends ConsumerWidget {
@@ -96,24 +108,32 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionState = ref.watch(sessionStateProvider);
-    final topPadding = MediaQuery.of(context).padding.top;
+    // S'assurer que SessionLifecycleNotifier est instancié dès que le scaffold
+    // est monté — sans ce watch, le notifier n'est jamais construit et
+    // _startSession() n'est jamais appelé lors du passage à active.
+    ref.watch(sessionLifecycleProvider);
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    // Hauteur bottom nav Material 3 ≈ 56dp + safe area
+    const bottomNavHeight = 56.0;
 
     return Scaffold(
       body: Stack(
         children: [
           navigationShell,
-          // Bouton Arrêter — visible pendant une session active ou en pause
+          // SessionStatusBar — barre Terra Cotta 44px top (sous safe area)
+          Positioned(
+            top: MediaQuery.of(context).padding.top,
+            left: 0,
+            right: 0,
+            child: const SessionStatusBar(),
+          ),
+          // Bouton Arrêter ■ — bas-droite 52×52px, au-dessus de la bottom nav
           if (sessionState != SessionState.idle)
             Positioned(
-              top: topPadding + 12,
+              bottom: bottomPadding + bottomNavHeight + 16,
               right: 16,
               child: _StopSessionButton(
-                onTap: () {
-                  // Arrêt UI de la session — reset du provider.
-                  // Modale de confirmation + sauvegarde Firestore + écran récapitulatif
-                  // implémentés en Story 2.5 (cycle de vie complet de la session GPS).
-                  ref.read(sessionStateProvider.notifier).state = SessionState.idle;
-                },
+                onTap: () => _onStopTapped(context, ref),
               ),
             ),
         ],
@@ -125,7 +145,6 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
           if (index == 2) {
             final current = ref.read(sessionStateProvider);
             if (current == SessionState.idle) {
-              // Première mise en route : afficher la sélection de mode avant de démarrer
               if (!context.mounted) return;
               final confirmed = await showUrbinkBottomSheet<bool>(
                 context: context,
@@ -154,17 +173,53 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
           }
           navigationShell.goBranch(
             index,
-            // Retap sur l'onglet actif → retour à la route initiale (scroll to top UX)
             initialLocation: index == navigationShell.currentIndex,
           );
         },
       ),
     );
   }
+
+  Future<void> _onStopTapped(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Arrêter la session ?'),
+        content: const Text('Ta progression sera sauvegardée.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Continuer'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: UrbinkColors.destructive,
+            ),
+            child: const Text('Arrêter'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    final metrics = ref.read(sessionMetricsProvider);
+    final session = await ref
+        .read(sessionLifecycleProvider.notifier)
+        .stopAndSave(metrics);
+
+    if (!context.mounted) return;
+    ref.read(sessionStateProvider.notifier).state = SessionState.idle;
+
+    if (session != null) {
+      context.push(AppRoutes.sessionSummary, extra: session);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Bouton Arrêter session — cercle rouge top-right
+// Bouton Arrêter session — carré 52×52px bas-droite
 // ---------------------------------------------------------------------------
 
 class _StopSessionButton extends StatelessWidget {
@@ -177,23 +232,24 @@ class _StopSessionButton extends StatelessWidget {
     return Semantics(
       label: 'Arrêter la session',
       button: true,
+      explicitChildNodes: true,
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          width: 44,
-          height: 44,
+          width: 52,
+          height: 52,
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
+            borderRadius: BorderRadius.circular(12),
             color: UrbinkColors.destructive,
             boxShadow: [
               BoxShadow(
-                color: UrbinkColors.destructive.withValues(alpha: 0.30),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
+                color: UrbinkColors.destructive.withValues(alpha: 0.35),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: const Icon(Icons.stop_rounded, color: Colors.white, size: 22),
+          child: const Icon(Icons.stop_rounded, color: Colors.white, size: 26),
         ),
       ),
     );
@@ -234,7 +290,7 @@ class _StartSessionSheet extends StatelessWidget {
                   UrbinkSpacing.minTapTarget,
                 ),
               ),
-              child: const Text('Démarrer la session'),
+              child: const Text('Démarrer la sortie'),
             ),
           ),
         ],
@@ -244,7 +300,7 @@ class _StartSessionSheet extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Écran placeholder (remplacé feature par feature dans les stories suivantes)
+// Écran placeholder
 // ---------------------------------------------------------------------------
 
 class _PlaceholderScreen extends StatelessWidget {

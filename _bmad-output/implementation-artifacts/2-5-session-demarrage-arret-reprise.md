@@ -1,6 +1,6 @@
 # Story 2.5 : Démarrage / arrêt / reprise de session circuit libre + sauvegarde Firestore
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -10,82 +10,82 @@ Afin de ne jamais perdre mes rues explorées même si l'app est fermée brutalem
 
 ## Acceptance Criteria
 
-- [ ] **AC1 — Démarrage session** : Given l'onglet Carte ouvert ; When l'utilisateur confirme le démarrage en mode Circuit libre ; Then la session démarre en ≤ 1 seconde — le bottom sheet se ferme, un placeholder `SessionStatusBar` Terra Cotta #A84E2C (44px) apparaît en haut de carte, le bouton Arrêter ■ 52×52px s'affiche bas-droite (FR1).
+- [x] **AC1 — Démarrage session** : Given l'onglet Carte ouvert ; When l'utilisateur confirme le démarrage en mode Circuit libre ; Then la session démarre en ≤ 1 seconde — le bottom sheet se ferme, un placeholder `SessionStatusBar` Terra Cotta #A84E2C (44px) apparaît en haut de carte, le bouton Arrêter ■ 52×52px s'affiche bas-droite (FR1).
 
-- [ ] **AC2 — Arrêt avec confirmation + sauvegarde Firestore** : Given une session circuit libre en cours ; When l'utilisateur tape le bouton Arrêter ■ ; Then un Dialog de confirmation s'affiche ("Arrêter la session ?") — si confirmé, la session est sauvegardée dans Firestore `/users/{uid}/sessions/{id}` avec `sessionStart`, `sessionEnd`, `mode`, `streetIds[]`, `distanceMeters` — un écran récapitulatif affiche les stats (rues / km / durée) (FR5, FR6).
+- [x] **AC2 — Arrêt avec confirmation + sauvegarde Firestore** : Given une session circuit libre en cours ; When l'utilisateur tape le bouton Arrêter ■ ; Then un Dialog de confirmation s'affiche ("Arrêter la session ?") — si confirmé, la session est sauvegardée dans Firestore `/users/{uid}/sessions/{id}` avec `sessionStart`, `sessionEnd`, `mode`, `streetIds[]`, `distanceMeters` — un écran récapitulatif affiche les stats (rues / km / durée) (FR5, FR6).
 
-- [ ] **AC3 — Fallback sqflite (offline)** : Given une session sauvegardée avec réseau absent ; When la sauvegarde Firestore échoue ; Then la session est d'abord persistée localement dans sqflite — une re-sync automatique est tentée dès la reconnexion réseau (NFR6, NFR7).
+- [x] **AC3 — Fallback sqflite (offline)** : Given une session sauvegardée avec réseau absent ; When la sauvegarde Firestore échoue ; Then la session est d'abord persistée localement dans sqflite — une re-sync automatique est tentée dès la reconnexion réseau (NFR6, NFR7).
 
-- [ ] **AC4 — Crash recovery** : Given l'app fermée brutalement pendant une session active ; When l'utilisateur relance l'app ; Then les données GPS locales sqflite permettent de reconstituer la session — un Dialog "Reprendre la session précédente ?" s'affiche sur l'onglet Carte (FR5).
+- [x] **AC4 — Crash recovery** : Given l'app fermée brutalement pendant une session active ; When l'utilisateur relance l'app ; Then les données GPS locales sqflite permettent de reconstituer la session — un Dialog "Reprendre la session précédente ?" s'affiche sur l'onglet Carte (FR5).
 
 ## Tasks / Subtasks
 
-- [ ] **T1 — Modèle `Session`** (AC: 1, 2, 3, 4)
-  - [ ] Créer `urbink/lib/features/sessions/models/session.dart`
-  - [ ] Champs : `sessionId`, `userId`, `sessionStart`, `sessionEnd?`, `mode`, `streetIds`, `distanceMeters`
-  - [ ] Méthodes : `toFirestore()`, `toSqflite()`, `fromFirestore()`, `fromSqflite()`, `copyWith()`
+- [x] **T1 — Modèle `Session`** (AC: 1, 2, 3, 4)
+  - [x] Créer `urbink/lib/features/sessions/models/session.dart`
+  - [x] Champs : `sessionId`, `userId`, `sessionStart`, `sessionEnd?`, `mode`, `streetIds`, `distanceMeters`
+  - [x] Méthodes : `toFirestore()`, `toSqflite()`, `fromFirestore()`, `fromSqflite()`, `copyWith()`
 
-- [ ] **T2 — `SessionLocalCache` (sqflite)** (AC: 3, 4)
-  - [ ] Créer `urbink/lib/features/sessions/services/session_local_cache.dart`
-  - [ ] Table `local_sessions` : `id TEXT PK`, `user_id TEXT`, `session_start INTEGER`, `session_end INTEGER?`, `mode TEXT`, `street_ids TEXT` (JSON), `distance_meters REAL`, `synced INTEGER`
-  - [ ] Méthodes : `openDb()`, `insertSession()`, `updateSession()`, `getInterruptedSession()` (WHERE session_end IS NULL AND synced = 0), `markSynced()`, `markCancelled()`
+- [x] **T2 — `SessionLocalCache` (sqflite)** (AC: 3, 4)
+  - [x] Créer `urbink/lib/features/sessions/services/session_local_cache.dart`
+  - [x] Table `local_sessions` : `id TEXT PK`, `user_id TEXT`, `session_start INTEGER`, `session_end INTEGER?`, `mode TEXT`, `street_ids TEXT` (JSON), `distance_meters REAL`, `synced INTEGER`
+  - [x] Méthodes : `openDb()`, `insertSession()`, `updateSession()`, `getInterruptedSession()` (WHERE session_end IS NULL AND synced = 0), `markSynced()`, `markCancelled()`
 
-- [ ] **T3 — `SessionRepository` (abstract + Firestore impl)** (AC: 2, 3)
-  - [ ] Créer `urbink/lib/features/sessions/services/session_repository.dart` (abstract class)
-  - [ ] Créer `urbink/lib/features/sessions/services/firestore_session_repository.dart`
-  - [ ] `saveSession(Session)` → écrit dans `/users/{uid}/sessions/{sessionId}`
-  - [ ] `syncPendingSessions(List<Session>)` → re-sync les sessions non-syncées depuis sqflite
+- [x] **T3 — `SessionRepository` (abstract + Firestore impl)** (AC: 2, 3)
+  - [x] Créer `urbink/lib/features/sessions/services/session_repository.dart` (abstract class)
+  - [x] Créer `urbink/lib/features/sessions/services/firestore_session_repository.dart`
+  - [x] `saveSession(Session)` → écrit dans `/users/{uid}/sessions/{sessionId}`
+  - [x] `syncPendingSessions(List<Session>)` → re-sync les sessions non-syncées depuis sqflite
 
-- [ ] **T4 — `SessionLifecycleNotifier`** (AC: 1, 2, 3, 4)
-  - [ ] Créer `urbink/lib/features/sessions/providers/session_lifecycle_provider.dart`
-  - [ ] State : `Session?` (null = aucune session active)
-  - [ ] `startSession(TransportMode mode)` → génère sessionId (UUID), écrit sqflite, tente Firestore async
-  - [ ] `stopAndSave(SessionMetrics metrics)` → complète sqflite, tente Firestore, retourne `Session` sauvegardée
-  - [ ] `resumeFromCrash(Session session)` → restaure state + set sessionStateProvider à active
-  - [ ] Pattern `_disposed` obligatoire sur tous les appels async
-  - [ ] Écoute `sessionStateProvider` : idle→active → `startSession()`
+- [x] **T4 — `SessionLifecycleNotifier`** (AC: 1, 2, 3, 4)
+  - [x] Créer `urbink/lib/features/sessions/providers/session_lifecycle_provider.dart`
+  - [x] State : `Session?` (null = aucune session active)
+  - [x] `startSession(TransportMode mode)` → génère sessionId (UUID), écrit sqflite, tente Firestore async
+  - [x] `stopAndSave(SessionMetrics metrics)` → complète sqflite, tente Firestore, retourne `Session` sauvegardée
+  - [x] `resumeFromCrash(Session session)` → restaure state + set sessionStateProvider à active
+  - [x] Pattern `_disposed` obligatoire sur tous les appels async
+  - [x] Écoute `sessionStateProvider` : idle→active → `startSession()`
 
-- [ ] **T5 — Sync réseau au retour de connectivité** (AC: 3)
-  - [ ] Dans `SessionLifecycleNotifier.build()` : écouter `connectivity_plus` via un Stream
-  - [ ] À la reconnexion : appeler `repository.syncPendingSessions(await localCache.getUnsyncedSessions())`
-  - [ ] Pas de queue complexe — simple retry sur reconnexion réseau
+- [x] **T5 — Sync réseau au retour de connectivité** (AC: 3)
+  - [x] Dans `SessionLifecycleNotifier.build()` : écouter `connectivity_plus` via un Stream
+  - [x] À la reconnexion : appeler `repository.syncPendingSessions(await localCache.getUnsyncedSessions())`
+  - [x] Pas de queue complexe — simple retry sur reconnexion réseau
 
-- [ ] **T6 — `SessionStatusBar` placeholder** (AC: 1)
-  - [ ] Créer `urbink/lib/shared/widgets/session_status_bar.dart`
-  - [ ] Barre 44px, fond Terra Cotta `#A84E2C`, position absolute top (après safe area)
-  - [ ] Affiche : emoji mode (🚶 par défaut) + distance km + durée HH:MM depuis `sessionMetricsProvider`
-  - [ ] Visible uniquement si `sessionStateProvider != SessionState.idle`
-  - [ ] **Story 2.10 remplace entièrement ce widget** — ne pas sur-ingéniérer
+- [x] **T6 — `SessionStatusBar` placeholder** (AC: 1)
+  - [x] Créer `urbink/lib/shared/widgets/session_status_bar.dart`
+  - [x] Barre 44px, fond Terra Cotta `#A84E2C`, position absolute top (après safe area)
+  - [x] Affiche : emoji mode (🚶 par défaut) + distance km + durée HH:MM depuis `sessionMetricsProvider`
+  - [x] Visible uniquement si `sessionStateProvider != SessionState.idle`
+  - [x] **Story 2.10 remplace entièrement ce widget** — ne pas sur-ingéniérer
 
-- [ ] **T7 — Refactoring `_ScaffoldWithBottomNav`** (AC: 1, 2)
-  - [ ] Dans `urbink/lib/core/router/app_router.dart`
-  - [ ] Déplacer `_StopSessionButton` : `top-right 44px` → `bottom-right 52×52px` (au-dessus bottom nav)
-  - [ ] Remplacer `ref.read(sessionStateProvider.notifier).state = idle` par le flow Dialog + save
-  - [ ] Ajouter `SessionStatusBar` dans le Stack du scaffold (dessus de `navigationShell`)
-  - [ ] `_onStopTapped()` : Dialog → si confirmé → `stopAndSave(metrics)` → navigate → reset state
-  - [ ] Ajouter la route `/session-summary` dans `GoRouter`
+- [x] **T7 — Refactoring `_ScaffoldWithBottomNav`** (AC: 1, 2)
+  - [x] Dans `urbink/lib/core/router/app_router.dart`
+  - [x] Déplacer `_StopSessionButton` : `top-right 44px` → `bottom-right 52×52px` (au-dessus bottom nav)
+  - [x] Remplacer `ref.read(sessionStateProvider.notifier).state = idle` par le flow Dialog + save
+  - [x] Ajouter `SessionStatusBar` dans le Stack du scaffold (dessus de `navigationShell`)
+  - [x] `_onStopTapped()` : Dialog → si confirmé → `stopAndSave(metrics)` → navigate → reset state
+  - [x] Ajouter la route `/session-summary` dans `GoRouter`
 
-- [ ] **T8 — `SessionSummaryScreen`** (AC: 2)
-  - [ ] Créer `urbink/lib/features/sessions/screens/session_summary_screen.dart`
-  - [ ] Affiche : N rues, X.X km, durée HH:MM, mode (emoji + label)
-  - [ ] CTA : "Retour à la carte" → `context.go('/map')`
-  - [ ] Reçoit `Session` via `state.extra as Session`
-  - [ ] Hors scope : badge animation, carte miniature tracé (→ Story 3.x)
+- [x] **T8 — `SessionSummaryScreen`** (AC: 2)
+  - [x] Créer `urbink/lib/features/sessions/screens/session_summary_screen.dart`
+  - [x] Affiche : N rues, X.X km, durée HH:MM, mode (emoji + label)
+  - [x] CTA : "Retour à la carte" → `context.go('/map')`
+  - [x] Reçoit `Session` via `state.extra as Session`
+  - [x] Hors scope : badge animation, carte miniature tracé (→ Story 3.x)
 
-- [ ] **T9 — Crash Recovery Check** (AC: 4)
-  - [ ] Créer `urbink/lib/features/sessions/services/crash_recovery_service.dart`
-  - [ ] `checkForInterruptedSession()` → appelle `SessionLocalCache.getInterruptedSession()`
-  - [ ] Déclencher depuis `MapScreen.initState()` via `addPostFrameCallback`
-  - [ ] Dialog "Reprendre ?" : Oui → `SessionLifecycleNotifier.resumeFromCrash()` / Non → `markCancelled()`
+- [x] **T9 — Crash Recovery Check** (AC: 4)
+  - [x] Créer `urbink/lib/features/sessions/services/crash_recovery_service.dart`
+  - [x] `checkForInterruptedSession()` → appelle `SessionLocalCache.getInterruptedSession()`
+  - [x] Déclencher depuis `MapScreen.initState()` via `addPostFrameCallback`
+  - [x] Dialog "Reprendre ?" : Oui → `SessionLifecycleNotifier.resumeFromCrash()` / Non → `markCancelled()`
 
-- [ ] **T10 — Ajout couleur Terra Cotta + uuid** (AC: 1)
-  - [ ] Dans `urbink/lib/shared/constants/colors.dart` : ajouter `static const Color terraCotta = Color(0xFFA84E2C);`
-  - [ ] Dans `urbink/pubspec.yaml` : ajouter `uuid: ^4.5.1`
+- [x] **T10 — Ajout couleur Terra Cotta + uuid** (AC: 1)
+  - [x] Dans `urbink/lib/shared/constants/colors.dart` : ajouter `static const Color terraCotta = Color(0xFFA84E2C);`
+  - [x] Dans `urbink/pubspec.yaml` : ajouter `uuid: ^4.5.1`
 
-- [ ] **T11 — Tests unitaires** (AC: 1, 2, 3, 4)
-  - [ ] `test/features/sessions/models/session_test.dart` : `toFirestore/fromFirestore`, `toSqflite/fromSqflite`
-  - [ ] `test/features/sessions/services/session_local_cache_test.dart` : insert, update, getInterrupted, markSynced
-  - [ ] `test/features/sessions/providers/session_lifecycle_provider_test.dart` : start, stop, crash recovery
+- [x] **T11 — Tests unitaires** (AC: 1, 2, 3, 4)
+  - [x] `test/features/sessions/models/session_test.dart` : `toFirestore/fromFirestore`, `toSqflite/fromSqflite`
+  - [x] `test/features/sessions/services/session_local_cache_test.dart` : insert, update, getInterrupted, markSynced
+  - [x] `test/features/sessions/providers/session_lifecycle_provider_test.dart` : start, stop, crash recovery
 
 ## Dev Notes
 
@@ -390,12 +390,44 @@ Claude Sonnet 4.6 (bmad-create-story)
 
 ### Debug Log References
 
+- `Session.copyWith` : ajout param `clearSessionEnd: bool = false` — `copyWith(sessionEnd: null)` est ambigu avec "non fourni"
+- `connectivityChangesProvider` : extrait en `StreamProvider` injectable pour éviter EventChannel native en test
+- `transportModeProvider` : surchargé en test avec `_FakeTransportModeNotifier` (sans SharedPreferences)
+- `resumeFromCrash` → listener `sessionStateProvider` déclenche `_startSession` : guard ajouté `&& state == null`
+- `SessionLocalCache` : param `dbPath` injectable (`inMemoryDatabasePath`) pour isolation tests sqflite
+
 ### Completion Notes List
 
+- 39 tests passent (`flutter test test/features/sessions/`)
+- `flutter analyze --no-pub` : 0 erreur
+
 ### File List
+
+**Nouveaux :**
+- `urbink/lib/features/sessions/models/session.dart`
+- `urbink/lib/features/sessions/services/session_local_cache.dart`
+- `urbink/lib/features/sessions/services/session_repository.dart`
+- `urbink/lib/features/sessions/services/firestore_session_repository.dart`
+- `urbink/lib/features/sessions/services/crash_recovery_service.dart`
+- `urbink/lib/features/sessions/providers/session_lifecycle_provider.dart`
+- `urbink/lib/features/sessions/providers/session_db_provider.dart`
+- `urbink/lib/features/sessions/providers/crash_recovery_provider.dart`
+- `urbink/lib/features/sessions/screens/session_summary_screen.dart`
+- `urbink/lib/shared/widgets/session_status_bar.dart`
+- `urbink/test/features/sessions/models/session_test.dart`
+- `urbink/test/features/sessions/services/session_local_cache_test.dart`
+- `urbink/test/features/sessions/providers/session_lifecycle_provider_test.dart`
+
+**Modifiés :**
+- `urbink/lib/features/sessions/models/transport_mode.dart` — `firestoreValue` + `fromFirestoreValue`
+- `urbink/lib/shared/constants/colors.dart` — `terraCotta`, `ocre`
+- `urbink/lib/core/router/app_router.dart` — stop button repositionné + `SessionStatusBar` + route `/session-summary`
+- `urbink/lib/features/map/screens/map_screen.dart` — crash recovery check `initState`
+- `urbink/pubspec.yaml` — `uuid: ^4.5.1`, `sqflite_common_ffi: ^2.3.4`
 
 ## Change Log
 
 | Date | Version | Description |
 |---|---|---|
 | 2026-04-13 | 1.0 | Création story — lifecycle session circuit libre + Firestore/sqflite + crash recovery |
+| 2026-04-13 | 1.1 | Implémentation complète — 39 tests passent, analyze OK |

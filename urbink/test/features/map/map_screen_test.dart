@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:urbink/features/map/screens/map_screen.dart';
+import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 
 Widget _wrap(Widget child) => ProviderScope(
+      overrides: [
+        // Pas de Firebase en test — uid null → crash recovery skippé
+        currentUidProvider.overrideWithValue(null),
+      ],
       child: MaterialApp(home: Scaffold(body: child)),
     );
 
 void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
   group('MapScreen', () {
     testWidgets('se construit sans erreur (smoke test)', (tester) async {
       await tester.pumpWidget(_wrap(const MapScreen()));
