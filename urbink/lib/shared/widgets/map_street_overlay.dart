@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/map/providers/map_street_overlay_provider.dart';
+import 'package:urbink/features/map/providers/streets_visible_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 
 /// Couche flutter_map affichant les rues explorées en Vert Sauge.
@@ -9,6 +10,9 @@ import 'package:urbink/shared/constants/colors.dart';
 /// - Rues explorées : [UrbinkColors.streetExplored] (#5A7A5A), opacité 0.75
 /// - Rue en cours d'exploration : [UrbinkColors.streetRecording] (#6A9A6A),
 ///   trait légèrement plus épais pour signaler l'activité
+///
+/// L'affichage est contrôlé par [streetsVisibleProvider] (toggle Zones).
+/// Le tracking passif continue en arrière-plan indépendamment du toggle.
 ///
 /// À ajouter dans les `children` de [FlutterMap] après [VectorTileLayer].
 class MapStreetOverlay extends ConsumerWidget {
@@ -19,6 +23,9 @@ class MapStreetOverlay extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Toggle Zones : si masqué, retourner vide sans stopper le tracking
+    if (!ref.watch(streetsVisibleProvider)) return const SizedBox.shrink();
+
     final overlayState = ref.watch(mapStreetOverlayProvider);
 
     if (overlayState.isEmpty) return const SizedBox.shrink();

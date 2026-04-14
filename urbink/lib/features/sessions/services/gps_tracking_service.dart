@@ -12,8 +12,6 @@ import 'package:geolocator/geolocator.dart';
 class GpsTrackingService {
   static const double minDistanceMeters = 10.0;
 
-  Position? _lastPosition;
-
   /// Vérifie que le service de localisation est activé au niveau système.
   Future<bool> isServiceEnabled() => Geolocator.isLocationServiceEnabled();
 
@@ -48,14 +46,39 @@ class GpsTrackingService {
 
   /// Stream de positions GPS filtrées (émis toutes les ~[minDistanceMeters] mètres).
   ///
+  /// Chaque appel crée un stream indépendant avec son propre état de filtrage
+  /// (closure-local) — plusieurs abonnés simultanés n'interfèrent pas entre eux.
   /// Le stream est actif tant qu'il est écouté.
   /// Continue en arrière-plan sur iOS grâce au background mode `location`
   /// configuré dans `Info.plist`.
   Stream<Position> positionStream() {
-    _lastPosition = null;
+    // lastPosition est closure-local : chaque appel à positionStream() a son
+    // propre état de filtrage, ce qui permet d'avoir passiveGpsStreamProvider
+    // et gpsPositionStreamProvider actifs simultanément sans interférence.
+    Position? lastPosition;
+
+    bool hasMovedEnough(Position position) {
+      final last = lastPosition;
+      if (last == null) {
+        lastPosition = position;
+        return true;
+      }
+      final distance = Geolocator.distanceBetween(
+        last.latitude,
+        last.longitude,
+        position.latitude,
+        position.longitude,
+      );
+      if (distance >= minDistanceMeters) {
+        lastPosition = position;
+        return true;
+      }
+      return false;
+    }
+
     return Geolocator.getPositionStream(
       locationSettings: _locationSettings(),
-    ).where(_hasMovedEnough);
+    ).where(hasMovedEnough);
   }
 
   LocationSettings _locationSettings() {
@@ -72,27 +95,6 @@ class GpsTrackingService {
       accuracy: LocationAccuracy.high,
       distanceFilter: 5,
     );
-  }
-
-  bool _hasMovedEnough(Position position) {
-    final last = _lastPosition;
-    if (last == null) {
-      _lastPosition = position;
-      return true;
-    }
-
-    final distance = Geolocator.distanceBetween(
-      last.latitude,
-      last.longitude,
-      position.latitude,
-      position.longitude,
-    );
-
-    if (distance >= minDistanceMeters) {
-      _lastPosition = position;
-      return true;
-    }
-    return false;
   }
 
   /// Calcule si deux positions sont suffisamment éloignées pour être émises.

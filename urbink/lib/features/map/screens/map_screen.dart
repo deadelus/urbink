@@ -14,6 +14,7 @@ import 'package:urbink/shared/constants/map_constants.dart';
 import 'package:urbink/shared/widgets/map_street_overlay.dart';
 import 'package:urbink/shared/widgets/session_counter.dart';
 import 'package:urbink/shared/widgets/urbink_snack_bar.dart';
+import 'package:urbink/shared/widgets/zones_toggle_pill.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -190,6 +191,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ],
           ),
           const SessionCounter(),
+          // Pill Zones bas-gauche — toggle affichage rues explorées (FR10b)
+          const Positioned(
+            left: 16,
+            bottom: 16,
+            child: ZonesTogglePill(),
+          ),
         ],
       ),
     );
