@@ -49,6 +49,9 @@ class PrivacyNotifier extends ChangeNotifier {
 /// Instance module-level partagée entre main.dart et PrivacyScreen.
 final privacyNotifier = PrivacyNotifier(accepted: false);
 
+/// Clé SharedPreferences pour le consentement — source unique de vérité.
+const kPrivacyAcceptedKey = 'urbink_privacy_accepted';
+
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.map,
   refreshListenable: privacyNotifier,
@@ -217,8 +220,14 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
                 child: const _StartSessionSheet(),
               );
               if (confirmed == true && context.mounted) {
-                // Vérifier la permission GPS avant de démarrer
+                // Vérifier le service + la permission GPS avant de démarrer
                 final gpsService = ref.read(gpsTrackingServiceProvider);
+                final serviceEnabled = await gpsService.isServiceEnabled();
+                if (!context.mounted) return;
+                if (!serviceEnabled) {
+                  _showGpsDeniedDialog(context);
+                  return;
+                }
                 final granted = await gpsService.requestPermission();
                 if (!context.mounted) return;
                 if (!granted) {

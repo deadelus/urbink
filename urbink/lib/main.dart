@@ -17,11 +17,15 @@ Future<void> main() async {
 
   // Politique de confidentialité — vérification au démarrage (FR45)
   final prefs = await SharedPreferences.getInstance();
-  final privacyAccepted = prefs.getBool('urbink_privacy_accepted') ?? false;
+  final privacyAccepted = prefs.getBool(kPrivacyAcceptedKey) ?? false;
 
   // Auth anonyme si politique acceptée et pas encore connecté (FR32)
   if (privacyAccepted && FirebaseAuth.instance.currentUser == null) {
-    await FirebaseAuth.instance.signInAnonymously();
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+    } catch (error, stackTrace) {
+      debugPrint('Anonymous sign-in failed during app startup: $error\n$stackTrace');
+    }
   }
 
   // Synchroniser le notifier GoRouter avec l'état persisté

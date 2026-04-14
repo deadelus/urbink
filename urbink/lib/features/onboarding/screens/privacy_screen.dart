@@ -5,7 +5,6 @@ import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 
-const _kPrivacyKey = 'urbink_privacy_accepted';
 
 /// Écran de politique de confidentialité — affiché au premier lancement.
 ///
@@ -29,7 +28,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
     try {
       // 1. Persister le consentement
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_kPrivacyKey, true);
+      await prefs.setBool(kPrivacyAcceptedKey, true);
 
       // 2. Auth anonyme si pas encore connecté
       if (FirebaseAuth.instance.currentUser == null) {
@@ -80,8 +79,8 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                 icon: Icons.location_on_outlined,
                 title: 'Localisation GPS',
                 body:
-                    'Urbink utilise ton GPS pour colorier les rues que tu parcours en temps réel. '
-                    'Le tracking s\'arrête dès que tu fermes l\'app.',
+                    'Urbink utilise ton GPS pour colorier les rues que tu parcours en temps réel pendant une session active. '
+                    'Le tracking s\'arrête lorsque la session est mise en pause ou stoppée.',
               ),
               const SizedBox(height: UrbinkSpacing.lg),
               const _PrivacySection(
