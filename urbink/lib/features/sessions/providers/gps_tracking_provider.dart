@@ -29,14 +29,35 @@ final snapToRoadServiceProvider = Provider<SnapToRoadService>((ref) {
   return service;
 });
 
+/// Stream de positions GPS passif — toujours actif quand la permission GPS est accordée.
+///
+/// Ne dépend pas de l'état de session — émet des positions dès que l'utilisateur
+/// se déplace, indépendamment de toute session enregistrée (FR0, tracking passif).
+/// Utilisé par [mapStreetOverlayProvider] pour colorier les rues en continu.
+///
+/// Chaque appel à [GpsTrackingService.positionStream] crée un stream indépendant
+/// avec son propre état de filtrage — pas d'interférence avec [gpsPositionStreamProvider].
+final passiveGpsStreamProvider = StreamProvider<Position>((ref) async* {
+  final gpsService = ref.watch(gpsTrackingServiceProvider);
+  // Utilise locationPermissionProvider (overrideable en test) plutôt qu'un
+  // appel direct à Geolocator.checkPermission() pour faciliter les tests.
+  final permission = await ref.watch(locationPermissionProvider.future);
+  if (permission == LocationPermission.denied ||
+      permission == LocationPermission.deniedForever) {
+    return;
+  }
+  yield* gpsService.positionStream();
+});
+
 /// Stream de positions GPS — actif uniquement quand la session est active.
 ///
 /// Émet les positions filtrées (déplacement ≥ 10 m).
 /// Se coupe automatiquement quand [SessionState] passe à `paused` ou `idle`.
+/// Utilisé par [sessionMetricsProvider] pour distance/mode — stream indépendant
+/// du passif (état de filtrage propre via closure dans [GpsTrackingService]).
 final gpsPositionStreamProvider = StreamProvider<Position>((ref) async* {
   final sessionState = ref.watch(sessionStateProvider);
   if (sessionState != SessionState.active) return;
-
   final gpsService = ref.watch(gpsTrackingServiceProvider);
   yield* gpsService.positionStream();
 });

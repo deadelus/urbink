@@ -1,8 +1,13 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:urbink/features/map/models/map_street_overlay_state.dart';
+import 'package:urbink/features/map/services/passive_street_repository.dart';
 import 'package:urbink/features/sessions/providers/gps_tracking_provider.dart';
+import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 
 class MapStreetOverlayNotifier extends Notifier<MapStreetOverlayState> {
@@ -16,12 +21,13 @@ class MapStreetOverlayNotifier extends Notifier<MapStreetOverlayState> {
     _callSeq = 0;
     ref.onDispose(() => _disposed = true);
 
-    // Écoute le stream GPS — chaque nouvelle position déclenche snap to road
-    ref.listen(gpsPositionStreamProvider, (_, next) {
+    // Tracking passif — écoute le stream GPS toujours actif (pas de gate session).
+    // Les rues se colorient dès que l'utilisateur se déplace, session ou non (FR0).
+    ref.listen(passiveGpsStreamProvider, (_, next) {
       next.whenData(_onPosition);
     });
 
-    // Quand la session repasse idle, effacer la rue courante
+    // Quand la session repasse idle, effacer l'indicateur de rue en cours
     ref.listen(sessionStateProvider, (_, sessionState) {
       if (sessionState == SessionState.idle) {
         state = state.copyWith(clearCurrentStreetId: true);
@@ -45,6 +51,21 @@ class MapStreetOverlayNotifier extends Notifier<MapStreetOverlayState> {
 
     final point = LatLng(position.latitude, position.longitude);
     final current = state;
+
+    // Persister en Firestore si la rue est nouvelle dans cette session mémoire
+    if (!current.exploredStreets.containsKey(streetId)) {
+      final uid = ref.read(currentUidProvider);
+      if (uid != null) {
+        unawaited(
+          ref
+              .read(passiveStreetRepositoryProvider)
+              .saveStreet(uid, streetId)
+              .catchError(
+                (Object e) => debugPrint('PassiveStreet: Firestore save failed: $e'),
+              ),
+        );
+      }
+    }
 
     // Copie superficielle du Map + copie profonde uniquement de la rue concernée
     final updated = Map<String, List<LatLng>>.of(current.exploredStreets);
