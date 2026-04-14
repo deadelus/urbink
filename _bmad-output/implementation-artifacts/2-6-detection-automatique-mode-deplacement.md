@@ -10,65 +10,65 @@ Afin de ne pas avoir à configurer manuellement mon mode avant chaque session.
 
 ## Acceptance Criteria
 
-- [ ] **AC1 — Marche** : Given une session active ; When la vitesse GPS est < 7 km/h en moyenne sur 30 secondes ; Then le mode est classifié `walking` — l'icône dans `SessionStatusBar` affiche 🚶 (FR4).
+- [x] **AC1 — Marche** : Given une session active ; When la vitesse GPS est < 7 km/h en moyenne sur 30 secondes ; Then le mode est classifié `walking` — l'icône dans `SessionStatusBar` affiche 🚶 (FR4).
 
-- [ ] **AC2 — Vélo** : Given une session active ; When la vitesse GPS est entre 7 et 30 km/h ; Then le mode est classifié `cycling` — l'icône dans `SessionStatusBar` affiche 🚴 (FR4).
+- [x] **AC2 — Vélo** : Given une session active ; When la vitesse GPS est entre 7 et 30 km/h ; Then le mode est classifié `cycling` — l'icône dans `SessionStatusBar` affiche 🚴 (FR4).
 
-- [ ] **AC3 — Voiture** : Given une session active ; When la vitesse GPS est > 30 km/h ; Then le mode est classifié `driving` — l'icône dans `SessionStatusBar` affiche 🚗 (FR4).
+- [x] **AC3 — Voiture** : Given une session active ; When la vitesse GPS est > 30 km/h ; Then le mode est classifié `driving` — l'icône dans `SessionStatusBar` affiche 🚗 (FR4).
 
-- [ ] **AC4 — Mode dominant en session** : Given un changement de mode détecté en cours de session ; When le mode bascule (ex : marche → voiture dans un bus) ; Then le mode de la session sauvegardée dans Firestore et affiché dans le récapitulatif correspond au mode dominant (= celui avec le plus de ticks GPS) (FR4).
+- [x] **AC4 — Mode dominant en session** : Given un changement de mode détecté en cours de session ; When le mode bascule (ex : marche → voiture dans un bus) ; Then le mode de la session sauvegardée dans Firestore et affiché dans le récapitulatif correspond au mode dominant (= celui avec le plus de ticks GPS) (FR4).
 
 ## Tasks / Subtasks
 
-- [ ] **T1 — `TransportModeDetector` (service pur)** (AC: 1, 2, 3)
-  - [ ] Créer `urbink/lib/features/sessions/services/transport_mode_detector.dart`
-  - [ ] Fenêtre glissante 30 secondes : `List<({double speedMps, DateTime at})> _samples`
-  - [ ] `TransportMode update(double speedMps, DateTime at)` — purge les samples > 30s, ajoute le nouveau, classifie la moyenne
-  - [ ] `static TransportMode classify(double avgSpeedMps)` — < 1.944 m/s → walking, 1.944–8.333 m/s → cycling, > 8.333 m/s → driving
-  - [ ] Ignorer les samples avec `speedMps < 0` (vitesse invalide geolocator)
+- [x] **T1 — `TransportModeDetector` (service pur)** (AC: 1, 2, 3)
+  - [x] Créer `urbink/lib/features/sessions/services/transport_mode_detector.dart`
+  - [x] Fenêtre glissante 30 secondes : `List<({double speedMps, DateTime at})> _samples`
+  - [x] `TransportMode update(double speedMps, DateTime at)` — purge les samples > 30s, ajoute le nouveau, classifie la moyenne
+  - [x] `static TransportMode classify(double avgSpeedMps)` — < 1.944 m/s → walking, 1.944–8.333 m/s → cycling, > 8.333 m/s → driving
+  - [x] Ignorer les samples avec `speedMps < 0` (vitesse invalide geolocator)
 
-- [ ] **T2 — Étendre `SessionMetrics`** (AC: 1, 2, 3, 4)
-  - [ ] Dans `urbink/lib/features/sessions/models/session_metrics.dart` : ajouter `final TransportMode detectedMode` (default `TransportMode.walking`)
-  - [ ] Ajouter `final Map<TransportMode, int> modeTicks` (default `const {}`)
-  - [ ] Ajouter getter `TransportMode get dominantMode` — retourne la clé avec la valeur max dans `modeTicks`, fallback `detectedMode`
-  - [ ] Mettre à jour `copyWith` pour inclure `detectedMode` et `modeTicks`
-  - [ ] `SessionMetrics` importe `transport_mode.dart`
+- [x] **T2 — Étendre `SessionMetrics`** (AC: 1, 2, 3, 4)
+  - [x] Dans `urbink/lib/features/sessions/models/session_metrics.dart` : ajouter `final TransportMode detectedMode` (default `TransportMode.walking`)
+  - [x] Ajouter `final Map<TransportMode, int> modeTicks` (default `const {}`)
+  - [x] Ajouter getter `TransportMode get dominantMode` — retourne la clé avec la valeur max dans `modeTicks`, fallback `detectedMode`
+  - [x] Mettre à jour `copyWith` pour inclure `detectedMode` et `modeTicks`
+  - [x] `SessionMetrics` importe `transport_mode.dart`
 
-- [ ] **T3 — Intégrer `TransportModeDetector` dans `SessionMetricsNotifier`** (AC: 1, 2, 3, 4)
-  - [ ] Dans `urbink/lib/features/sessions/providers/session_metrics_provider.dart`
-  - [ ] Instancier `TransportModeDetector _detector` dans le notifier (réinitialisé dans `build()`)
-  - [ ] Dans `_onPosition(Position position)` : appeler `_detector.update(position.speed, DateTime.now())`
-  - [ ] Mettre à jour `modeTicks` : `{...current.modeTicks, newMode: (current.modeTicks[newMode] ?? 0) + 1}`
-  - [ ] Mettre à jour `state.detectedMode = newMode`
+- [x] **T3 — Intégrer `TransportModeDetector` dans `SessionMetricsNotifier`** (AC: 1, 2, 3, 4)
+  - [x] Dans `urbink/lib/features/sessions/providers/session_metrics_provider.dart`
+  - [x] Instancier `TransportModeDetector _detector` dans le notifier (réinitialisé dans `build()`)
+  - [x] Dans `_onPosition(Position position)` : appeler `_detector.update(position.speed, DateTime.now())`
+  - [x] Mettre à jour `modeTicks` : `{...current.modeTicks, newMode: (current.modeTicks[newMode] ?? 0) + 1}`
+  - [x] Mettre à jour `state.detectedMode = newMode`
 
-- [ ] **T4 — `autoDetectedModeProvider`** (AC: 1, 2, 3)
-  - [ ] Dans `urbink/lib/features/sessions/providers/session_metrics_provider.dart` (ou fichier dédié)
-  - [ ] `final autoDetectedModeProvider = Provider<TransportMode>((ref) => ref.watch(sessionMetricsProvider).detectedMode);`
+- [x] **T4 — `autoDetectedModeProvider`** (AC: 1, 2, 3)
+  - [x] Dans `urbink/lib/features/sessions/providers/session_metrics_provider.dart` (ou fichier dédié)
+  - [x] `final autoDetectedModeProvider = Provider<TransportMode>((ref) => ref.watch(sessionMetricsProvider).detectedMode);`
 
-- [ ] **T5 — Mettre à jour `SessionStatusBar` placeholder** (AC: 1, 2, 3)
-  - [ ] Dans `urbink/lib/shared/widgets/session_status_bar.dart`
-  - [ ] Remplacer `const Text('🚶')` par un emoji dynamique lu depuis `autoDetectedModeProvider`
-  - [ ] Helper `String _modeEmoji(TransportMode mode)` : walking → 🚶, cycling → 🚴, driving → 🚗
-  - [ ] ⚠️ Ne pas faire d'autres changements — Story 2.10 remplace entièrement ce widget
+- [x] **T5 — Mettre à jour `SessionStatusBar` placeholder** (AC: 1, 2, 3)
+  - [x] Dans `urbink/lib/shared/widgets/session_status_bar.dart`
+  - [x] Remplacer `const Text('🚶')` par un emoji dynamique lu depuis `autoDetectedModeProvider`
+  - [x] Helper `String _modeEmoji(TransportMode mode)` : walking → 🚶, cycling → 🚴, driving → 🚗
+  - [x] ⚠️ Ne pas faire d'autres changements — Story 2.10 remplace entièrement ce widget
 
-- [ ] **T6 — Mettre à jour `SessionLifecycleNotifier.stopAndSave()`** (AC: 4)
-  - [ ] Dans `urbink/lib/features/sessions/providers/session_lifecycle_provider.dart`
-  - [ ] Remplacer `final mode = ref.read(transportModeProvider)` par `final mode = metrics.dominantMode`
-  - [ ] Supprimer l'import de `transport_mode_provider.dart` si devenu inutilisé dans ce fichier
+- [x] **T6 — Mettre à jour `SessionLifecycleNotifier.stopAndSave()`** (AC: 4)
+  - [x] Dans `urbink/lib/features/sessions/providers/session_lifecycle_provider.dart`
+  - [x] Remplacer `final mode = ref.read(transportModeProvider)` par `final mode = metrics.dominantMode`
+  - [x] Supprimer l'import de `transport_mode_provider.dart` si devenu inutilisé dans ce fichier
 
-- [ ] **T7 — Tests unitaires `TransportModeDetector`** (AC: 1, 2, 3, 4)
-  - [ ] Créer `urbink/test/features/sessions/services/transport_mode_detector_test.dart`
-  - [ ] Test : vitesse 0 m/s → walking
-  - [ ] Test : vitesse 1.5 m/s (~5.4 km/h) → walking
-  - [ ] Test : vitesse 2.5 m/s (~9 km/h) → cycling
-  - [ ] Test : vitesse 10 m/s (36 km/h) → driving
-  - [ ] Test : fenêtre glissante — samples > 30s sont purgés
-  - [ ] Test : `classify()` aux seuils exacts (1.944 m/s, 8.333 m/s)
-  - [ ] Test : sample invalide (speed = -1.0) ignoré
+- [x] **T7 — Tests unitaires `TransportModeDetector`** (AC: 1, 2, 3, 4)
+  - [x] Créer `urbink/test/features/sessions/services/transport_mode_detector_test.dart`
+  - [x] Test : vitesse 0 m/s → walking
+  - [x] Test : vitesse 1.5 m/s (~5.4 km/h) → walking
+  - [x] Test : vitesse 2.5 m/s (~9 km/h) → cycling
+  - [x] Test : vitesse 10 m/s (36 km/h) → driving
+  - [x] Test : fenêtre glissante — samples > 30s sont purgés
+  - [x] Test : `classify()` aux seuils exacts (1.944 m/s, 8.333 m/s)
+  - [x] Test : sample invalide (speed = -1.0) ignoré
 
-- [ ] **T8 — Tests `SessionMetrics`** (AC: 4)
-  - [ ] Dans `urbink/test/features/sessions/models/session_test.dart` : ajouter test `dominantMode` (modeTicks non vide → retourne le mode dominant)
-  - [ ] Test : `modeTicks` vide → `dominantMode` fallback sur `detectedMode`
+- [x] **T8 — Tests `SessionMetrics`** (AC: 4)
+  - [x] Dans `urbink/test/features/sessions/models/session_test.dart` : ajouter test `dominantMode` (modeTicks non vide → retourne le mode dominant)
+  - [x] Test : `modeTicks` vide → `dominantMode` fallback sur `detectedMode`
 
 ## Dev Notes
 
@@ -313,12 +313,32 @@ Claude Sonnet 4.6
 
 ### Debug Log References
 
+- `_detector` field : déclaré `late` dans le notifier, initialisé dans `build()` pour être réinitialisé à chaque session
+- `position.speed` : -1.0 si GPS non localisé → filtré en amont dans `TransportModeDetector.update()`
+- Import `transport_mode.dart` ajouté dans `session_metrics.dart`
+- `transportModeProvider` conservé dans `session_lifecycle_provider` (utilisé pour `_startSession` initial) — suppression Story 2.10
+
 ### Completion Notes List
 
+- 73 tests passent (58 existants + 15 nouveaux)
+- `flutter analyze --no-pub` : 0 erreur
+
 ### File List
+
+**Nouveaux :**
+- `urbink/lib/features/sessions/services/transport_mode_detector.dart`
+- `urbink/test/features/sessions/services/transport_mode_detector_test.dart`
+
+**Modifiés :**
+- `urbink/lib/features/sessions/models/session_metrics.dart` — `+detectedMode`, `+modeTicks`, `dominantMode` getter
+- `urbink/lib/features/sessions/providers/session_metrics_provider.dart` — intégration `TransportModeDetector` + `autoDetectedModeProvider`
+- `urbink/lib/features/sessions/providers/session_lifecycle_provider.dart` — `mode: metrics.dominantMode`
+- `urbink/lib/shared/widgets/session_status_bar.dart` — emoji dynamique via `autoDetectedModeProvider`
+- `urbink/test/features/sessions/models/session_test.dart` — `+dominantMode` tests
 
 ## Change Log
 
 | Date | Version | Description |
 |---|---|---|
 | 2026-04-14 | 1.0 | Création story — auto-détection mode déplacement via fenêtre glissante 30s |
+| 2026-04-14 | 1.1 | Implémentation complète — 73 tests passent, analyze OK |

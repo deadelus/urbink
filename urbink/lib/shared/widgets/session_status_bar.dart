@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:urbink/features/sessions/models/transport_mode.dart';
 import 'package:urbink/features/sessions/providers/session_metrics_provider.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
@@ -58,6 +59,7 @@ class _SessionStatusBarState extends ConsumerState<SessionStatusBar> {
     if (sessionState == SessionState.idle) return const SizedBox.shrink();
 
     final metrics = ref.watch(sessionMetricsProvider);
+    final detectedMode = ref.watch(autoDetectedModeProvider);
     final elapsed = metrics.elapsed;
     final hours = elapsed.inHours;
     final minutes = elapsed.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -78,7 +80,7 @@ class _SessionStatusBarState extends ConsumerState<SessionStatusBar> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('🚶', style: TextStyle(fontSize: 16)),
+            Text(_modeEmoji(detectedMode), style: const TextStyle(fontSize: 16)),
             const SizedBox(width: 8),
             Text(
               '${metrics.streetCount} rues · $distanceLabel · $durationLabel',
@@ -94,4 +96,10 @@ class _SessionStatusBarState extends ConsumerState<SessionStatusBar> {
       ),
     );
   }
+
+  String _modeEmoji(TransportMode mode) => switch (mode) {
+        TransportMode.walking => '🚶',
+        TransportMode.cycling => '🚴',
+        TransportMode.driving => '🚗',
+      };
 }

@@ -117,10 +117,9 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
     final current = state;
     if (current == null) return null;
 
-    final mode = ref.read(transportModeProvider);
     final completed = current.copyWith(
       sessionEnd: DateTime.now(),
-      mode: mode,
+      mode: metrics.dominantMode,
       streetIds: metrics.exploredStreetIds.toList(),
       distanceMeters: metrics.distanceMeters,
     );
