@@ -58,6 +58,7 @@ class _SessionStatusBarState extends ConsumerState<SessionStatusBar> {
     if (sessionState == SessionState.idle) return const SizedBox.shrink();
 
     final metrics = ref.watch(sessionMetricsProvider);
+    final detectedMode = ref.watch(autoDetectedModeProvider);
     final elapsed = metrics.elapsed;
     final hours = elapsed.inHours;
     final minutes = elapsed.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -78,7 +79,7 @@ class _SessionStatusBarState extends ConsumerState<SessionStatusBar> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('🚶', style: TextStyle(fontSize: 16)),
+            Text(detectedMode.emoji, style: const TextStyle(fontSize: 16)),
             const SizedBox(width: 8),
             Text(
               '${metrics.streetCount} rues · $distanceLabel · $durationLabel',
@@ -94,4 +95,5 @@ class _SessionStatusBarState extends ConsumerState<SessionStatusBar> {
       ),
     );
   }
+
 }

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:urbink/features/sessions/models/session.dart';
+import 'package:urbink/features/sessions/models/session_metrics.dart';
 import 'package:urbink/features/sessions/models/transport_mode.dart';
 
 void main() {
@@ -99,6 +100,45 @@ void main() {
       expect(updated.distanceMeters, 2000.0);
       expect(updated.sessionId, session.sessionId);
       expect(updated.streetIds, session.streetIds);
+    });
+  });
+
+  group('SessionMetrics.dominantMode', () {
+    test('modeTicks vide → fallback sur detectedMode', () {
+      const metrics = SessionMetrics(
+        detectedMode: TransportMode.cycling,
+        modeTicks: {},
+      );
+      expect(metrics.dominantMode, TransportMode.cycling);
+    });
+
+    test('un seul mode dans modeTicks → retourne ce mode', () {
+      const metrics = SessionMetrics(
+        modeTicks: {TransportMode.walking: 10},
+      );
+      expect(metrics.dominantMode, TransportMode.walking);
+    });
+
+    test('mode dominant = celui avec le plus de ticks', () {
+      const metrics = SessionMetrics(
+        modeTicks: {
+          TransportMode.walking: 3,
+          TransportMode.cycling: 7,
+          TransportMode.driving: 1,
+        },
+      );
+      expect(metrics.dominantMode, TransportMode.cycling);
+    });
+
+    test('égalité → retourne le premier (ordre Map)', () {
+      const metrics = SessionMetrics(
+        modeTicks: {
+          TransportMode.walking: 5,
+          TransportMode.cycling: 5,
+        },
+      );
+      // reduce retourne le premier en cas d'égalité (a.value >= b.value)
+      expect(metrics.dominantMode, TransportMode.walking);
     });
   });
 }

@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:urbink/features/sessions/models/session_metrics.dart';
+import 'package:urbink/features/sessions/models/transport_mode.dart';
 import 'package:urbink/features/sessions/providers/gps_tracking_provider.dart';
+import 'package:urbink/features/sessions/services/transport_mode_detector.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 
 class SessionMetricsNotifier extends Notifier<SessionMetrics> {
@@ -10,12 +12,14 @@ class SessionMetricsNotifier extends Notifier<SessionMetrics> {
   // Incrémenté à chaque reset session — invalide les réponses snap-to-road
   // arrivées après un changement d'état (active→idle).
   int _sessionToken = 0;
+  late TransportModeDetector _detector;
 
   @override
   SessionMetrics build() {
     _disposed = false;
     _lastPosition = null;
     _sessionToken++;
+    _detector = TransportModeDetector();
     ref.onDispose(() => _disposed = true);
 
     ref.listen(sessionStateProvider, (previous, next) {
@@ -56,6 +60,9 @@ class SessionMetricsNotifier extends Notifier<SessionMetrics> {
         : 0.0;
     _lastPosition = position;
 
+    // Auto-détection du mode de déplacement (fenêtre glissante 30s)
+    final newMode = _detector.update(position.speed, position.timestamp);
+
     // Snap to road pour compter les rues uniques
     final snapService = ref.read(snapToRoadServiceProvider);
     final streetId = await snapService.snapToRoad(position);
@@ -67,9 +74,14 @@ class SessionMetricsNotifier extends Notifier<SessionMetrics> {
     final updatedStreets = {...current.exploredStreetIds};
     if (streetId != null) updatedStreets.add(streetId);
 
+    final updatedTicks = Map<TransportMode, int>.from(current.modeTicks);
+    updatedTicks[newMode] = (updatedTicks[newMode] ?? 0) + 1;
+
     state = current.copyWith(
       distanceMeters: current.distanceMeters + additionalDistance,
       exploredStreetIds: updatedStreets,
+      detectedMode: newMode,
+      modeTicks: updatedTicks,
     );
   }
 }
@@ -77,4 +89,11 @@ class SessionMetricsNotifier extends Notifier<SessionMetrics> {
 final sessionMetricsProvider =
     NotifierProvider<SessionMetricsNotifier, SessionMetrics>(
   SessionMetricsNotifier.new,
+);
+
+/// Mode de déplacement auto-détecté en temps réel (fenêtre GPS 30s).
+///
+/// Utilisé par [SessionStatusBar] pour afficher l'icône de mode.
+final autoDetectedModeProvider = Provider<TransportMode>(
+  (ref) => ref.watch(sessionMetricsProvider).detectedMode,
 );

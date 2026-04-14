@@ -135,6 +135,72 @@ void main() {
       expect(repo.saved, hasLength(1));
     });
 
+    test('mode = dominantMode quand des positions ont été reçues', () async {
+      final cache = SessionLocalCache(dbPath: inMemoryDatabasePath);
+      final repo = FakeSessionRepository();
+      final container = makeContainer(repo: repo, cache: cache);
+      addTearDown(() async {
+        container.dispose();
+        await cache.close();
+      });
+
+      final fakeSession = Session(
+        sessionId: 'mode-id',
+        userId: 'user-test',
+        sessionStart: DateTime(2026, 4, 14, 10, 0),
+        mode: TransportMode.walking,
+        streetIds: const [],
+        distanceMeters: 0,
+      );
+      await cache.insertSession(fakeSession);
+      // ignore: invalid_use_of_protected_member
+      container.read(sessionLifecycleProvider.notifier).state = fakeSession;
+
+      // Métriques avec cycling dominant (2 ticks cycling, 1 walking)
+      final metrics = SessionMetrics(
+        sessionStartTime: DateTime(2026, 4, 14, 10, 0),
+        modeTicks: const {
+          TransportMode.cycling: 2,
+          TransportMode.walking: 1,
+        },
+      );
+
+      final result = await container
+          .read(sessionLifecycleProvider.notifier)
+          .stopAndSave(metrics);
+
+      expect(result!.mode, TransportMode.cycling);
+    });
+
+    test('mode = current.mode si aucune position reçue (modeTicks vide)', () async {
+      final cache = SessionLocalCache(dbPath: inMemoryDatabasePath);
+      final repo = FakeSessionRepository();
+      final container = makeContainer(repo: repo, cache: cache);
+      addTearDown(() async {
+        container.dispose();
+        await cache.close();
+      });
+
+      final fakeSession = Session(
+        sessionId: 'fallback-id',
+        userId: 'user-test',
+        sessionStart: DateTime(2026, 4, 14, 10, 0),
+        mode: TransportMode.cycling, // sélection initiale
+        streetIds: const [],
+        distanceMeters: 0,
+      );
+      await cache.insertSession(fakeSession);
+      // ignore: invalid_use_of_protected_member
+      container.read(sessionLifecycleProvider.notifier).state = fakeSession;
+
+      // Métriques sans aucune position GPS
+      final result = await container
+          .read(sessionLifecycleProvider.notifier)
+          .stopAndSave(const SessionMetrics());
+
+      expect(result!.mode, TransportMode.cycling);
+    });
+
     test('session reste dans sqflite si Firestore échoue (offline)', () async {
       final cache = SessionLocalCache(dbPath: inMemoryDatabasePath);
       final repo = FakeSessionRepository()..throwOnSave = true;
