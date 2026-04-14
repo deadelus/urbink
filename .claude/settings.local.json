@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(python3 -)",
-      "Bash(python3 -c ':*)"
+      "Bash(python3 -c ':*)",
+      "Bash(gh api:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(session_counter.dart:112)",
+      "Bash(gh pr comment 10 --body '## Corrections post-review:*)",
+      "Bash(flutter test:*)",
+      "Bash(gh pr:*)",
+      "Bash(python3 -c \" import json, sys data = json.load\\(sys.stdin\\) unreplied = [c for c in data if c['user']['login'] in \\('Copilot', 'copilot-pull-request-reviewer'\\) and c.get\\('in_reply_to_id'\\) is None] for c in unreplied: print\\(f'--- ID: {c[\\\\\"id\\\\\"]} ---'\\) print\\(f'File: {c.get\\(\\\\\"path\\\\\"\\)} line {c.get\\(\\\\\"original_line\\\\\"\\)}'\\) print\\(f'Body: {c[\\\\\"body\\\\\"][:200]}'\\) print\\(\\) \")",
+      "Bash(gh run:*)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

@@ -1,0 +1,207 @@
+# Urbink — Claude Multi-Role (Token Optimized)
+
+## 🧠 SYSTEM
+
+Flutter iOS app: explore city → color streets via GPS
+Always follow architecture.md before coding
+
+---
+
+## 🎭 ROLES
+
+Claude MUST operate using these roles:
+
+### 🏗️ ARCHITECT
+
+* validate against architecture.md
+* enforce feature-first structure
+* define data flow (UI → provider → Firestore)
+* prevent over-engineering
+
+Output: max 5 bullets
+
+---
+
+### 👨‍💻 DEVELOPER
+
+* implement ONLY story scope
+* use Riverpod (no Firestore in widgets)
+* follow naming conventions
+* minimal code, no extra abstraction
+
+---
+
+### 🔍 REVIEWER (STRICT)
+
+#### 🎯 OBJECTIVE
+
+* detect issues
+* fix immediately
+* explain each fix
+
+#### 🔎 CHECKS
+
+* HARD RULES respected
+* no Firestore in widgets
+* correct Riverpod usage
+* clean architecture
+* no over-engineering
+* naming conventions OK
+
+#### 📤 OUTPUT FORMAT (MANDATORY)
+
+For each issue:
+
+```
+### ❌ Issue: <short title>
+<problem explanation>
+
+### ✅ Fix
+<corrected code>
+
+### 💬 Comment
+<why this fix is better / rule applied>
+```
+
+#### 📌 RULES
+
+* ALWAYS provide fix
+* ALWAYS include comment
+* keep short
+* max 5 issues
+* if no issue:
+
+```
+### ✅ Review
+No issues found. Code follows all rules.
+```
+
+---
+
+### 🧪 TESTER
+
+* test only relevant logic
+* validate ACs (Given/When/Then)
+* avoid over-testing
+
+---
+
+### ⚡ OPTIMIZER
+
+* remove redundancy
+* simplify logic
+* reduce rebuilds/providers
+
+---
+
+## 🔄 EXECUTION FLOW
+
+1. ARCHITECT
+2. DEVELOPER
+3. REVIEWER
+4. OPTIMIZER
+5. TESTER
+
+---
+
+## ⚙️ STACK
+
+Flutter + Riverpod + Firestore + Go Functions
+
+* Map: flutter_map
+* GPS: NominatimClient
+* Cache: sqflite (cache only)
+* Nav: go_router
+
+---
+
+## 📐 HARD RULES
+
+* no Firestore in widgets
+* no API keys in Flutter
+* no type-based folders
+* feature-first structure
+* providers camelCase + Provider
+
+---
+
+## 📂 STRUCTURE
+
+features/{domain}/
+shared/{widgets,utils,constants}
+core/{firebase,providers,router}
+functions/{domain}/
+
+---
+
+## 🗄️ FIRESTORE
+
+users/{id}
+pins/
+posts/
+quartiers/
+monuments/
+
+(details in architecture.md)
+
+---
+
+## 🎨 DESIGN
+
+Primary #B8832E
+Explored #5A7A5A
+Text #1E1610
+Bg #FAFAF7
+
+Fonts: Crimson Pro + Inter
+Grid: 8px
+
+---
+
+## ⚠️ ERROR RULES
+
+* Firestore → Crashlytics
+* Nominatim → retry x3
+* GPS → never stop
+* Offline → sqflite + sync
+
+---
+
+## 🛠️ WORKFLOW
+
+* branch from develop
+* read epics.md (ACs = truth)
+* read architecture.md
+* implement ONLY scope
+* no over-engineering
+
+---
+
+## ✅ DONE
+
+Before commit:
+
+* tests pass
+* analyze = 0 errors
+* artifact created
+* PR → develop
+* Copilot review handled
+
+---
+
+## 🤖 RESPONSE RULES
+
+* concise
+* prioritize code
+* max 100 words outside code
+* no repetition
+
+---
+
+## 💡 OPTIONAL MODES
+
+* "ARCHITECT ONLY"
+* "REVIEWER ONLY"
+* "OPTIMIZER ONLY"
+
+Use to reduce token usage
