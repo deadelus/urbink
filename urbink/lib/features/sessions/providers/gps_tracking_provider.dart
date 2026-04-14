@@ -39,7 +39,9 @@ final snapToRoadServiceProvider = Provider<SnapToRoadService>((ref) {
 /// avec son propre état de filtrage — pas d'interférence avec [gpsPositionStreamProvider].
 final passiveGpsStreamProvider = StreamProvider<Position>((ref) async* {
   final gpsService = ref.watch(gpsTrackingServiceProvider);
-  final permission = await Geolocator.checkPermission();
+  // Utilise locationPermissionProvider (overrideable en test) plutôt qu'un
+  // appel direct à Geolocator.checkPermission() pour faciliter les tests.
+  final permission = await ref.watch(locationPermissionProvider.future);
   if (permission == LocationPermission.denied ||
       permission == LocationPermission.deniedForever) {
     return;

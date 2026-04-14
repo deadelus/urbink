@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:urbink/features/map/providers/map_street_overlay_provider.dart';
 import 'package:urbink/features/sessions/providers/gps_tracking_provider.dart';
+import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 import 'package:urbink/features/sessions/services/snap_to_road_service.dart';
 
 class _FakeSnapToRoadService extends SnapToRoadService {
@@ -35,9 +36,13 @@ ProviderContainer _makeContainer({
       snapToRoadServiceProvider.overrideWith(
         (ref) => _FakeSnapToRoadService(snapResult),
       ),
-      gpsPositionStreamProvider.overrideWith(
+      // L'overlay écoute passiveGpsStreamProvider (pas gpsPositionStreamProvider)
+      // depuis Story 2.8 — le tracking passif est indépendant de l'état session.
+      passiveGpsStreamProvider.overrideWith(
         (ref) => positionStream ?? const Stream.empty(),
       ),
+      // Firebase non initialisé en test — UID null = pas d'appel Firestore
+      currentUidProvider.overrideWith((ref) => null),
     ],
   );
 }

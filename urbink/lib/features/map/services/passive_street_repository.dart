@@ -11,15 +11,20 @@ abstract interface class PassiveStreetRepository {
 }
 
 class FirestorePassiveStreetRepository implements PassiveStreetRepository {
+  FirestorePassiveStreetRepository({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  final FirebaseFirestore _firestore;
+
   @override
   Future<void> saveStreet(String userId, String streetId) async {
-    await FirebaseFirestore.instance
+    await _firestore
         .collection('users')
         .doc(userId)
         .collection('streets')
         .doc(streetId)
         .set(
-          {'lastExploredAt': Timestamp.now()},
+          {'lastExploredAt': FieldValue.serverTimestamp()},
           SetOptions(merge: true),
         );
   }
