@@ -1,6 +1,6 @@
 # Story 2.6 : Détection automatique du mode de déplacement
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 

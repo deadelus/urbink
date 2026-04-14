@@ -42,7 +42,7 @@ class TransportModeDetector {
   /// Méthode statique — exposée pour les tests unitaires.
   static TransportMode classify(double avgSpeedMps) {
     if (avgSpeedMps < _walkMaxMps) return TransportMode.walking;
-    if (avgSpeedMps < _bikeMaxMps) return TransportMode.cycling;
+    if (avgSpeedMps <= _bikeMaxMps) return TransportMode.cycling;
     return TransportMode.driving;
   }
 }

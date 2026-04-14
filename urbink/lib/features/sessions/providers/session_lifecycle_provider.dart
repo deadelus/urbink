@@ -119,7 +119,7 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
 
     final completed = current.copyWith(
       sessionEnd: DateTime.now(),
-      mode: metrics.dominantMode,
+      mode: metrics.modeTicks.isEmpty ? current.mode : metrics.dominantMode,
       streetIds: metrics.exploredStreetIds.toList(),
       distanceMeters: metrics.distanceMeters,
     );

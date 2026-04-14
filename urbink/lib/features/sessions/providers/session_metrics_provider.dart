@@ -61,7 +61,7 @@ class SessionMetricsNotifier extends Notifier<SessionMetrics> {
     _lastPosition = position;
 
     // Auto-détection du mode de déplacement (fenêtre glissante 30s)
-    final newMode = _detector.update(position.speed, DateTime.now());
+    final newMode = _detector.update(position.speed, position.timestamp);
 
     // Snap to road pour compter les rues uniques
     final snapService = ref.read(snapToRoadServiceProvider);

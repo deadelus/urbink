@@ -23,9 +23,16 @@ void main() {
       expect(TransportModeDetector.classify(2.5), TransportMode.cycling);
     });
 
-    test('seuil exact 8.333 m/s (30 km/h) → driving', () {
+    test('seuil exact 8.333 m/s (30 km/h) → cycling', () {
       expect(
         TransportModeDetector.classify(30.0 / 3.6),
+        TransportMode.cycling,
+      );
+    });
+
+    test('au-dessus de 30 km/h → driving', () {
+      expect(
+        TransportModeDetector.classify(30.1 / 3.6),
         TransportMode.driving,
       );
     });
