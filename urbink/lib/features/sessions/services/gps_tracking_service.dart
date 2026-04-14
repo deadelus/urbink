@@ -14,6 +14,9 @@ class GpsTrackingService {
 
   Position? _lastPosition;
 
+  /// Vérifie que le service de localisation est activé au niveau système.
+  Future<bool> isServiceEnabled() => Geolocator.isLocationServiceEnabled();
+
   /// Demande la permission GPS.
   ///
   /// Sur iOS, tente d'obtenir "Toujours autoriser" pour le tracking arrière-plan.

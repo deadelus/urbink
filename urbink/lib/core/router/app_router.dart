@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:urbink/features/map/screens/map_screen.dart';
+import 'package:urbink/features/onboarding/screens/privacy_screen.dart';
 import 'package:urbink/features/sessions/models/session.dart';
+import 'package:urbink/features/sessions/providers/gps_tracking_provider.dart';
 import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 import 'package:urbink/features/sessions/providers/session_metrics_provider.dart';
 import 'package:urbink/features/sessions/screens/session_summary_screen.dart';
@@ -22,10 +25,42 @@ abstract final class AppRoutes {
   static const String challenges = '/challenges';
   static const String profile = '/profile';
   static const String sessionSummary = '/session-summary';
+  static const String onboarding = '/onboarding';
 }
+
+// ---------------------------------------------------------------------------
+// Notifier de politique de confidentialité — pilote le redirect GoRouter.
+// Initialisé depuis main() avant runApp().
+// ---------------------------------------------------------------------------
+
+class PrivacyNotifier extends ChangeNotifier {
+  bool _accepted;
+  PrivacyNotifier({required bool accepted}) : _accepted = accepted;
+
+  bool get accepted => _accepted;
+
+  void setAccepted() {
+    if (_accepted) return;
+    _accepted = true;
+    notifyListeners();
+  }
+}
+
+/// Instance module-level partagée entre main.dart et PrivacyScreen.
+final privacyNotifier = PrivacyNotifier(accepted: false);
+
+/// Clé SharedPreferences pour le consentement — source unique de vérité.
+const kPrivacyAcceptedKey = 'urbink_privacy_accepted';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.map,
+  refreshListenable: privacyNotifier,
+  redirect: (context, state) {
+    final onOnboarding = state.matchedLocation == AppRoutes.onboarding;
+    if (!privacyNotifier.accepted && !onOnboarding) return AppRoutes.onboarding;
+    if (privacyNotifier.accepted && onOnboarding) return AppRoutes.map;
+    return null;
+  },
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
@@ -93,8 +128,42 @@ final GoRouter appRouter = GoRouter(
         session: state.extra! as Session,
       ),
     ),
+    GoRoute(
+      path: AppRoutes.onboarding,
+      builder: (context, state) => const PrivacyScreen(),
+    ),
   ],
 );
+
+// ---------------------------------------------------------------------------
+// Dialog GPS refusé
+// ---------------------------------------------------------------------------
+
+Future<void> _showGpsDeniedDialog(BuildContext context) {
+  return showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('GPS requis'),
+      content: const Text(
+        'Le GPS est requis pour colorier tes rues.\n'
+        'Active-le dans les Réglages pour continuer.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: const Text('Annuler'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(ctx).pop();
+            openAppSettings();
+          },
+          child: const Text('Ouvrir les réglages'),
+        ),
+      ],
+    ),
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Scaffold principal avec bottom nav + SessionStatusBar + bouton Arrêter
@@ -151,6 +220,20 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
                 child: const _StartSessionSheet(),
               );
               if (confirmed == true && context.mounted) {
+                // Vérifier le service + la permission GPS avant de démarrer
+                final gpsService = ref.read(gpsTrackingServiceProvider);
+                final serviceEnabled = await gpsService.isServiceEnabled();
+                if (!context.mounted) return;
+                if (!serviceEnabled) {
+                  _showGpsDeniedDialog(context);
+                  return;
+                }
+                final granted = await gpsService.requestPermission();
+                if (!context.mounted) return;
+                if (!granted) {
+                  _showGpsDeniedDialog(context);
+                  return;
+                }
                 ref.read(sessionStateProvider.notifier).state =
                     SessionState.active;
                 navigationShell.goBranch(
