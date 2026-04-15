@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:urbink/features/map/screens/map_screen.dart';
 import 'package:urbink/features/onboarding/screens/privacy_screen.dart';
 import 'package:urbink/features/sessions/models/session.dart';
@@ -12,6 +11,7 @@ import 'package:urbink/features/sessions/screens/session_summary_screen.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
+import 'package:urbink/shared/widgets/gps_required_dialog.dart';
 import 'package:urbink/shared/widgets/session_status_bar.dart';
 import 'package:urbink/shared/widgets/transport_mode_selector.dart';
 import 'package:urbink/shared/widgets/urbink_bottom_nav.dart';
@@ -144,31 +144,6 @@ final GoRouter appRouter = GoRouter(
 // Dialog GPS refusé
 // ---------------------------------------------------------------------------
 
-Future<void> _showGpsDeniedDialog(BuildContext context) {
-  return showDialog(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('GPS requis'),
-      content: const Text(
-        'Le GPS est requis pour colorier tes rues.\n'
-        'Active-le dans les Réglages pour continuer.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text('Annuler'),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.of(ctx).pop();
-            openAppSettings();
-          },
-          child: const Text('Ouvrir les réglages'),
-        ),
-      ],
-    ),
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Scaffold principal avec bottom nav + SessionStatusBar + bouton Arrêter
@@ -230,13 +205,13 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
                 final serviceEnabled = await gpsService.isServiceEnabled();
                 if (!context.mounted) return;
                 if (!serviceEnabled) {
-                  _showGpsDeniedDialog(context);
+                  showGpsRequiredDialog(context);
                   return;
                 }
                 final granted = await gpsService.requestPermission();
                 if (!context.mounted) return;
                 if (!granted) {
-                  _showGpsDeniedDialog(context);
+                  showGpsRequiredDialog(context);
                   return;
                 }
                 ref.read(sessionStateProvider.notifier).state =
@@ -399,10 +374,14 @@ class _CreateItineraireScreen extends StatelessWidget {
     final topPadding = MediaQuery.of(context).padding.top;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Scaffold(
-      body: Stack(
+    // MapScreen possède son propre Scaffold — on évite le nesting en
+    // enveloppant dans Material+Stack plutôt qu'un Scaffold parent.
+    return Material(
+      color: Colors.transparent,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          // Carte complète en arrière-plan
+          // Carte complète en arrière-plan (Scaffold géré par MapScreen)
           const MapScreen(),
           // Bouton ← Retour flottant (au-dessus safe area)
           Positioned(

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/features/sessions/providers/gps_tracking_provider.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
+import 'package:urbink/shared/widgets/gps_required_dialog.dart';
 
 /// Bottom sheet "Carte & Sorties" — Story 2.9
 ///
@@ -48,42 +48,16 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
     final serviceEnabled = await gpsService.isServiceEnabled();
     if (!context.mounted) return;
     if (!serviceEnabled) {
-      await _showGpsDeniedDialog(context);
+      await showGpsRequiredDialog(context);
       return;
     }
     final granted = await gpsService.requestPermission();
     if (!context.mounted) return;
     if (!granted) {
-      await _showGpsDeniedDialog(context);
+      await showGpsRequiredDialog(context);
       return;
     }
     ref.read(sessionStateProvider.notifier).state = SessionState.active;
-  }
-
-  static Future<void> _showGpsDeniedDialog(BuildContext context) {
-    return showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('GPS requis'),
-        content: const Text(
-          'Le GPS est requis pour colorier tes rues.\n'
-          'Active-le dans les Réglages pour continuer.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              openAppSettings();
-            },
-            child: const Text('Ouvrir les réglages'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -106,7 +80,7 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
       builder: (context, constraints) {
         final parentH = constraints.maxHeight;
         final minSize = (SortiesBottomSheet.collapsedHeight / parentH).clamp(0.0, 1.0);
-        final peekSize = (320 / parentH).clamp(minSize, 0.64);
+        final peekSize = (260 / parentH).clamp(minSize, 0.64);
         const maxSize = 0.65;
         _minSize = minSize; // mis à jour à chaque rebuild — lu par ref.listen
 
