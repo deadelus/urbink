@@ -19,6 +19,10 @@ import 'package:urbink/shared/constants/spacing.dart';
 class SortiesBottomSheet extends ConsumerStatefulWidget {
   const SortiesBottomSheet({super.key});
 
+  /// Hauteur collapsed du sheet (72px). Utilisé par les parents pour
+  /// repositionner les widgets au-dessus (ex. ZonesTogglePill bottom offset).
+  static const double collapsedHeight = 72;
+
   @override
   ConsumerState<SortiesBottomSheet> createState() => _SortiesBottomSheetState();
 }
@@ -30,6 +34,8 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
       DraggableScrollableController();
   _SheetView _view = _SheetView.selectMode;
   bool _goingForward = true;
+  // Dernière valeur calculée par LayoutBuilder — lue par ref.listen sans rebuild.
+  double _minSize = 0.0;
 
   @override
   void dispose() {
@@ -83,13 +89,12 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionStateProvider);
-    final isSessionActive = sessionState != SessionState.idle;
+    final isSessionActive = sessionState == SessionState.active;
 
     ref.listen<SessionState>(sessionStateProvider, (prev, next) {
-      if (next != SessionState.idle && _controller.isAttached) {
-        final screenH = MediaQuery.of(context).size.height;
+      if (next == SessionState.active && _controller.isAttached) {
         _controller.animateTo(
-          (72 / screenH).clamp(0.0, 1.0),
+          _minSize,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
@@ -100,9 +105,10 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final parentH = constraints.maxHeight;
-        final minSize = (72 / parentH).clamp(0.0, 1.0);
+        final minSize = (SortiesBottomSheet.collapsedHeight / parentH).clamp(0.0, 1.0);
         final peekSize = (320 / parentH).clamp(minSize, 0.64);
         const maxSize = 0.65;
+        _minSize = minSize; // mis à jour à chaque rebuild — lu par ref.listen
 
         // Callbacks velocity-based pour snap au flick
         void snapUp() => _controller.animateTo(
@@ -137,7 +143,7 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
             minChildSize: minSize,
             maxChildSize: maxSize,
             snap: true,
-            snapSizes: [peekSize],
+            snapSizes: [peekSize, maxSize],
             builder: (ctx, scrollController) {
               return _SheetContainer(
                 scrollController: scrollController,

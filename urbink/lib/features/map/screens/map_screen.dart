@@ -192,10 +192,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ],
           ),
           const SessionCounter(),
-          // Pill Zones bas-gauche — au-dessus du sheet collapsed (72px + 16px gap)
+          // Pill Zones bas-gauche — au-dessus du sheet collapsed
           const Positioned(
             left: 16,
-            bottom: 88,
+            bottom: SortiesBottomSheet.collapsedHeight + 16,
             child: ZonesTogglePill(),
           ),
           // Bottom sheet Carte & Sorties (Story 2.9)
