@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/map/providers/map_state_provider.dart';
+import 'package:urbink/features/map/widgets/sorties_bottom_sheet.dart';
 import 'package:urbink/features/sessions/models/session.dart';
 import 'package:urbink/features/sessions/providers/crash_recovery_provider.dart';
 import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
@@ -191,12 +192,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ],
           ),
           const SessionCounter(),
-          // Pill Zones bas-gauche — toggle affichage rues explorées (FR10b)
+          // Pill Zones bas-gauche — au-dessus du sheet collapsed (72px + 16px gap)
           const Positioned(
             left: 16,
-            bottom: 16,
+            bottom: 88,
             child: ZonesTogglePill(),
           ),
+          // Bottom sheet Carte & Sorties (Story 2.9)
+          const SortiesBottomSheet(),
         ],
       ),
     );

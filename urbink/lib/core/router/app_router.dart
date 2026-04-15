@@ -26,6 +26,7 @@ abstract final class AppRoutes {
   static const String profile = '/profile';
   static const String sessionSummary = '/session-summary';
   static const String onboarding = '/onboarding';
+  static const String createItineraire = '/create-itineraire';
 }
 
 // ---------------------------------------------------------------------------
@@ -131,6 +132,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.onboarding,
       builder: (context, state) => const PrivacyScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.createItineraire,
+      builder: (context, state) =>
+          const _PlaceholderScreen(label: 'Créer un itinéraire'),
     ),
   ],
 );
