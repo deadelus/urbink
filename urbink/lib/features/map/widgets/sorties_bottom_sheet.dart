@@ -29,6 +29,7 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
   final DraggableScrollableController _controller =
       DraggableScrollableController();
   _SheetView _view = _SheetView.selectMode;
+  bool _goingForward = true;
 
   @override
   void dispose() {
@@ -100,7 +101,7 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
       builder: (context, constraints) {
         final parentH = constraints.maxHeight;
         final minSize = (72 / parentH).clamp(0.0, 1.0);
-        final peekSize = (260 / parentH).clamp(minSize, 0.64);
+        final peekSize = (320 / parentH).clamp(minSize, 0.64);
         const maxSize = 0.65;
 
         // Callbacks velocity-based pour snap au flick
@@ -114,6 +115,19 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
               duration: const Duration(milliseconds: 280),
               curve: Curves.easeOut,
             );
+        void snapToggle() {
+          if (!_controller.isAttached) return;
+          final current = _controller.size;
+          if (current > minSize + 0.02) {
+            _controller.animateTo(minSize,
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOut);
+          } else {
+            _controller.animateTo(peekSize,
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOut);
+          }
+        }
 
         return IgnorePointer(
           ignoring: isSessionActive,
@@ -129,14 +143,21 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
                 scrollController: scrollController,
                 view: _view,
                 isSessionActive: isSessionActive,
-                onSelectItineraire: () =>
-                    setState(() => _view = _SheetView.itinerairesList),
-                onBack: () => setState(() => _view = _SheetView.selectMode),
+                onSelectItineraire: () => setState(() {
+                  _goingForward = true;
+                  _view = _SheetView.itinerairesList;
+                }),
+                onBack: () => setState(() {
+                  _goingForward = false;
+                  _view = _SheetView.selectMode;
+                }),
                 onStart: () => _startSession(context),
                 onCreateItineraire: () =>
                     context.push(AppRoutes.createItineraire),
+                goingForward: _goingForward,
                 onSnapUp: snapUp,
                 onSnapDown: snapDown,
+                onSnapToggle: snapToggle,
               );
             },
           ),
@@ -150,31 +171,97 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
 // Conteneur principal du sheet
 // ---------------------------------------------------------------------------
 
-class _SheetContainer extends StatelessWidget {
+class _SheetContainer extends StatefulWidget {
   const _SheetContainer({
     required this.scrollController,
     required this.view,
     required this.isSessionActive,
+    required this.goingForward,
     required this.onSelectItineraire,
     required this.onBack,
     required this.onStart,
     required this.onCreateItineraire,
     required this.onSnapUp,
     required this.onSnapDown,
+    required this.onSnapToggle,
   });
 
   final ScrollController scrollController;
   final _SheetView view;
   final bool isSessionActive;
+  final bool goingForward;
   final VoidCallback onSelectItineraire;
   final VoidCallback onBack;
   final VoidCallback onStart;
   final VoidCallback onCreateItineraire;
   final VoidCallback onSnapUp;
   final VoidCallback onSnapDown;
+  final VoidCallback onSnapToggle;
+
+  @override
+  State<_SheetContainer> createState() => _SheetContainerState();
+}
+
+class _SheetContainerState extends State<_SheetContainer>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pushController;
+  late Animation<double> _pushAnim;
+  late _SheetView _prevView;
+  // Dummy controller for the exiting view — avoids double-attach error.
+  final ScrollController _exitScrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _prevView = widget.view;
+    _pushController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 260),
+      value: 1.0, // Déjà complet au premier rendu
+    );
+    _pushAnim =
+        CurvedAnimation(parent: _pushController, curve: Curves.easeOut);
+  }
+
+  @override
+  void didUpdateWidget(_SheetContainer old) {
+    super.didUpdateWidget(old);
+    if (widget.view != old.view) {
+      _prevView = old.view;
+      _pushController.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pushController.dispose();
+    _exitScrollController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildView(_SheetView v, ScrollController sc) => switch (v) {
+        _SheetView.selectMode => _SelectModeContent(
+            scrollController: sc,
+            onSelectItineraire: widget.onSelectItineraire,
+            onStart: widget.onStart,
+            onSnapUp: widget.onSnapUp,
+            onSnapDown: widget.onSnapDown,
+            onSnapToggle: widget.onSnapToggle,
+          ),
+        _SheetView.itinerairesList => _ItinerairesListContent(
+            scrollController: sc,
+            onBack: widget.onBack,
+            onCreateItineraire: widget.onCreateItineraire,
+            onSnapUp: widget.onSnapUp,
+            onSnapDown: widget.onSnapDown,
+            onSnapToggle: widget.onSnapToggle,
+          ),
+      };
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.sizeOf(context).width;
+
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       child: Container(
@@ -189,36 +276,31 @@ class _SheetContainer extends StatelessWidget {
             ),
           ],
         ),
-        child: isSessionActive
+        child: widget.isSessionActive
             ? const _CollapsedLockedContent()
-            : AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                transitionBuilder: (child, animation) {
-                  final offsetAnim = Tween<Offset>(
-                    begin: const Offset(1, 0),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(parent: animation, curve: Curves.easeOut),
-                  );
-                  return SlideTransition(position: offsetAnim, child: child);
-                },
-                child: view == _SheetView.selectMode
-                    ? _SelectModeContent(
-                        key: const ValueKey('selectMode'),
-                        scrollController: scrollController,
-                        onSelectItineraire: onSelectItineraire,
-                        onStart: onStart,
-                        onSnapUp: onSnapUp,
-                        onSnapDown: onSnapDown,
-                      )
-                    : _ItinerairesListContent(
-                        key: const ValueKey('itinerairesList'),
-                        scrollController: scrollController,
-                        onBack: onBack,
-                        onCreateItineraire: onCreateItineraire,
-                        onSnapUp: onSnapUp,
-                        onSnapDown: onSnapDown,
+            : AnimatedBuilder(
+                animation: _pushAnim,
+                builder: (context, _) {
+                  final t = _pushAnim.value; // 0 → 1
+                  final dir = widget.goingForward ? 1.0 : -1.0;
+                  return Stack(
+                    children: [
+                      // Vue sortante : glisse vers dir négatif
+                      if (t < 1.0)
+                        Transform.translate(
+                          offset: Offset(-dir * t * w, 0),
+                          child: _buildView(
+                              _prevView, _exitScrollController),
+                        ),
+                      // Vue entrante : glisse depuis dir positif → 0
+                      Transform.translate(
+                        offset: Offset(dir * (1.0 - t) * w, 0),
+                        child: _buildView(
+                            widget.view, widget.scrollController),
                       ),
+                    ],
+                  );
+                },
               ),
       ),
     );
@@ -250,12 +332,12 @@ class _CollapsedLockedContent extends StatelessWidget {
 
 class _SelectModeContent extends StatelessWidget {
   const _SelectModeContent({
-    super.key,
     required this.scrollController,
     required this.onSelectItineraire,
     required this.onStart,
     required this.onSnapUp,
     required this.onSnapDown,
+    required this.onSnapToggle,
   });
 
   final ScrollController scrollController;
@@ -263,6 +345,7 @@ class _SelectModeContent extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback onSnapUp;
   final VoidCallback onSnapDown;
+  final VoidCallback onSnapToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -271,15 +354,16 @@ class _SelectModeContent extends StatelessWidget {
       padding: EdgeInsets.zero,
       children: [
         const SizedBox(height: UrbinkSpacing.sm),
-        _DragHandle(onSwipeUp: onSnapUp, onSwipeDown: onSnapDown),
+        _DragHandle(onSwipeUp: onSnapUp, onSwipeDown: onSnapDown, onToggle: onSnapToggle),
         const SizedBox(height: UrbinkSpacing.sm),
         // Hint visible quand collapsed — toute la zone répond au swipe
         GestureDetector(
           behavior: HitTestBehavior.opaque,
+          onTap: onSnapToggle,
           onVerticalDragEnd: (details) {
             final v = details.primaryVelocity ?? 0;
-            if (v < -150) onSnapUp();
-            if (v > 150) onSnapDown();
+            if (v < -50) onSnapUp();
+            if (v > 50) onSnapDown();
           },
           child: const Padding(
             padding: EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
@@ -379,12 +463,12 @@ class _SelectModeContent extends StatelessWidget {
 
 class _ItinerairesListContent extends StatelessWidget {
   const _ItinerairesListContent({
-    super.key,
     required this.scrollController,
     required this.onBack,
     required this.onCreateItineraire,
     required this.onSnapUp,
     required this.onSnapDown,
+    required this.onSnapToggle,
   });
 
   final ScrollController scrollController;
@@ -392,6 +476,7 @@ class _ItinerairesListContent extends StatelessWidget {
   final VoidCallback onCreateItineraire;
   final VoidCallback onSnapUp;
   final VoidCallback onSnapDown;
+  final VoidCallback onSnapToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -400,7 +485,7 @@ class _ItinerairesListContent extends StatelessWidget {
       padding: EdgeInsets.zero,
       children: [
         const SizedBox(height: UrbinkSpacing.sm),
-        _DragHandle(onSwipeUp: onSnapUp, onSwipeDown: onSnapDown),
+        _DragHandle(onSwipeUp: onSnapUp, onSwipeDown: onSnapDown, onToggle: onSnapToggle),
         const SizedBox(height: UrbinkSpacing.xs),
         // Header : ← Retour | + Créer
         Padding(
@@ -579,19 +664,21 @@ class _GpsInfoChip extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _DragHandle extends StatelessWidget {
-  const _DragHandle({this.onSwipeUp, this.onSwipeDown});
+  const _DragHandle({this.onSwipeUp, this.onSwipeDown, this.onToggle});
 
   final VoidCallback? onSwipeUp;
   final VoidCallback? onSwipeDown;
+  final VoidCallback? onToggle;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      behavior: HitTestBehavior.translucent,
+      behavior: HitTestBehavior.opaque,
+      onTap: onToggle,
       onVerticalDragEnd: (details) {
         final v = details.primaryVelocity ?? 0;
-        if (v < -150) onSwipeUp?.call();
-        if (v > 150) onSwipeDown?.call();
+        if (v < -50) onSwipeUp?.call();
+        if (v > 50) onSwipeDown?.call();
       },
       child: SizedBox(
         width: double.infinity,
