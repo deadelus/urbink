@@ -135,8 +135,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.createItineraire,
-      builder: (context, state) =>
-          const _PlaceholderScreen(label: 'Créer un itinéraire'),
+      builder: (context, state) => const _CreateItineraireScreen(),
     ),
   ],
 );
@@ -380,6 +379,92 @@ class _StartSessionSheet extends StatelessWidget {
                 ),
               ),
               child: const Text('Démarrer la sortie'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Écran Créer un itinéraire — carte + panneau bas (placeholder Story 2.9)
+// ---------------------------------------------------------------------------
+
+class _CreateItineraireScreen extends StatelessWidget {
+  const _CreateItineraireScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Carte complète en arrière-plan
+          const MapScreen(),
+          // Bouton ← Retour flottant (au-dessus safe area)
+          Positioned(
+            top: topPadding + 8,
+            left: 8,
+            child: Material(
+              color: Colors.transparent,
+              child: IconButton(
+                onPressed: () => context.pop(),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.white.withValues(alpha: 0.92),
+                  foregroundColor: UrbinkColors.onSurface,
+                ),
+              ),
+            ),
+          ),
+          // Panneau bas — placeholder création itinéraire
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(
+                UrbinkSpacing.md,
+                UrbinkSpacing.md,
+                UrbinkSpacing.md,
+                UrbinkSpacing.md + bottomPadding,
+              ),
+              decoration: const BoxDecoration(
+                color: UrbinkColors.surface,
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(16)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x18000000),
+                    blurRadius: 16,
+                    offset: Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Créer un itinéraire',
+                    style:
+                        Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: UrbinkColors.onSurface,
+                            ),
+                  ),
+                  const SizedBox(height: UrbinkSpacing.xs),
+                  Text(
+                    'Trace ton parcours sur la carte.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: UrbinkColors.navInactive,
+                        ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

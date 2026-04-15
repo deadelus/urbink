@@ -103,6 +103,18 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
         final peekSize = (260 / parentH).clamp(minSize, 0.64);
         const maxSize = 0.65;
 
+        // Callbacks velocity-based pour snap au flick
+        void snapUp() => _controller.animateTo(
+              peekSize,
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeOut,
+            );
+        void snapDown() => _controller.animateTo(
+              minSize,
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeOut,
+            );
+
         return IgnorePointer(
           ignoring: isSessionActive,
           child: DraggableScrollableSheet(
@@ -123,6 +135,8 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet> {
                 onStart: () => _startSession(context),
                 onCreateItineraire: () =>
                     context.push(AppRoutes.createItineraire),
+                onSnapUp: snapUp,
+                onSnapDown: snapDown,
               );
             },
           ),
@@ -145,6 +159,8 @@ class _SheetContainer extends StatelessWidget {
     required this.onBack,
     required this.onStart,
     required this.onCreateItineraire,
+    required this.onSnapUp,
+    required this.onSnapDown,
   });
 
   final ScrollController scrollController;
@@ -154,48 +170,57 @@ class _SheetContainer extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onStart;
   final VoidCallback onCreateItineraire;
+  final VoidCallback onSnapUp;
+  final VoidCallback onSnapDown;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: UrbinkColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x18000000),
-            blurRadius: 16,
-            offset: Offset(0, -4),
-          ),
-        ],
-      ),
-      child: isSessionActive
-          ? const _CollapsedLockedContent()
-          : AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              transitionBuilder: (child, animation) {
-                final offsetAnim = Tween<Offset>(
-                  begin: const Offset(1, 0),
-                  end: Offset.zero,
-                ).animate(
-                  CurvedAnimation(parent: animation, curve: Curves.easeOut),
-                );
-                return SlideTransition(position: offsetAnim, child: child);
-              },
-              child: view == _SheetView.selectMode
-                  ? _SelectModeContent(
-                      key: const ValueKey('selectMode'),
-                      scrollController: scrollController,
-                      onSelectItineraire: onSelectItineraire,
-                      onStart: onStart,
-                    )
-                  : _ItinerairesListContent(
-                      key: const ValueKey('itinerairesList'),
-                      scrollController: scrollController,
-                      onBack: onBack,
-                      onCreateItineraire: onCreateItineraire,
-                    ),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: UrbinkColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x18000000),
+              blurRadius: 16,
+              offset: Offset(0, -4),
             ),
+          ],
+        ),
+        child: isSessionActive
+            ? const _CollapsedLockedContent()
+            : AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                transitionBuilder: (child, animation) {
+                  final offsetAnim = Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(parent: animation, curve: Curves.easeOut),
+                  );
+                  return SlideTransition(position: offsetAnim, child: child);
+                },
+                child: view == _SheetView.selectMode
+                    ? _SelectModeContent(
+                        key: const ValueKey('selectMode'),
+                        scrollController: scrollController,
+                        onSelectItineraire: onSelectItineraire,
+                        onStart: onStart,
+                        onSnapUp: onSnapUp,
+                        onSnapDown: onSnapDown,
+                      )
+                    : _ItinerairesListContent(
+                        key: const ValueKey('itinerairesList'),
+                        scrollController: scrollController,
+                        onBack: onBack,
+                        onCreateItineraire: onCreateItineraire,
+                        onSnapUp: onSnapUp,
+                        onSnapDown: onSnapDown,
+                      ),
+              ),
+      ),
     );
   }
 }
@@ -229,11 +254,15 @@ class _SelectModeContent extends StatelessWidget {
     required this.scrollController,
     required this.onSelectItineraire,
     required this.onStart,
+    required this.onSnapUp,
+    required this.onSnapDown,
   });
 
   final ScrollController scrollController;
   final VoidCallback onSelectItineraire;
   final VoidCallback onStart;
+  final VoidCallback onSnapUp;
+  final VoidCallback onSnapDown;
 
   @override
   Widget build(BuildContext context) {
@@ -242,18 +271,26 @@ class _SelectModeContent extends StatelessWidget {
       padding: EdgeInsets.zero,
       children: [
         const SizedBox(height: UrbinkSpacing.sm),
-        const _DragHandle(),
+        _DragHandle(onSwipeUp: onSnapUp, onSwipeDown: onSnapDown),
         const SizedBox(height: UrbinkSpacing.sm),
-        // Hint visible quand collapsed
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
-          child: Text(
-            '↑ Dérouler pour démarrer une sortie',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: UrbinkColors.navInactive,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+        // Hint visible quand collapsed — toute la zone répond au swipe
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onVerticalDragEnd: (details) {
+            final v = details.primaryVelocity ?? 0;
+            if (v < -150) onSnapUp();
+            if (v > 150) onSnapDown();
+          },
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
+            child: Text(
+              '↑ Dérouler pour démarrer une sortie',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: UrbinkColors.navInactive,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ),
@@ -281,7 +318,7 @@ class _SelectModeContent extends StatelessWidget {
                   title: 'Circuit libre',
                   subtitle: '✓ Par défaut',
                   isSelected: true,
-                  onTap: null, // déjà sélectionné
+                  onTap: null,
                 ),
               ),
               const SizedBox(width: UrbinkSpacing.sm),
@@ -346,11 +383,15 @@ class _ItinerairesListContent extends StatelessWidget {
     required this.scrollController,
     required this.onBack,
     required this.onCreateItineraire,
+    required this.onSnapUp,
+    required this.onSnapDown,
   });
 
   final ScrollController scrollController;
   final VoidCallback onBack;
   final VoidCallback onCreateItineraire;
+  final VoidCallback onSnapUp;
+  final VoidCallback onSnapDown;
 
   @override
   Widget build(BuildContext context) {
@@ -359,7 +400,7 @@ class _ItinerairesListContent extends StatelessWidget {
       padding: EdgeInsets.zero,
       children: [
         const SizedBox(height: UrbinkSpacing.sm),
-        const _DragHandle(),
+        _DragHandle(onSwipeUp: onSnapUp, onSwipeDown: onSnapDown),
         const SizedBox(height: UrbinkSpacing.xs),
         // Header : ← Retour | + Créer
         Padding(
@@ -407,10 +448,7 @@ class _ItinerairesListContent extends StatelessWidget {
           ),
           child: Column(
             children: [
-              const Text(
-                '🗺️',
-                style: TextStyle(fontSize: 40),
-              ),
+              const Text('🗺️', style: TextStyle(fontSize: 40)),
               const SizedBox(height: UrbinkSpacing.sm),
               Text(
                 'Aucun itinéraire',
@@ -516,7 +554,8 @@ class _GpsInfoChip extends StatelessWidget {
       ),
       decoration: const BoxDecoration(
         color: UrbinkColors.ghost,
-        borderRadius: BorderRadius.all(Radius.circular(UrbinkSpacing.radiusChip)),
+        borderRadius:
+            BorderRadius.all(Radius.circular(UrbinkSpacing.radiusChip)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -536,21 +575,36 @@ class _GpsInfoChip extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Drag handle
+// Drag handle — zone de swipe velocity-based
 // ---------------------------------------------------------------------------
 
 class _DragHandle extends StatelessWidget {
-  const _DragHandle();
+  const _DragHandle({this.onSwipeUp, this.onSwipeDown});
+
+  final VoidCallback? onSwipeUp;
+  final VoidCallback? onSwipeDown;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 36,
-        height: 4,
-        decoration: BoxDecoration(
-          color: UrbinkColors.sheetDragPill,
-          borderRadius: BorderRadius.circular(2),
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onVerticalDragEnd: (details) {
+        final v = details.primaryVelocity ?? 0;
+        if (v < -150) onSwipeUp?.call();
+        if (v > 150) onSwipeDown?.call();
+      },
+      child: SizedBox(
+        width: double.infinity,
+        height: 24,
+        child: Center(
+          child: Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: UrbinkColors.sheetDragPill,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
         ),
       ),
     );

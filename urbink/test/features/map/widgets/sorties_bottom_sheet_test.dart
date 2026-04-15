@@ -57,10 +57,11 @@ void main() {
       await tester.pumpWidget(_wrap(const SortiesBottomSheet()));
       await tester.pump();
 
-      // Drag vers le haut pour passer en peek
-      await tester.drag(
+      // Fling vers le haut — vélocité négative déclenche onSnapUp() → animateTo(peekSize)
+      await tester.fling(
         find.text('↑ Dérouler pour démarrer une sortie'),
-        const Offset(0, -300),
+        const Offset(0, -200),
+        800,
       );
       await tester.pumpAndSettle();
 
@@ -76,9 +77,10 @@ void main() {
       await tester.pump();
 
       // Ouvrir le sheet
-      await tester.drag(
+      await tester.fling(
         find.text('↑ Dérouler pour démarrer une sortie'),
-        const Offset(0, -300),
+        const Offset(0, -200),
+        800,
       );
       await tester.pumpAndSettle();
 
@@ -99,9 +101,10 @@ void main() {
       await tester.pumpWidget(_wrap(const SortiesBottomSheet()));
       await tester.pump();
 
-      await tester.drag(
+      await tester.fling(
         find.text('↑ Dérouler pour démarrer une sortie'),
-        const Offset(0, -300),
+        const Offset(0, -200),
+        800,
       );
       await tester.pumpAndSettle();
 
