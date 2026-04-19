@@ -112,6 +112,60 @@ void main() {
       expect(find.text('Démarrer la sortie'), findsOneWidget);
     });
 
+    // AC3b — parcoursList: all sample parcours are shown
+    testWidgets('AC3b — parcoursList shows all sample parcours', (tester) async {
+      await tester.pumpWidget(_wrap(const SortiesBottomSheet()));
+      await tester.pump();
+
+      await _openSheet(tester);
+
+      await tester.tap(find.text('Itinéraire'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mes itinéraires'), findsOneWidget);
+      expect(find.text('Tour de Montmartre'), findsOneWidget);
+      expect(find.text('Quartier Latin'), findsOneWidget);
+      expect(find.text('Berges de la Seine'), findsOneWidget);
+      expect(find.text('Marais & Archives'), findsOneWidget);
+    });
+
+    // AC3c — parcoursList: tap Créer un itinéraire navigates to /create-itineraire
+    testWidgets('AC3c — Créer un itinéraire navigates away', (tester) async {
+      await tester.pumpWidget(_wrap(const SortiesBottomSheet()));
+      await tester.pump();
+
+      await _openSheet(tester);
+
+      await tester.tap(find.text('Itinéraire'));
+      await tester.pumpAndSettle();
+
+      // Button label in _ParcourListBody header row is 'Créer'
+      await tester.tap(find.text('Créer'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Create itineraire'), findsOneWidget);
+    });
+
+    // AC3d — parcoursList: Retour goes back to selectMode
+    testWidgets('AC3d — Retour depuis parcoursList revient sur selectMode',
+        (tester) async {
+      await tester.pumpWidget(_wrap(const SortiesBottomSheet()));
+      await tester.pump();
+
+      await _openSheet(tester);
+
+      await tester.tap(find.text('Itinéraire'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mes itinéraires'), findsOneWidget);
+
+      await tester.tap(find.text('Retour'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Circuit libre'), findsOneWidget);
+      expect(find.text('Démarrer la sortie'), findsOneWidget);
+    });
+
     // AC4 — session active: sheet hidden via Offstage
     testWidgets('AC4 — session active: sheet hidden', (tester) async {
       await tester.pumpWidget(

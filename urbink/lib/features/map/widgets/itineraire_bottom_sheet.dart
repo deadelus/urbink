@@ -535,15 +535,18 @@ class _ManualContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: Row(
             children: [
-              const Text(
-                'Étapes du parcours',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: UrbinkColors.onSurface,
+              const Flexible(
+                child: Text(
+                  'Étapes du parcours',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: UrbinkColors.onSurface,
+                  ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               if (pois.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
