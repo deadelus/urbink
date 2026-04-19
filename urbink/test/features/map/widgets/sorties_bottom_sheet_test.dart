@@ -21,7 +21,7 @@ Widget _wrap(Widget child, {List<Override> overrides = const []}) {
       GoRoute(
         path: '/create-itineraire',
         builder: (_, s) => const Scaffold(
-          body: Center(child: Text('Créer un itinéraire')),
+          body: Center(child: Text('Create itineraire')),
         ),
       ),
     ],
@@ -36,77 +36,64 @@ Widget _wrap(Widget child, {List<Override> overrides = const []}) {
   );
 }
 
+/// Open the sheet from PARTIAL to OPEN by dragging up from the bottom.
+Future<void> _openSheet(WidgetTester tester) async {
+  // The sheet is aligned to bottom and is 72px tall.
+  // Drag up from near the bottom of the screen.
+  final size = tester.view.physicalSize / tester.view.devicePixelRatio;
+  final startPoint = Offset(size.width / 2, size.height - 36);
+  await tester.dragFrom(startPoint, const Offset(0, -400));
+  await tester.pumpAndSettle();
+}
+
 // ---------------------------------------------------------------------------
-// Tests
+// Tests — 2-state bottom sheet (PARTIAL / OPEN) + Offstage when active
 // ---------------------------------------------------------------------------
 
 void main() {
   group('SortiesBottomSheet', () {
-    // AC1 — sheet se construit avec les éléments collapsed visibles
-    testWidgets('AC1 — affiche le handle et le hint en état collapsed',
-        (tester) async {
+    // AC1 — sheet starts in PARTIAL state with hint visible
+    testWidgets('AC1 — starts PARTIAL, hint visible', (tester) async {
       await tester.pumpWidget(_wrap(const SortiesBottomSheet()));
       await tester.pump();
 
-      expect(find.text('↑ Dérouler pour démarrer une sortie'), findsOneWidget);
+      // PARTIAL: hint visible
+      expect(find.text('Démarrer une sortie'), findsOneWidget);
     });
 
-    // AC2 — contenu peek visible : cards + chip + bouton Démarrer
-    testWidgets('AC2 — affiche les cards et le bouton Démarrer après drag',
+    // AC2 — drag up opens OPEN with all content visible
+    testWidgets('AC2 — drag up opens OPEN with cards and CTA',
         (tester) async {
       await tester.pumpWidget(_wrap(const SortiesBottomSheet()));
       await tester.pump();
 
-      // Fling vers le haut — vélocité négative déclenche onSnapUp() → animateTo(peekSize)
-      await tester.fling(
-        find.text('↑ Dérouler pour démarrer une sortie'),
-        const Offset(0, -200),
-        800,
-      );
-      await tester.pumpAndSettle();
+      await _openSheet(tester);
 
       expect(find.text('Circuit libre'), findsOneWidget);
       expect(find.text('Itinéraire'), findsOneWidget);
-      expect(find.text('▶ Démarrer la sortie'), findsOneWidget);
-      expect(find.text('Mode auto-détecté · GPS prêt'), findsOneWidget);
+      expect(find.text('Démarrer la sortie'), findsOneWidget);
     });
 
-    // AC3 — tap card Itinéraire → vue liste (AnimatedSwitcher)
-    testWidgets('AC3 — tap Itinéraire affiche la vue liste', (tester) async {
+    // AC3 — tap Itinéraire shows navigation view
+    testWidgets('AC3 — tap Itinéraire shows nav view', (tester) async {
       await tester.pumpWidget(_wrap(const SortiesBottomSheet()));
       await tester.pump();
 
-      // Ouvrir le sheet
-      await tester.fling(
-        find.text('↑ Dérouler pour démarrer une sortie'),
-        const Offset(0, -200),
-        800,
-      );
-      await tester.pumpAndSettle();
+      await _openSheet(tester);
 
-      // Tap card Itinéraire
       await tester.tap(find.text('Itinéraire'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Mes itinéraires'), findsOneWidget);
+      expect(find.text('Naviguer avec…'), findsOneWidget);
       expect(find.text('Retour'), findsOneWidget);
-      expect(find.text('Créer'), findsOneWidget);
-      // La vue sélection est masquée
-      expect(find.text('Circuit libre'), findsNothing);
     });
 
-    // AC3 — bouton Retour revient sur la vue sélection
-    testWidgets('AC3 — bouton Retour revient sur la vue select mode',
-        (tester) async {
+    // AC3 — Retour goes back to select mode
+    testWidgets('AC3 — Retour revient sur select mode', (tester) async {
       await tester.pumpWidget(_wrap(const SortiesBottomSheet()));
       await tester.pump();
 
-      await tester.fling(
-        find.text('↑ Dérouler pour démarrer une sortie'),
-        const Offset(0, -200),
-        800,
-      );
-      await tester.pumpAndSettle();
+      await _openSheet(tester);
 
       await tester.tap(find.text('Itinéraire'));
       await tester.pumpAndSettle();
@@ -115,12 +102,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Circuit libre'), findsOneWidget);
-      expect(find.text('▶ Démarrer la sortie'), findsOneWidget);
+      expect(find.text('Démarrer la sortie'), findsOneWidget);
     });
 
-    // AC4 — session active : sheet non déroulable, contenu masqué
-    testWidgets('AC4 — session active : hint masqué, sheet locked',
-        (tester) async {
+    // AC4 — session active: sheet hidden via Offstage
+    testWidgets('AC4 — session active: sheet hidden', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const SortiesBottomSheet(),
@@ -132,15 +118,12 @@ void main() {
       );
       await tester.pump();
 
-      // Le hint n'est pas visible (session active → collapsed locked)
-      expect(find.text('↑ Dérouler pour démarrer une sortie'), findsNothing);
-      // Les cards de sélection ne sont pas visibles
-      expect(find.text('Circuit libre'), findsNothing);
-      expect(find.text('▶ Démarrer la sortie'), findsNothing);
+      // Content should not be visible when session active
+      expect(find.text('Démarrer une sortie'), findsNothing);
     });
 
-    // AC4 — session passe de active à idle → hint réapparaît
-    testWidgets('AC4 — retour à idle réaffiche le hint', (tester) async {
+    // AC4 — session idle again: sheet reappears
+    testWidgets('AC4 — retour idle reaffiche le hint', (tester) async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -167,17 +150,18 @@ void main() {
       );
       await tester.pump();
 
-      // Passer à active
+      // Start: hint visible (PARTIAL)
+      expect(find.text('Démarrer une sortie'), findsOneWidget);
+
+      // Go active → sheet hidden
       container.read(sessionStateProvider.notifier).state = SessionState.active;
       await tester.pumpAndSettle();
 
-      expect(find.text('↑ Dérouler pour démarrer une sortie'), findsNothing);
-
-      // Repasser à idle
+      // Back to idle → sheet visible again
       container.read(sessionStateProvider.notifier).state = SessionState.idle;
       await tester.pumpAndSettle();
 
-      expect(find.text('↑ Dérouler pour démarrer une sortie'), findsOneWidget);
+      expect(find.text('Démarrer une sortie'), findsOneWidget);
     });
   });
 }

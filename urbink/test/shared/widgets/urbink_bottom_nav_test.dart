@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
+import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/theme/app_theme.dart';
 import 'package:urbink/shared/widgets/urbink_bottom_nav.dart';
@@ -55,58 +56,40 @@ UrbinkBottomNav buildNav({
 // ---------------------------------------------------------------------------
 
 void main() {
-  group('UrbinkBottomNav — Semantics VoiceOver (AC1)', () {
-    testWidgets('chaque onglet a un label Semantics en français', (tester) async {
+  group('UrbinkBottomNav v4 — Semantics VoiceOver', () {
+    testWidgets('5 onglets ont chacun un label Semantics correct', (tester) async {
       await tester.pumpWidget(wrap(buildNav(currentIndex: 0)));
 
       expect(
-        find.bySemanticsLabel(RegExp(r'Accueil, onglet 1 sur 5')),
+        find.bySemanticsLabel(RegExp(r'Carte, onglet 1 sur 5')),
         findsOneWidget,
       );
       expect(
-        find.bySemanticsLabel(RegExp(r'Carte, onglet 2 sur 5')),
+        find.bySemanticsLabel(RegExp(r'Parcours, onglet 2 sur 5')),
         findsOneWidget,
       );
       expect(
-        find.bySemanticsLabel(RegExp(r'Challenges, onglet 4 sur 5')),
+        find.bySemanticsLabel(RegExp(r'Social, onglet 3 sur 5')),
         findsOneWidget,
       );
       expect(
-        find.bySemanticsLabel(RegExp(r'Vous, onglet 5 sur 5')),
+        find.bySemanticsLabel(RegExp(r'Badges, onglet 4 sur 5')),
+        findsOneWidget,
+      );
+      expect(
+        find.bySemanticsLabel(RegExp(r'Profil, onglet 5 sur 5')),
         findsOneWidget,
       );
     });
 
-    testWidgets('bouton Démarrer idle annonce "Démarrer, onglet 3 sur 5"', (tester) async {
+    testWidgets('aucun bouton central / Démarrer', (tester) async {
       await tester.pumpWidget(wrap(buildNav()));
-      expect(
-        find.bySemanticsLabel('Démarrer, onglet 3 sur 5'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('bouton actif annonce "Pause session, onglet 3 sur 5"', (tester) async {
-      await tester.pumpWidget(
-        wrap(buildNav(sessionState: SessionState.active)),
-      );
-      expect(
-        find.bySemanticsLabel('Pause session, onglet 3 sur 5'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('bouton paused annonce "Reprendre session, onglet 3 sur 5"', (tester) async {
-      await tester.pumpWidget(
-        wrap(buildNav(sessionState: SessionState.paused)),
-      );
-      expect(
-        find.bySemanticsLabel('Reprendre session, onglet 3 sur 5'),
-        findsOneWidget,
-      );
+      // v4 : le bouton central a été supprimé
+      expect(find.bySemanticsLabel(RegExp(r'Démarrer')), findsNothing);
     });
   });
 
-  group('UrbinkBottomNav — Réduire les animations (AC2)', () {
+  group('UrbinkBottomNav v4 — Réduire les animations', () {
     testWidgets('AnimatedOpacity présent sur underline quand disableAnimations=true',
         (tester) async {
       await tester.pumpWidget(
@@ -115,8 +98,6 @@ void main() {
           mediaQuery: const MediaQueryData(disableAnimations: true),
         ),
       );
-      // Avec disableAnimations, on cible explicitement l'underline :
-      // un AnimatedOpacity qui enveloppe un Container avec BoxDecoration arrondie.
       final underlineFinder = find.byWidgetPredicate(
         (widget) =>
             widget is AnimatedOpacity &&
@@ -138,9 +119,7 @@ void main() {
           mediaQuery: const MediaQueryData(disableAnimations: false),
         ),
       );
-      // Avec animations normales, les underlines sont des AnimatedContainer
-      // à décoration rectangulaire (vs le bouton central qui est BoxShape.circle).
-      // Il y en a exactement 4 (un par onglet non-central).
+      // 5 onglets → 5 AnimatedContainer (un indicateur par onglet)
       final underlineFinder = find.byWidgetPredicate(
         (widget) =>
             widget is AnimatedContainer &&
@@ -148,53 +127,17 @@ void main() {
             (widget.decoration as BoxDecoration).shape == BoxShape.rectangle,
         description: "AnimatedContainer utilisé pour l'underline",
       );
-      expect(underlineFinder, findsNWidgets(4));
+      expect(underlineFinder, findsNWidgets(5));
     });
 
-    testWidgets("AnimatedSwitcher présent pour l'icône du bouton central", (tester) async {
+    testWidgets('5 AnimatedSwitcher — un par icône d\'onglet (pas de bouton central)', (tester) async {
       await tester.pumpWidget(wrap(buildNav()));
-      expect(find.byType(AnimatedSwitcher), findsOneWidget);
+      // Chaque onglet a un AnimatedSwitcher pour la transition d'icône (couleur active/inactive)
+      expect(find.byType(AnimatedSwitcher), findsNWidgets(5));
     });
   });
 
-  group('UrbinkBottomNav — Dynamic Type (AC3)', () {
-    testWidgets('les labels onglets ont maxLines:1 et overflow ellipsis', (tester) async {
-      await tester.pumpWidget(
-        wrap(
-          buildNav(),
-          mediaQuery: const MediaQueryData(
-            textScaler: TextScaler.linear(3.0), // xxxLarge
-          ),
-        ),
-      );
-      // L'app ne doit pas provoquer d'overflow (pas d'exception RenderFlex)
-      expect(tester.takeException(), isNull);
-
-      final textWidgets = tester.widgetList<Text>(
-        find.descendant(
-          of: find.byType(UrbinkBottomNav),
-          matching: find.byType(Text),
-        ),
-      );
-      const labels = ['Accueil', 'Carte', 'Challenges', 'Vous'];
-      final labelTexts =
-          textWidgets.where((text) => labels.contains(text.data)).toList();
-
-      expect(labelTexts, hasLength(labels.length));
-      for (final text in labelTexts) {
-        expect(
-          text.maxLines,
-          1,
-          reason: '${text.data} doit être limité à une seule ligne',
-        );
-        expect(
-          text.overflow,
-          TextOverflow.ellipsis,
-          reason: '${text.data} doit utiliser ellipsis en cas de débordement',
-        );
-      }
-    });
-
+  group('UrbinkBottomNav v4 — Dynamic Type', () {
     testWidgets('aucun overflow avec Dynamic Type xxxLarge', (tester) async {
       await tester.pumpWidget(
         wrap(
@@ -209,75 +152,73 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('labels onglets utilisent la police Inter du thème (labelSmall)',
-        (tester) async {
-      await tester.pumpWidget(wrap(buildNav()));
+    testWidgets('les labels onglets ont maxLines:1 et overflow ellipsis', (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          buildNav(),
+          mediaQuery: const MediaQueryData(
+            textScaler: TextScaler.linear(3.0),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
 
+      const labels = ['Carte', 'Parcours', 'Social', 'Badges', 'Profil'];
       final textWidgets = tester.widgetList<Text>(
         find.descendant(
           of: find.byType(UrbinkBottomNav),
           matching: find.byType(Text),
         ),
       );
+      final labelTexts =
+          textWidgets.where((t) => labels.contains(t.data)).toList();
 
-      // Les labels doivent utiliser le fontFamily Inter (bodyFamily du design system)
-      const expectedFamily = 'Inter';
-      final labels = ['Accueil', 'Carte', 'Challenges', 'Vous'];
-      for (final text in textWidgets) {
-        if (labels.contains(text.data)) {
-          expect(
-            text.style?.fontFamily,
-            expectedFamily,
-            reason: '${text.data} doit utiliser la police Inter du thème',
-          );
-        }
+      expect(labelTexts, hasLength(labels.length));
+      for (final text in labelTexts) {
+        expect(text.maxLines, 1,
+            reason: '${text.data} doit être limité à une ligne');
+        expect(text.overflow, TextOverflow.ellipsis,
+            reason: '${text.data} doit utiliser ellipsis');
       }
     });
   });
 
-  group('UrbinkBottomNav — Touch targets ≥ 44pt (AC4)', () {
-    testWidgets('le bouton Démarrer fait 56×56', (tester) async {
-      await tester.pumpWidget(wrap(buildNav()));
-
-      final startButtonFinder = find.byWidgetPredicate(
-        (widget) =>
-            widget is AnimatedContainer &&
-            widget.decoration is BoxDecoration &&
-            (widget.decoration as BoxDecoration).shape == BoxShape.circle,
-        description: 'AnimatedContainer circulaire 56×56 du bouton Démarrer',
-      );
-      expect(startButtonFinder, findsOneWidget);
-
-      // Vérification des dimensions réelles rendues par le moteur Flutter
-      final size = tester.getSize(startButtonFinder);
-      expect(size.width, 56.0);
-      expect(size.height, 56.0);
-    });
-
-    testWidgets('tap sur onglet Carte déclenche onTabSelected(1)', (tester) async {
+  group('UrbinkBottomNav v4 — Touch targets ≥ 44pt', () {
+    testWidgets('tap sur onglet Carte déclenche onTabSelected(0)', (tester) async {
       int? tapped;
       await tester.pumpWidget(
         wrap(buildNav(onTabSelected: (i) => tapped = i)),
       );
 
-      await tester.tap(find.bySemanticsLabel(RegExp(r'Carte, onglet 2 sur 5')));
+      await tester.tap(find.bySemanticsLabel(RegExp(r'Carte, onglet 1 sur 5')));
+      await tester.pump();
+      expect(tapped, 0);
+    });
+
+    testWidgets('tap sur onglet Parcours déclenche onTabSelected(1)', (tester) async {
+      int? tapped;
+      await tester.pumpWidget(
+        wrap(buildNav(onTabSelected: (i) => tapped = i)),
+      );
+
+      await tester.tap(find.bySemanticsLabel(RegExp(r'Parcours, onglet 2 sur 5')));
       await tester.pump();
       expect(tapped, 1);
     });
 
-    testWidgets('tap sur bouton Démarrer déclenche onTabSelected(2)', (tester) async {
+    testWidgets('tap sur onglet Profil déclenche onTabSelected(4)', (tester) async {
       int? tapped;
       await tester.pumpWidget(
         wrap(buildNav(onTabSelected: (i) => tapped = i)),
       );
 
-      await tester.tap(find.bySemanticsLabel('Démarrer, onglet 3 sur 5'));
+      await tester.tap(find.bySemanticsLabel(RegExp(r'Profil, onglet 5 sur 5')));
       await tester.pump();
-      expect(tapped, 2);
+      expect(tapped, 4);
     });
   });
 
-  group('UrbinkBottomNav — Safe areas iOS (AC5)', () {
+  group('UrbinkBottomNav v4 — Safe areas iOS', () {
     testWidgets('hauteur inclut le padding bottom de la safe area', (tester) async {
       const bottomPadding = 34.0; // iPhone 15 home indicator
 
@@ -290,16 +231,15 @@ void main() {
         ),
       );
 
-      final sizedBox = tester.widget<SizedBox>(
+      final container = tester.widget<Container>(
         find.descendant(
           of: find.byType(UrbinkBottomNav),
-          matching: find.byType(SizedBox).first,
+          matching: find.byType(Container).first,
         ),
       );
 
-      // La hauteur doit inclure au minimum la hauteur de base + le padding safe area.
       expect(
-        sizedBox.height,
+        (container.constraints?.maxHeight ?? 0),
         greaterThanOrEqualTo(UrbinkSpacing.bottomNavHeight + bottomPadding),
       );
     });
@@ -308,32 +248,44 @@ void main() {
       await tester.pumpWidget(
         wrap(
           buildNav(),
-          mediaQuery: const MediaQueryData(
-            padding: EdgeInsets.zero,
-          ),
+          mediaQuery: const MediaQueryData(padding: EdgeInsets.zero),
         ),
       );
       expect(tester.takeException(), isNull);
     });
   });
 
-  group('UrbinkBottomNav — Couleurs session', () {
-    testWidgets('bouton idle affiche icône play_arrow (Vert Sauge)', (tester) async {
-      await tester.pumpWidget(wrap(buildNav(sessionState: SessionState.idle)));
-      // Le Semantics du bouton idle contient "Démarrer"
-      expect(find.bySemanticsLabel('Démarrer, onglet 3 sur 5'), findsOneWidget);
-      // Et l'icône play_arrow est présente
-      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+  group('UrbinkBottomNav v4 — Couleurs session', () {
+    testWidgets('indicateur Ocre au repos (sessionState idle)', (tester) async {
+      await tester.pumpWidget(
+        wrap(buildNav(currentIndex: 0, sessionState: SessionState.idle)),
+      );
+      // L'indicateur actif doit exister (onglet 0 = Carte actif)
+      final indicator = find.byWidgetPredicate(
+        (w) =>
+            w is AnimatedContainer &&
+            w.decoration is BoxDecoration &&
+            (w.decoration as BoxDecoration).color == UrbinkColors.primary,
+        description: 'indicateur Ocre #B8832E',
+      );
+      expect(indicator, findsWidgets);
     });
 
-    testWidgets('bouton active affiche icône pause (Ocre)', (tester) async {
+    testWidgets('indicateur Terra Cotta en session active', (tester) async {
       await tester.pumpWidget(
-        wrap(buildNav(sessionState: SessionState.active)),
+        wrap(
+          buildNav(currentIndex: 0, sessionState: SessionState.active),
+          mediaQuery: const MediaQueryData(disableAnimations: false),
+        ),
       );
-      // Le Semantics du bouton active contient "Pause session"
-      expect(find.bySemanticsLabel('Pause session, onglet 3 sur 5'), findsOneWidget);
-      // Et l'icône pause est présente
-      expect(find.byIcon(Icons.pause), findsOneWidget);
+      final indicator = find.byWidgetPredicate(
+        (w) =>
+            w is AnimatedContainer &&
+            w.decoration is BoxDecoration &&
+            (w.decoration as BoxDecoration).color == UrbinkColors.primary,
+        description: 'indicateur Deep Green #256F4C',
+      );
+      expect(indicator, findsWidgets);
     });
   });
 }

@@ -1,32 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:urbink/features/map/screens/filters_screen.dart';
 import 'package:urbink/features/map/screens/map_screen.dart';
+import 'package:urbink/features/map/widgets/itineraire_bottom_sheet.dart';
 import 'package:urbink/features/onboarding/screens/privacy_screen.dart';
 import 'package:urbink/features/sessions/models/session.dart';
-import 'package:urbink/features/sessions/providers/gps_tracking_provider.dart';
 import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 import 'package:urbink/features/sessions/providers/session_metrics_provider.dart';
 import 'package:urbink/features/sessions/screens/session_summary_screen.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
-import 'package:urbink/shared/widgets/gps_required_dialog.dart';
+import 'package:urbink/shared/widgets/filter_chips_row.dart';
 import 'package:urbink/shared/widgets/session_status_bar.dart';
-import 'package:urbink/shared/widgets/transport_mode_selector.dart';
 import 'package:urbink/shared/widgets/urbink_bottom_nav.dart';
-import 'package:urbink/shared/widgets/urbink_bottom_sheet.dart';
+import 'package:urbink/shared/widgets/zones_toggle_pill.dart';
 
 // Routes nommées — éviter les chaînes magiques dans le code
 abstract final class AppRoutes {
-  static const String home = '/';
   static const String map = '/map';
-  static const String start = '/start';
-  static const String challenges = '/challenges';
+  static const String parcours = '/parcours';
+  static const String social = '/social';
+  static const String badges = '/badges';
   static const String profile = '/profile';
   static const String sessionSummary = '/session-summary';
   static const String onboarding = '/onboarding';
   static const String createItineraire = '/create-itineraire';
+  static const String filters = '/filters';
 }
 
 // ---------------------------------------------------------------------------
@@ -67,16 +68,7 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state, navigationShell) =>
           _ScaffoldWithBottomNav(navigationShell: navigationShell),
       branches: [
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: AppRoutes.home,
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: _PlaceholderScreen(label: 'Accueil'),
-              ),
-            ),
-          ],
-        ),
+        // 0 — Carte (hub principal)
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -87,32 +79,46 @@ final GoRouter appRouter = GoRouter(
             ),
           ],
         ),
+        // 1 — Parcours
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: AppRoutes.start,
+              path: AppRoutes.parcours,
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: _PlaceholderScreen(label: 'Démarrer'),
+                child: _PlaceholderScreen(label: 'Parcours'),
               ),
             ),
           ],
         ),
+        // 2 — Social
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: AppRoutes.challenges,
+              path: AppRoutes.social,
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: _PlaceholderScreen(label: 'Challenges'),
+                child: _PlaceholderScreen(label: 'Social'),
               ),
             ),
           ],
         ),
+        // 3 — Badges
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppRoutes.badges,
+              pageBuilder: (context, state) => const NoTransitionPage(
+                child: _PlaceholderScreen(label: 'Badges'),
+              ),
+            ),
+          ],
+        ),
+        // 4 — Profil
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: AppRoutes.profile,
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: _PlaceholderScreen(label: 'Vous'),
+                child: _PlaceholderScreen(label: 'Profil'),
               ),
             ),
           ],
@@ -135,7 +141,13 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.createItineraire,
-      builder: (context, state) => const _CreateItineraireScreen(),
+      pageBuilder: (context, state) => const NoTransitionPage(
+        child: _CreateItineraireScreen(),
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.filters,
+      builder: (context, state) => const FiltersScreen(),
     ),
   ],
 );
@@ -162,8 +174,6 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
     // _startSession() n'est jamais appelé lors du passage à active.
     ref.watch(sessionLifecycleProvider);
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    // Hauteur bottom nav Material 3 ≈ 56dp + safe area
-    const bottomNavHeight = 56.0;
 
     return Scaffold(
       body: Stack(
@@ -179,8 +189,8 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
           // Bouton Arrêter ■ — bas-droite 52×52px, au-dessus de la bottom nav
           if (sessionState != SessionState.idle)
             Positioned(
-              bottom: bottomPadding + bottomNavHeight + 16,
-              right: 16,
+              bottom: bottomPadding + UrbinkSpacing.bottomNavHeight + 8,
+              right: 10,
               child: _StopSessionButton(
                 onTap: () => _onStopTapped(context, ref),
               ),
@@ -190,50 +200,7 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
       bottomNavigationBar: UrbinkBottomNav(
         currentIndex: navigationShell.currentIndex,
         sessionState: sessionState,
-        onTabSelected: (index) async {
-          if (index == 2) {
-            final current = ref.read(sessionStateProvider);
-            if (current == SessionState.idle) {
-              if (!context.mounted) return;
-              final confirmed = await showUrbinkBottomSheet<bool>(
-                context: context,
-                child: const _StartSessionSheet(),
-              );
-              if (confirmed == true && context.mounted) {
-                // Vérifier le service + la permission GPS avant de démarrer
-                final gpsService = ref.read(gpsTrackingServiceProvider);
-                final serviceEnabled = await gpsService.isServiceEnabled();
-                if (!context.mounted) return;
-                if (!serviceEnabled) {
-                  showGpsRequiredDialog(context);
-                  return;
-                }
-                final granted = await gpsService.requestPermission();
-                if (!context.mounted) return;
-                if (!granted) {
-                  showGpsRequiredDialog(context);
-                  return;
-                }
-                ref.read(sessionStateProvider.notifier).state =
-                    SessionState.active;
-                navigationShell.goBranch(
-                  index,
-                  initialLocation: index == navigationShell.currentIndex,
-                );
-              }
-              return;
-            }
-            // Session active/pause — bascule sans bottom sheet
-            ref.read(sessionStateProvider.notifier).state =
-                current == SessionState.active
-                    ? SessionState.paused
-                    : SessionState.active;
-            navigationShell.goBranch(
-              index,
-              initialLocation: index == navigationShell.currentIndex,
-            );
-            return;
-          }
+        onTabSelected: (index) {
           navigationShell.goBranch(
             index,
             initialLocation: index == navigationShell.currentIndex,
@@ -282,7 +249,7 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Bouton Arrêter session — carré 52×52px bas-droite
+// Bouton Arrêter session — carré arrondi 52×52px bas-droite
 // ---------------------------------------------------------------------------
 
 class _StopSessionButton extends StatelessWidget {
@@ -302,11 +269,11 @@ class _StopSessionButton extends StatelessWidget {
           width: 52,
           height: 52,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             color: UrbinkColors.destructive,
             boxShadow: [
               BoxShadow(
-                color: UrbinkColors.destructive.withValues(alpha: 0.35),
+                color: UrbinkColors.destructive.withValues(alpha: 0.45),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -320,137 +287,146 @@ class _StopSessionButton extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Bottom sheet sélection du mode de transport avant de démarrer une session
-// ---------------------------------------------------------------------------
-
-class _StartSessionSheet extends StatelessWidget {
-  const _StartSessionSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(UrbinkSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Mode de déplacement',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: UrbinkSpacing.md),
-          const Center(child: TransportModeSelector()),
-          const SizedBox(height: UrbinkSpacing.lg),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: UrbinkColors.secondary,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(
-                  double.infinity,
-                  UrbinkSpacing.minTapTarget,
-                ),
-              ),
-              child: const Text('Démarrer la sortie'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Écran Créer un itinéraire — carte + panneau bas (placeholder Story 2.9)
 // ---------------------------------------------------------------------------
 
-class _CreateItineraireScreen extends StatelessWidget {
+class _CreateItineraireScreen extends ConsumerWidget {
   const _CreateItineraireScreen();
 
-  @override
-  Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
+  static const _tabRoutes = [
+    AppRoutes.map,
+    AppRoutes.parcours,
+    AppRoutes.social,
+    AppRoutes.badges,
+    AppRoutes.profile,
+  ];
 
-    // MapScreen possède son propre Scaffold — on évite le nesting en
-    // enveloppant dans Material+Stack plutôt qu'un Scaffold parent.
-    return Material(
-      color: Colors.transparent,
-      child: Stack(
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    final sessionState = ref.watch(sessionStateProvider);
+
+    return Scaffold(
+      bottomNavigationBar: UrbinkBottomNav(
+        currentIndex: 0,
+        sessionState: sessionState,
+        onTabSelected: (i) => context.go(_tabRoutes[i]),
+      ),
+      body: Stack(
         fit: StackFit.expand,
         children: [
-          // Carte complète en arrière-plan (Scaffold géré par MapScreen)
-          const MapScreen(),
-          // Bouton ← Retour flottant (au-dessus safe area)
+          // Carte complète — bottom UI géré par ce screen
+          const MapScreen(hideSearchBar: true, showBottomUi: false),
+
+          // Top bar — 3 niveaux : titre/retour · recherche · filtres
           Positioned(
-            top: topPadding + 8,
-            left: 8,
-            child: Material(
-              color: Colors.transparent,
-              child: IconButton(
-                onPressed: () => context.pop(),
-                icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.white.withValues(alpha: 0.92),
-                  foregroundColor: UrbinkColors.onSurface,
-                ),
-              ),
-            ),
-          ),
-          // Panneau bas — placeholder création itinéraire
-          Positioned(
-            bottom: 0,
+            top: 0,
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.fromLTRB(
-                UrbinkSpacing.md,
-                UrbinkSpacing.md,
-                UrbinkSpacing.md,
-                UrbinkSpacing.md + bottomPadding,
-              ),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: UrbinkColors.surface,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(16)),
                 boxShadow: [
                   BoxShadow(
-                    color: Color(0x18000000),
-                    blurRadius: 16,
-                    offset: Offset(0, -4),
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'Créer un itinéraire',
-                    style:
-                        Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
+                  // Niveau 1 — retour + titre
+                  SizedBox(height: topPadding + 4),
+                  SizedBox(
+                    height: 44,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => context.pop(),
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                          color: UrbinkColors.onSurface,
+                        ),
+                        const Expanded(
+                          child: Text(
+                            'Créer un itinéraire',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
                               color: UrbinkColors.onSurface,
                             ),
-                  ),
-                  const SizedBox(height: UrbinkSpacing.xs),
-                  Text(
-                    'Trace ton parcours sur la carte.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: UrbinkColors.navInactive,
+                          ),
                         ),
+                      ],
+                    ),
                   ),
+
+                  // Niveau 2 — barre de recherche
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
+                    child: Container(
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: UrbinkColors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(UrbinkSpacing.radiusChip),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.07),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        children: [
+                          SizedBox(width: 12),
+                          Icon(Icons.search_rounded,
+                              color: UrbinkColors.navInactive, size: 18),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Rechercher un lieu…',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: UrbinkColors.navInactive,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Niveau 3 — filtres
+                  const SizedBox(height: UrbinkSpacing.sm),
+                  FilterChipsRow(
+                    padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
+                    onMoreTap: () => context.push(AppRoutes.filters),
+                  ),
+                  const SizedBox(height: UrbinkSpacing.sm),
                 ],
               ),
             ),
           ),
+
+          // Pill "Zones explorées" — au-dessus du bottom sheet réduit
+          const Positioned(
+            left: UrbinkSpacing.md,
+            bottom: ItineraireBottomSheet.collapsedHeight + UrbinkSpacing.md,
+            child: ZonesTogglePill(),
+          ),
+
+          // Bottom sheet itinéraire
+          const ItineraireBottomSheet(),
         ],
       ),
     );
   }
 }
+
 
 // ---------------------------------------------------------------------------
 // Écran placeholder

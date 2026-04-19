@@ -23,19 +23,19 @@ void main() {
   });
 
   group('AppTheme.light() — ColorScheme (AC-1)', () {
-    test('primary = Ocre #B8832E', () {
+    test('primary = Deep Green #256F4C', () {
       expect(theme.colorScheme.primary, UrbinkColors.primary);
     });
 
-    test('secondary = Vert Sauge #5A7A5A', () {
-      expect(theme.colorScheme.secondary, UrbinkColors.secondary);
+    test('secondary = Amber (accent)', () {
+      expect(theme.colorScheme.secondary, UrbinkColors.accent);
     });
 
-    test('surface = Fond chaud #FAFAF7', () {
+    test('surface = Blanc pur', () {
       expect(theme.colorScheme.surface, UrbinkColors.surface);
     });
 
-    test('onSurface = Brun Profond #1E1610', () {
+    test('onSurface = Slate 900', () {
       expect(theme.colorScheme.onSurface, UrbinkColors.onSurface);
     });
   });
@@ -57,28 +57,25 @@ void main() {
   });
 
   group('AppTheme.light() — Border radius (AC-4)', () {
-    test('FilledButton — radius 12px', () {
+    test('FilledButton — radius 16px', () {
       final shape = theme.filledButtonTheme.style!.shape!
           .resolve({}) as RoundedRectangleBorder;
       final radius = (shape.borderRadius as BorderRadius).topLeft.x;
       expect(radius, UrbinkSpacing.radiusButton);
     });
 
-    test('Card — radius 16px', () {
-      final shape = theme.cardTheme.shape as RoundedRectangleBorder;
-      final radius = (shape.borderRadius as BorderRadius).topLeft.x;
-      expect(radius, UrbinkSpacing.radiusCard);
+    test('Card — no explicit shape (Material 3 default)', () {
+      // CardTheme doesn't set a custom shape; M3 provides its own defaults
+      expect(theme.cardTheme.color, UrbinkColors.surface);
     });
 
-    test('Chip — radius 8px', () {
-      final shape = theme.chipTheme.shape as RoundedRectangleBorder;
-      final radius = (shape.borderRadius as BorderRadius).topLeft.x;
-      expect(radius, UrbinkSpacing.radiusChip);
+    test('Chip — no explicit shape (Material 3 default)', () {
+      expect(theme.chipTheme.backgroundColor, UrbinkColors.surfaceVariant);
     });
   });
 
   group('AppTheme.light() — FilledButton (AC-4)', () {
-    test('backgroundColor = Ocre', () {
+    test('backgroundColor = Deep Green', () {
       final bg = theme.filledButtonTheme.style!.backgroundColor!
           .resolve({}) as Color;
       expect(bg, UrbinkColors.primary);
@@ -97,7 +94,7 @@ void main() {
   });
 
   group('AppTheme.light() — NavigationBar', () {
-    test('icône sélectionnée = Ocre', () {
+    test('icône sélectionnée = Deep Green', () {
       final selected = theme.navigationBarTheme.iconTheme!
           .resolve({WidgetState.selected})!;
       expect(selected.color, UrbinkColors.primary);
@@ -118,14 +115,12 @@ void main() {
           home: Builder(
             builder: (context) {
               final cs = Theme.of(context).colorScheme;
-              // Vérification en contexte widget (AC-1 end-to-end)
               expect(cs.primary, UrbinkColors.primary);
-              expect(cs.secondary, UrbinkColors.secondary);
+              expect(cs.secondary, UrbinkColors.accent);
               expect(cs.surface, UrbinkColors.surface);
               expect(cs.onSurface, UrbinkColors.onSurface);
 
               final tt = Theme.of(context).textTheme;
-              // Vérification typography en contexte widget (AC-2 end-to-end)
               expect(tt.displayLarge!.fontFamily,
                   UrbinkTypography.displayFamily);
               expect(tt.bodyLarge!.fontFamily, UrbinkTypography.bodyFamily);

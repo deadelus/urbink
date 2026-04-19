@@ -7,9 +7,9 @@ enum UrbinkButtonVariant { primary, secondary, destructive }
 
 /// Bouton Urbink — 3 variantes conformes Story 1.4.
 ///
-/// - [primary]     : fond Ocre #B8832E, texte blanc, hauteur 52pt, radius 12px
-/// - [secondary]   : contour Ocre 1.5px, fond transparent, texte Ocre
-/// - [destructive] : texte Rouge #C0392B, fond transparent — pour actions irréversibles
+/// - [primary]     : fond Primary #256F4C, texte blanc, hauteur 52pt, radius 16px
+/// - [secondary]   : contour Primary 1.5px, fond transparent, texte Primary
+/// - [destructive] : texte Rouge #DC2626, fond transparent — pour actions irréversibles
 ///
 /// État loading : spinner blanc inline, bouton non interactif.
 /// Haptique : HeavyImpact (primary) · LightImpact (secondary/destructive).

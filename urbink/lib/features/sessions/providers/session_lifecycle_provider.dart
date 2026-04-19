@@ -8,7 +8,6 @@ import 'package:urbink/features/sessions/models/session.dart';
 import 'package:urbink/features/sessions/models/session_metrics.dart';
 import 'package:urbink/features/sessions/models/transport_mode.dart';
 import 'package:urbink/features/sessions/providers/session_db_provider.dart';
-import 'package:urbink/features/sessions/providers/transport_mode_provider.dart';
 import 'package:urbink/features/sessions/services/firestore_session_repository.dart';
 import 'package:urbink/features/sessions/services/session_repository.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
@@ -52,8 +51,7 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
     // Guard : si state != null, une session est déjà active (crash recovery) → skip
     ref.listen(sessionStateProvider, (prev, next) {
       if (prev != SessionState.active && next == SessionState.active && state == null) {
-        final mode = ref.read(transportModeProvider);
-        _startSession(mode);
+        _startSession(TransportMode.walking);
       }
     });
 

@@ -7,15 +7,16 @@ abstract final class UrbinkSpacing {
   static const double xl = 32.0;
   static const double xxl = 48.0;
 
-  // Border radius
-  static const double radiusButton = 12.0;
-  static const double radiusCard = 16.0;
-  static const double radiusChip = 8.0;
+  // Border radius — iOS-inspired, rounded
+  static const double radiusButton = 16.0;
+  static const double radiusCard = 20.0;
+  static const double radiusChip = 10.0;
+  static const double radiusSheet = 24.0;
 
   // Zones tactiles iOS HIG
   static const double minTapTarget = 44.0;
 
   // Bottom nav & safe areas
-  static const double bottomNavHeight = 60.0;
+  static const double bottomNavHeight = 74.0;
   static const double thumbZone = 120.0; // zone pouce depuis le bas
 }

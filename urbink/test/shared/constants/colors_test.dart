@@ -4,74 +4,74 @@ import 'package:urbink/shared/constants/colors.dart';
 
 void main() {
   group('UrbinkColors — palette principale', () {
-    test('primary = Ocre #B8832E', () {
-      expect(UrbinkColors.primary, const Color(0xFFB8832E));
+    test('primary = Deep Green #256F4C', () {
+      expect(UrbinkColors.primary, const Color(0xFF256F4C));
     });
 
-    test('secondary = Vert Sauge #5A7A5A', () {
-      expect(UrbinkColors.secondary, const Color(0xFF5A7A5A));
+    test('secondary = Deep Green #256F4C', () {
+      expect(UrbinkColors.secondary, const Color(0xFF256F4C));
     });
 
-    test('surface = Fond chaud #FAFAF7', () {
-      expect(UrbinkColors.surface, const Color(0xFFFAFAF7));
+    test('surface = Blanc pur #FFFFFF', () {
+      expect(UrbinkColors.surface, const Color(0xFFFFFFFF));
     });
 
-    test('onSurface = Brun Profond #1E1610', () {
-      expect(UrbinkColors.onSurface, const Color(0xFF1E1610));
+    test('onSurface = Slate 900 #0F172A', () {
+      expect(UrbinkColors.onSurface, const Color(0xFF0F172A));
     });
   });
 
   group('UrbinkColors — rues', () {
-    test('streetExplored = Vert Sauge #5A7A5A', () {
-      expect(UrbinkColors.streetExplored, const Color(0xFF5A7A5A));
+    test('streetExplored = Deep Green #256F4C', () {
+      expect(UrbinkColors.streetExplored, const Color(0xFF256F4C));
     });
 
-    test('streetRecording = Vert animé #6A9A6A', () {
-      expect(UrbinkColors.streetRecording, const Color(0xFF6A9A6A));
+    test('streetRecording = Vert animé #34A76A', () {
+      expect(UrbinkColors.streetRecording, const Color(0xFF34A76A));
     });
   });
 
   group('UrbinkColors — toasts', () {
-    test('toastSuccess #2D5A2D', () {
-      expect(UrbinkColors.toastSuccess, const Color(0xFF2D5A2D));
+    test('toastSuccess #256F4C', () {
+      expect(UrbinkColors.toastSuccess, const Color(0xFF256F4C));
     });
 
-    test('toastInfo #1E1610', () {
-      expect(UrbinkColors.toastInfo, const Color(0xFF1E1610));
+    test('toastInfo #0F172A', () {
+      expect(UrbinkColors.toastInfo, const Color(0xFF0F172A));
     });
 
-    test('toastError #8B2020', () {
-      expect(UrbinkColors.toastError, const Color(0xFF8B2020));
+    test('toastError #DC2626', () {
+      expect(UrbinkColors.toastError, const Color(0xFFDC2626));
     });
 
-    test('toastWarning #7A5A1E', () {
-      expect(UrbinkColors.toastWarning, const Color(0xFF7A5A1E));
+    test('toastWarning #F59E0B', () {
+      expect(UrbinkColors.toastWarning, const Color(0xFFF59E0B));
     });
   });
 
   group('UrbinkColors — UI', () {
-    test('destructive = Rouge #C0392B', () {
-      expect(UrbinkColors.destructive, const Color(0xFFC0392B));
+    test('destructive = Rouge #DC2626', () {
+      expect(UrbinkColors.destructive, const Color(0xFFDC2626));
     });
 
-    test('navInactive #8C7B6A', () {
-      expect(UrbinkColors.navInactive, const Color(0xFF8C7B6A));
+    test('navInactive #64748B', () {
+      expect(UrbinkColors.navInactive, const Color(0xFF64748B));
     });
 
-    test('sheetScrim = Brun Profond #1E1610', () {
-      expect(UrbinkColors.sheetScrim, const Color(0xFF1E1610));
+    test('sheetScrim = Slate 900 #0F172A', () {
+      expect(UrbinkColors.sheetScrim, const Color(0xFF0F172A));
     });
 
-    test('sheetDragPill #D4C8B4', () {
-      expect(UrbinkColors.sheetDragPill, const Color(0xFFD4C8B4));
+    test('sheetDragPill #CBD5E1', () {
+      expect(UrbinkColors.sheetDragPill, const Color(0xFFCBD5E1));
     });
 
-    test('ghost #F0EDE8', () {
-      expect(UrbinkColors.ghost, const Color(0xFFF0EDE8));
+    test('ghost #F1F5F9', () {
+      expect(UrbinkColors.ghost, const Color(0xFFF1F5F9));
     });
 
-    test('surfaceVariant #F4F2ED', () {
-      expect(UrbinkColors.surfaceVariant, const Color(0xFFF4F2ED));
+    test('surfaceVariant #F1F5F9', () {
+      expect(UrbinkColors.surfaceVariant, const Color(0xFFF1F5F9));
     });
   });
 }

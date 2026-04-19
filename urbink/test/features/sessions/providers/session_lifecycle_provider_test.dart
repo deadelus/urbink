@@ -7,19 +7,9 @@ import 'package:urbink/features/sessions/models/session_metrics.dart';
 import 'package:urbink/features/sessions/models/transport_mode.dart';
 import 'package:urbink/features/sessions/providers/session_db_provider.dart';
 import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
-import 'package:urbink/features/sessions/providers/transport_mode_provider.dart';
 import 'package:urbink/features/sessions/services/session_local_cache.dart';
 import 'package:urbink/features/sessions/services/session_repository.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
-
-// ---------------------------------------------------------------------------
-// Fausse implémentation du TransportModeNotifier — sans SharedPreferences
-// ---------------------------------------------------------------------------
-
-class _FakeTransportModeNotifier extends TransportModeNotifier {
-  @override
-  TransportMode build() => TransportMode.walking; // pas de SharedPreferences
-}
 
 // ---------------------------------------------------------------------------
 // Fausse implémentation du repository — pas de dépendance Firestore en test
@@ -66,8 +56,6 @@ void main() {
           return c;
         }),
         sessionRepositoryProvider.overrideWithValue(repo ?? FakeSessionRepository()),
-        // Pas de SharedPreferences en test — mode fixe walking
-        transportModeProvider.overrideWith(() => _FakeTransportModeNotifier()),
         // Stream vide — pas de connectivité native en test
         connectivityChangesProvider.overrideWith(
           (ref) => const Stream<List<ConnectivityResult>>.empty(),

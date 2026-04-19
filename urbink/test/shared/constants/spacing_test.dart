@@ -25,9 +25,10 @@ void main() {
   });
 
   group('UrbinkSpacing — border radius', () {
-    test('radiusButton = 12', () => expect(UrbinkSpacing.radiusButton, 12.0));
-    test('radiusCard = 16', () => expect(UrbinkSpacing.radiusCard, 16.0));
-    test('radiusChip = 8', () => expect(UrbinkSpacing.radiusChip, 8.0));
+    test('radiusButton = 16', () => expect(UrbinkSpacing.radiusButton, 16.0));
+    test('radiusCard = 20', () => expect(UrbinkSpacing.radiusCard, 20.0));
+    test('radiusChip = 10', () => expect(UrbinkSpacing.radiusChip, 10.0));
+    test('radiusSheet = 24', () => expect(UrbinkSpacing.radiusSheet, 24.0));
   });
 
   group('UrbinkSpacing — zones tactiles', () {
@@ -35,8 +36,8 @@ void main() {
       expect(UrbinkSpacing.minTapTarget, greaterThanOrEqualTo(44.0));
     });
 
-    test('bottomNavHeight = 60', () {
-      expect(UrbinkSpacing.bottomNavHeight, 60.0);
+    test('bottomNavHeight = 74', () {
+      expect(UrbinkSpacing.bottomNavHeight, 74.0);
     });
 
     test('thumbZone = 120', () {
