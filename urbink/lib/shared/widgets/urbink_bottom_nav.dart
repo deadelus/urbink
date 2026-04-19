@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
+import 'package:urbink/shared/constants/typography.dart';
 
-/// Bottom navigation bar Urbink — 5 onglets avec bouton Démarrer central surélevé.
+/// Bottom navigation bar Urbink v4 — 5 onglets plats, iOS-inspired.
 ///
-/// Conformité Story 1.3 :
-/// - Bouton Démarrer central surélevé de 12px avec ombre Material 3
-/// - Onglet sélectionné : icône + label Ocre #B8832E + underline 2px
-/// - Onglets inactifs : #8C7B6A
-/// - [SessionState.active] : bouton Démarrer Ocre #B8832E avec icône ⏸
-/// - [SessionState.idle] / [SessionState.paused] : bouton Démarrer Vert Sauge #5A7A5A avec icône ▶
-/// - Semantics VoiceOver : "Accueil, onglet 1 sur 5", etc.
+/// Conformité Story 2.10 + direction UI :
+/// - Icônes Material outline 22px (stroke style proche Lucide)
+/// - Indicateur actif : trait 20×2px au-dessus de l'icône, deep green
+/// - Session active : indicateur deep green (même couleur)
+/// - Tap scale 0.97 — 200ms ease-out
 class UrbinkBottomNav extends StatelessWidget {
   const UrbinkBottomNav({
     super.key,
@@ -22,94 +21,32 @@ class UrbinkBottomNav extends StatelessWidget {
 
   final int currentIndex;
   final ValueChanged<int> onTabSelected;
-
-  /// [SessionState.active] → bouton ⏸ Ocre
-  /// [SessionState.idle] / [SessionState.paused] → bouton ▶ Vert Sauge
   final SessionState sessionState;
 
-  static const double _centerElevation = 12.0;
-  static const double _centerButtonSize = 56.0;
-
-  @override
-  Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
-    // Hauteur totale = barre + safe area + espace pour le bouton surélevé
-    final totalHeight =
-        UrbinkSpacing.bottomNavHeight + bottomPadding + _centerElevation;
-
-    return SizedBox(
-      height: totalHeight,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // Fond de la barre + 4 onglets normaux
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _BottomNavBar(
-              currentIndex: currentIndex,
-              onTabSelected: onTabSelected,
-              height: UrbinkSpacing.bottomNavHeight + bottomPadding,
-              bottomPadding: bottomPadding,
-            ),
-          ),
-          // Bouton Démarrer central surélevé de 12px
-          Positioned(
-            bottom: bottomPadding +
-                (UrbinkSpacing.bottomNavHeight - _centerButtonSize) / 2 +
-                _centerElevation,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: _StartButton(
-                isSelected: currentIndex == 2,
-                sessionState: sessionState,
-                onTap: () => onTabSelected(2),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Barre de navigation avec les 4 onglets (slot central vide pour le bouton)
-// ---------------------------------------------------------------------------
-
-class _BottomNavBar extends StatelessWidget {
-  const _BottomNavBar({
-    required this.currentIndex,
-    required this.onTabSelected,
-    required this.height,
-    required this.bottomPadding,
-  });
-
-  final int currentIndex;
-  final ValueChanged<int> onTabSelected;
-  final double height;
-  final double bottomPadding;
-
-  static const _items = [
-    _TabItem(0, Icons.home_outlined, 'Accueil'),
-    _TabItem(1, Icons.map_outlined, 'Carte'),
-    _TabItem(3, Icons.emoji_events_outlined, 'Challenges'),
-    _TabItem(4, Icons.person_outline, 'Vous'),
+  static const _tabs = [
+    _TabItem(icon: Icons.map_outlined,            label: 'Carte'),
+    _TabItem(icon: Icons.route_outlined,           label: 'Parcours'),
+    _TabItem(icon: Icons.people_outline,           label: 'Social'),
+    _TabItem(icon: Icons.emoji_events_outlined,    label: 'Badges'),
+    _TabItem(icon: Icons.person_outline_rounded,   label: 'Profil'),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Container(
-      height: height,
+      height: UrbinkSpacing.bottomNavHeight + bottomPadding,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: UrbinkColors.surface,
+        border: const Border(
+          top: BorderSide(color: UrbinkColors.border),
+        ),
         boxShadow: [
           BoxShadow(
-            color: UrbinkColors.onSurface.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, -2),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, -1),
           ),
         ],
       ),
@@ -117,93 +54,14 @@ class _BottomNavBar extends StatelessWidget {
         padding: EdgeInsets.only(bottom: bottomPadding),
         child: Row(
           children: [
-            // Onglets 0 et 1 (Accueil, Carte)
-            _buildTab(context, _items[0]),
-            _buildTab(context, _items[1]),
-            // Slot vide central pour laisser place au bouton surélevé
-            const Expanded(child: SizedBox()),
-            // Onglets 3 et 4 (Challenges, Vous)
-            _buildTab(context, _items[2]),
-            _buildTab(context, _items[3]),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTab(BuildContext context, _TabItem item) {
-    final isSelected = currentIndex == item.index;
-    final disableAnimations = MediaQuery.of(context).disableAnimations;
-
-    return Expanded(
-      child: Semantics(
-        label: '${item.label}, onglet ${item.index + 1} sur 5',
-        button: true,
-        selected: isSelected,
-        excludeSemantics: true,
-        onTap: () => onTabSelected(item.index),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => onTabSelected(item.index),
-          child: SizedBox(
-            height: double.infinity,
-            // Cap textScaler à 1.3x : évite l'overflow vertical dans la nav bar
-            // (espace fixe ~60px — WCAG 2.1 AA autorise ce cap sur les éléments de navigation)
-            child: MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: MediaQuery.of(context).textScaler.clamp(
-                  minScaleFactor: 0.0,
-                  maxScaleFactor: 1.3,
-                ),
+            for (var i = 0; i < _tabs.length; i++)
+              _NavTab(
+                item: _tabs[i],
+                index: i,
+                isSelected: currentIndex == i,
+                onTap: () => onTabSelected(i),
               ),
-              child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  item.icon,
-                  size: 24,
-                  color: isSelected ? UrbinkColors.primary : UrbinkColors.navInactive,
-                ),
-                const SizedBox(height: 4),
-                // Dynamic Type : labelSmall du thème, textScaler capé à 1.3x pour éviter overflow
-                Text(
-                  item.label,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: isSelected ? UrbinkColors.primary : UrbinkColors.navInactive,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                // Underline : fade si "Réduire les animations" activé, sinon animation de largeur
-                if (disableAnimations)
-                  AnimatedOpacity(
-                    opacity: isSelected ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 150),
-                    child: Container(
-                      height: 2,
-                      width: 24,
-                      decoration: BoxDecoration(
-                        color: UrbinkColors.primary,
-                        borderRadius: BorderRadius.circular(1),
-                      ),
-                    ),
-                  )
-                else
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    height: 2,
-                    width: isSelected ? 24 : 0,
-                    decoration: BoxDecoration(
-                      color: UrbinkColors.primary,
-                      borderRadius: BorderRadius.circular(1),
-                    ),
-                  ),
-              ],
-            ),
-            ), // MediaQuery
-          ),
+          ],
         ),
       ),
     );
@@ -211,78 +69,146 @@ class _BottomNavBar extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Bouton Démarrer — FAB circulaire surélevé au centre
+// Onglet individuel avec tap scale
 // ---------------------------------------------------------------------------
 
-class _StartButton extends StatelessWidget {
-  const _StartButton({
+class _NavTab extends StatefulWidget {
+  const _NavTab({
+    required this.item,
+    required this.index,
     required this.isSelected,
-    required this.sessionState,
     required this.onTap,
   });
 
+  final _TabItem item;
+  final int index;
   final bool isSelected;
-  final SessionState sessionState;
   final VoidCallback onTap;
 
   @override
+  State<_NavTab> createState() => _NavTabState();
+}
+
+class _NavTabState extends State<_NavTab>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _scaleController;
+  late final Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+      reverseDuration: const Duration(milliseconds: 200),
+      lowerBound: 0.97,
+      upperBound: 1.0,
+      value: 1.0,
+    );
+    _scaleAnim = CurvedAnimation(
+      parent: _scaleController,
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(_) => _scaleController.reverse();
+  void _onTapUp(_) {
+    _scaleController.forward();
+    widget.onTap();
+  }
+  void _onTapCancel() => _scaleController.forward();
+
+  @override
   Widget build(BuildContext context) {
-    // Repos/pause → Vert Sauge ▶ ; session active → Ocre ⏸
-    final isActive = sessionState == SessionState.active;
-    final color = isActive ? UrbinkColors.primary : UrbinkColors.secondary;
-    final icon = isActive ? Icons.pause : Icons.play_arrow;
-    final semanticLabel = switch (sessionState) {
-      SessionState.idle => 'Démarrer, onglet 3 sur 5',
-      SessionState.active => 'Pause session, onglet 3 sur 5',
-      SessionState.paused => 'Reprendre session, onglet 3 sur 5',
-    };
-
-    // Réduire les animations : transitions instant (couleur) + fade court (icône)
     final disableAnimations = MediaQuery.of(context).disableAnimations;
-    final colorDuration =
-        disableAnimations ? Duration.zero : const Duration(milliseconds: 200);
-    final iconDuration = disableAnimations
-        ? const Duration(milliseconds: 150)
-        : const Duration(milliseconds: 200);
+    const activeColor = UrbinkColors.primary;
+    const inactiveColor = UrbinkColors.navInactive;
 
-    return Semantics(
-      label: semanticLabel,
-      button: true,
-      selected: isSelected,
-      excludeSemantics: true,
-      onTap: onTap,
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: colorDuration,
-          width: UrbinkBottomNav._centerButtonSize,
-          height: UrbinkBottomNav._centerButtonSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color,
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.30),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+    return Expanded(
+      child: Semantics(
+        label: '${widget.item.label}, onglet ${widget.index + 1} sur 5',
+        button: true,
+        selected: widget.isSelected,
+        excludeSemantics: true,
+        onTap: widget.onTap,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: disableAnimations ? null : _onTapDown,
+          onTapUp: disableAnimations ? null : _onTapUp,
+          onTapCancel: disableAnimations ? null : _onTapCancel,
+          onTap: disableAnimations ? widget.onTap : null,
+          child: ScaleTransition(
+            scale: disableAnimations
+                ? const AlwaysStoppedAnimation(1.0)
+                : _scaleAnim,
+            child: MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: MediaQuery.of(context).textScaler.clamp(
+                      minScaleFactor: 0.0,
+                      maxScaleFactor: 1.3,
+                    ),
               ),
-              BoxShadow(
-                color: UrbinkColors.onSurface.withValues(alpha: 0.10),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  // Indicateur actif — trait 20×2px au-dessus de l'icône
+                  if (disableAnimations)
+                    AnimatedOpacity(
+                      opacity: widget.isSelected ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 150),
+                      child: Container(
+                        height: 2,
+                        width: 20,
+                        decoration: BoxDecoration(
+                          color: activeColor,
+                          borderRadius: BorderRadius.circular(1),
+                        ),
+                      ),
+                    )
+                  else
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOut,
+                      height: 2,
+                      width: widget.isSelected ? 20 : 0,
+                      decoration: BoxDecoration(
+                        color: activeColor,
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                    ),
+                  const SizedBox(height: 4),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    transitionBuilder: (child, anim) =>
+                        FadeTransition(opacity: anim, child: child),
+                    child: Icon(
+                      widget.item.icon,
+                      key: ValueKey(widget.isSelected),
+                      size: 22,
+                      color: widget.isSelected ? activeColor : inactiveColor,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.item.label,
+                    style: TextStyle(
+                      fontFamily: UrbinkTypography.bodyFamily,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: widget.isSelected ? activeColor : inactiveColor,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: AnimatedSwitcher(
-            duration: iconDuration,
-            // FadeTransition explicite — compatible "Réduire les animations"
-            transitionBuilder: (child, animation) =>
-                FadeTransition(opacity: animation, child: child),
-            child: Icon(
-              icon,
-              key: ValueKey(icon),
-              color: Colors.white,
-              size: 28,
             ),
           ),
         ),
@@ -296,9 +222,8 @@ class _StartButton extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _TabItem {
-  const _TabItem(this.index, this.icon, this.label);
+  const _TabItem({required this.icon, required this.label});
 
-  final int index;
   final IconData icon;
   final String label;
 }

@@ -60,7 +60,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               Text(
                 'Urbink',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      color: UrbinkColors.ocre,
+                      color: UrbinkColors.accent,
                       fontFamily: 'CrimsonPro',
                       fontWeight: FontWeight.w600,
                     ),
@@ -165,7 +165,7 @@ class _PrivacySection extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: UrbinkColors.ocre, size: 24),
+        Icon(icon, color: UrbinkColors.accent, size: 24),
         const SizedBox(width: UrbinkSpacing.md),
         Expanded(
           child: Column(
