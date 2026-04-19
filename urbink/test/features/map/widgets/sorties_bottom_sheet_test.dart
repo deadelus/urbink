@@ -81,7 +81,14 @@ void main() {
 
       await _openSheet(tester);
 
+      // Étape 1 : sélectionner le mode Itinéraire → liste des parcours
       await tester.tap(find.text('Itinéraire'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Mes itinéraires'), findsOneWidget);
+
+      // Étape 2 : choisir un parcours → vue "Naviguer avec…"
+      await tester.tap(find.text('Tour de Montmartre'));
       await tester.pumpAndSettle();
 
       expect(find.text('Naviguer avec…'), findsOneWidget);
