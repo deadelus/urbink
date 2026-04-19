@@ -54,7 +54,7 @@ class FiltersScreen extends ConsumerWidget {
                   TextButton(
                     onPressed: () =>
                         ref.read(activeFiltersProvider.notifier).state =
-                            const {},
+                            const <String>{},
                     style: TextButton.styleFrom(
                         foregroundColor: UrbinkColors.destructive),
                     child: const Text(
