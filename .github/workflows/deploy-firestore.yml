@@ -4,7 +4,7 @@ on:
   # Auto — dev à chaque push sur develop
   push:
     branches:
-      - '**'
+      - develop
     paths:
       - 'firestore.rules'
       - 'firestore.indexes.json'
