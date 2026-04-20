@@ -1,0 +1,69 @@
+name: Deploy Firestore
+
+on:
+  # Auto — dev à chaque push sur develop
+  push:
+    branches:
+      - develop
+    paths:
+      - 'firestore.rules'
+      - 'firestore.indexes.json'
+
+  # Manuel — dev (toute branche) / staging (main, develop) / prod (main uniquement)
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environnement cible'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+jobs:
+  # ── Auto : develop → dev ─────────────────────────────────────────────────
+  deploy-dev-auto:
+    name: Deploy → dev (auto)
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install -g firebase-tools
+      - run: firebase deploy --only firestore -P dev
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  # ── Manuel ───────────────────────────────────────────────────────────────
+  deploy-manual:
+    name: Deploy → ${{ github.event.inputs.environment }} (manuel)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Valider la branche selon l'environnement
+        run: |
+          ENV="${{ github.event.inputs.environment }}"
+          BRANCH="${{ github.ref_name }}"
+          if [ "$ENV" = "prod" ] && [ "$BRANCH" != "main" ]; then
+            echo "❌ prod ne peut être déployé que depuis main (branche actuelle : $BRANCH)"
+            exit 1
+          fi
+          if [ "$ENV" = "staging" ] && [ "$BRANCH" != "main" ] && [ "$BRANCH" != "develop" ]; then
+            echo "❌ staging ne peut être déployé que depuis main ou develop (branche actuelle : $BRANCH)"
+            exit 1
+          fi
+          echo "✅ Branche $BRANCH autorisée pour $ENV"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install -g firebase-tools
+      - run: firebase deploy --only firestore -P ${{ github.event.inputs.environment }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

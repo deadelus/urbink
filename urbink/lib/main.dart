@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:urbink/core/firebase/firebase_service.dart';
+import 'package:urbink/core/firebase/startup_auth.dart';
 import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/core/utils/tile_error_utils.dart';
 import 'package:urbink/shared/theme/app_theme.dart';
@@ -20,9 +21,12 @@ Future<void> main() async {
   final privacyAccepted = prefs.getBool(kPrivacyAcceptedKey) ?? false;
 
   // Auth anonyme si politique acceptée et pas encore connecté (FR32)
-  if (privacyAccepted && FirebaseAuth.instance.currentUser == null) {
+  if (privacyAccepted) {
     try {
-      await FirebaseAuth.instance.signInAnonymously();
+      await ensureAnonymousAuth(
+        isSignedIn: () => FirebaseAuth.instance.currentUser != null,
+        signInAnonymously: FirebaseAuth.instance.signInAnonymously,
+      );
     } catch (error, stackTrace) {
       debugPrint('Anonymous sign-in failed during app startup: $error\n$stackTrace');
     }
