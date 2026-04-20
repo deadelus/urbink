@@ -69,6 +69,7 @@ void main() {
 
       // Abonner avant d'émettre — évite la perte d'event sur stream single-subscription
       final future = container.read(aggregationProvider.future);
+      await Future<void>.delayed(Duration.zero); // laisse le provider s'abonner
       controller.add([
         ['way:10', 'way:20'],
         ['way:20', 'way:30'],
