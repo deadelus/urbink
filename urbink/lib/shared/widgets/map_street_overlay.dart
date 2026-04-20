@@ -33,11 +33,10 @@ class MapStreetOverlay extends ConsumerWidget {
     if (!ref.watch(streetsVisibleProvider)) return const SizedBox.shrink();
 
     final liveState = ref.watch(mapStreetOverlayProvider);
-    final aggregatedIds = ref.watch(aggregationProvider).valueOrNull ?? const <String>{};
+    final aggregationAsync = ref.watch(aggregationProvider);
+    final aggregatedIds = aggregationAsync.valueOrNull ?? const <String>{};
     final allHistoricalStreets = ref.watch(historicalStreetsProvider).valueOrNull ?? {};
 
-    // aggregationProvider est la source de vérité : seules les rues dans l'union
-    // des sessions sont affichées. En Story 3.2, ce Set sera filtré par date.
     final historicalStreets = {
       for (final e in allHistoricalStreets.entries)
         if (aggregatedIds.contains(e.key)) e.key: e.value,
@@ -76,6 +75,10 @@ class MapStreetOverlay extends ConsumerWidget {
 
     if (historicalPolylines.isEmpty && livePolylines.isEmpty) return const SizedBox.shrink();
 
-    return PolylineLayer(polylines: [...historicalPolylines, ...livePolylines]);
+    return AnimatedOpacity(
+      opacity: aggregationAsync.isLoading ? 0.0 : 1.0,
+      duration: const Duration(milliseconds: 250),
+      child: PolylineLayer(polylines: [...historicalPolylines, ...livePolylines]),
+    );
   }
 }

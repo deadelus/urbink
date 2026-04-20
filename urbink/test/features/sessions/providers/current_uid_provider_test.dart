@@ -59,7 +59,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           currentUidProvider.overrideWith((ref) => uid),
-          sessionsStreetIdsStreamProvider(uid).overrideWith(
+          sessionsStreetIdsStreamProvider((uid, null)).overrideWith(
             (ref) => controller.stream,
           ),
         ],

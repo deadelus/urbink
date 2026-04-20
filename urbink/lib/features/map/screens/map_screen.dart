@@ -20,6 +20,7 @@ import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/constants/typography.dart';
 import 'package:urbink/shared/widgets/filter_chips_row.dart';
 import 'package:urbink/shared/widgets/map_street_overlay.dart';
+import 'package:urbink/shared/widgets/time_filter_bar.dart';
 import 'package:urbink/shared/widgets/urbink_snack_bar.dart';
 import 'package:urbink/shared/widgets/zones_toggle_pill.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
@@ -233,12 +234,23 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ),
             ),
 
-          // ── Pill Zones & Bottom sheet — masqués si showBottomUi = false ─
+          // ── Pill Zones + filtre temporel + Bottom sheet ──────────────
           if (widget.showBottomUi) ...[
-            const Positioned(
+            Positioned(
               left: UrbinkSpacing.md,
+              right: UrbinkSpacing.md,
               bottom: SortiesBottomSheet.collapsedHeight + UrbinkSpacing.md,
-              child: ZonesTogglePill(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isIdle) ...[
+                    const TimeFilterBar(),
+                    const SizedBox(height: UrbinkSpacing.sm),
+                  ],
+                  const ZonesTogglePill(),
+                ],
+              ),
             ),
             const SortiesBottomSheet(),
           ],
