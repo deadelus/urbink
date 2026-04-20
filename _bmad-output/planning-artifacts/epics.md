@@ -443,9 +443,9 @@ Afin de détecter les régressions rapidement et publier sur l'App Store en conf
 
 ---
 
-### Story 1.7 : Refactoring navigation v4 — 5 onglets plats, suppression FAB Démarrer *(remplace Story 1.3)*
+### Story 1.7 : Refactoring navigation v4 — 5 onglets plats, suppression FAB Démarrer *(done)*
 
-> **Dépendance :** Story 1.3 done. Cette story migre la navigation vers la v4. Elle est à implémenter après les Stories 2.8 et 2.9 (tracking passif + bottom sheet) qui fournissent le point d'entrée de remplacement du FAB.
+> **Status : done — implémentée dans PR#17 (story-2.10-create-itineraire, mergée dans develop).** Navigation v4 5 onglets plats, FAB supprimé, routes renommées, SessionStatusBar prend le relais pour l'état session.
 
 En tant qu'**utilisateur**,
 Je veux une navigation plate en 5 onglets sans bouton central surélevé,
