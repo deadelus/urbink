@@ -268,9 +268,48 @@ summary() {
 }
 
 # ---------------------------------------------------------------------------
-# Cleanup émulateur
+# Purge données de test (dev/staging uniquement)
+# ---------------------------------------------------------------------------
+purge_test_data() {
+  [ "$ENV" = "local" ] && return
+
+  title "Purge données de test"
+
+  local auth_delete_url
+  if [ "$ENV" = "local" ]; then
+    auth_delete_url="${AUTH_URL}/identitytoolkit.googleapis.com/v1/accounts:delete"
+  else
+    auth_delete_url="${AUTH_URL}/v1/accounts:delete"
+  fi
+
+  # Suppression documents Firestore
+  for path in \
+    "users/$FUID_1/sessions/test-session" \
+    "users/$FUID_1/streets/way:123" \
+    "users/$FUID_1/sessions/hack-session" \
+    "users/$FUID_1/sessions/anon-write"; do
+    curl -s -o /dev/null -X DELETE \
+      -H "Authorization: Bearer $TOKEN_1" \
+      "${FIRESTORE_URL}/v1/projects/${PROJECT_ID}/databases/(default)/documents/${path}" || true
+  done
+  log "Documents Firestore supprimés"
+
+  # Suppression utilisateurs anonymes
+  curl -s -o /dev/null -X POST "$auth_delete_url?key=${API_KEY}" \
+    -H "Content-Type: application/json" \
+    -d "{\"idToken\":\"$TOKEN_1\"}" || true
+  curl -s -o /dev/null -X POST "$auth_delete_url?key=${API_KEY}" \
+    -H "Content-Type: application/json" \
+    -d "{\"idToken\":\"$TOKEN_2\"}" || true
+  log "Utilisateurs anonymes supprimés"
+}
+
+# ---------------------------------------------------------------------------
+# Cleanup émulateur + purge
 # ---------------------------------------------------------------------------
 cleanup() {
+  purge_test_data 2>/dev/null || true
+
   if [ -f /tmp/firebase-emulator.pid ]; then
     local pid
     pid=$(cat /tmp/firebase-emulator.pid)
