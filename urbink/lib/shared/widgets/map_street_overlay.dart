@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:urbink/features/map/providers/aggregation_provider.dart';
 import 'package:urbink/features/map/providers/historical_streets_provider.dart';
 import 'package:urbink/features/map/providers/map_street_overlay_provider.dart';
 import 'package:urbink/features/map/providers/streets_visible_provider.dart';
@@ -9,8 +10,10 @@ import 'package:urbink/shared/constants/colors.dart';
 /// Couche flutter_map affichant les rues explorées en Vert Sauge.
 ///
 /// Deux couches superposées :
-/// - **Historique** (`historicalStreetsProvider`) : rues des sessions précédentes,
-///   alpha 0.4 — fond permanent même sans session active (état idle, FR7).
+/// - **Historique** (`historicalStreetsProvider` filtré par `aggregationProvider`) :
+///   rues des sessions précédentes, alpha 0.4 — fond permanent état idle (FR7).
+///   `aggregationProvider` est la source de vérité des IDs à afficher ; en Story 3.2
+///   il sera filtré par date sans modifier ce widget.
 /// - **Live** (`mapStreetOverlayProvider`) : rues de la session courante,
 ///   alpha 0.75 + rue en cours en [UrbinkColors.streetRecording].
 ///
@@ -30,12 +33,15 @@ class MapStreetOverlay extends ConsumerWidget {
     if (!ref.watch(streetsVisibleProvider)) return const SizedBox.shrink();
 
     final liveState = ref.watch(mapStreetOverlayProvider);
-    final historicalStreets = ref.watch(historicalStreetsProvider).valueOrNull ?? {};
+    final aggregatedIds = ref.watch(aggregationProvider).valueOrNull ?? const <String>{};
+    final allHistoricalStreets = ref.watch(historicalStreetsProvider).valueOrNull ?? {};
 
-    final hasHistorical = historicalStreets.isNotEmpty;
-    final hasLive = !liveState.isEmpty;
-
-    if (!hasHistorical && !hasLive) return const SizedBox.shrink();
+    // aggregationProvider est la source de vérité : seules les rues dans l'union
+    // des sessions sont affichées. En Story 3.2, ce Set sera filtré par date.
+    final historicalStreets = {
+      for (final e in allHistoricalStreets.entries)
+        if (aggregatedIds.contains(e.key)) e.key: e.value,
+    };
 
     // Rues historiques (fond) — exclut celles déjà dans l'état live pour éviter doublons
     final historicalPolylines = historicalStreets.entries
@@ -67,6 +73,8 @@ class MapStreetOverlay extends ConsumerWidget {
           );
         })
         .toList();
+
+    if (historicalPolylines.isEmpty && livePolylines.isEmpty) return const SizedBox.shrink();
 
     return PolylineLayer(polylines: [...historicalPolylines, ...livePolylines]);
   }

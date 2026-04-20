@@ -11,9 +11,9 @@ abstract interface class PassiveStreetRepository {
 
   /// Ajoute un point GPS à la géométrie persistée d'une rue.
   ///
-  /// Utilise arrayUnion pour n'écrire que le delta — idempotent si le
-  /// même GeoPoint est soumis deux fois.
-  Future<void> appendStreetPoint(String userId, String streetId, GeoPoint point);
+  /// Utilise arrayUnion pour n'écrire que le delta — idempotent si les
+  /// mêmes coordonnées sont soumises deux fois.
+  Future<void> appendStreetPoint(String userId, String streetId, double lat, double lng);
 }
 
 class FirestorePassiveStreetRepository implements PassiveStreetRepository {
@@ -34,11 +34,11 @@ class FirestorePassiveStreetRepository implements PassiveStreetRepository {
   }
 
   @override
-  Future<void> appendStreetPoint(String userId, String streetId, GeoPoint point) async {
+  Future<void> appendStreetPoint(String userId, String streetId, double lat, double lng) async {
     await _streetRef(userId, streetId).set(
       {
         'lastExploredAt': FieldValue.serverTimestamp(),
-        'points': FieldValue.arrayUnion([point]),
+        'points': FieldValue.arrayUnion([GeoPoint(lat, lng)]),
       },
       SetOptions(merge: true),
     );

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -53,14 +52,15 @@ class MapStreetOverlayNotifier extends Notifier<MapStreetOverlayState> {
     final point = LatLng(position.latitude, position.longitude);
     final current = state;
 
-    // Persister la géométrie en Firestore (arrayUnion → delta uniquement)
+    // Persister la géométrie en Firestore (arrayUnion → delta uniquement).
+    // TODO(story-3.x): throttle — buffer local + flush périodique pour réduire
+    // le nombre d'écritures Firestore (~1/point GPS filtré actuellement).
     final uid = ref.read(currentUidProvider);
     if (uid != null) {
-      final geoPoint = GeoPoint(position.latitude, position.longitude);
-      final repo = ref.read(passiveStreetRepositoryProvider);
       unawaited(
-        repo
-            .appendStreetPoint(uid, streetId, geoPoint)
+        ref
+            .read(passiveStreetRepositoryProvider)
+            .appendStreetPoint(uid, streetId, position.latitude, position.longitude)
             .catchError(
               (Object e) => debugPrint('PassiveStreet: Firestore save failed: $e'),
             ),

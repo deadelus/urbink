@@ -1,7 +1,7 @@
 # Story 3.1 — Moteur d'agrégation des sessions + affichage carte historique
 ## Implementation Artifact
 
-**Branch :** `story-2.10-create-itineraire` (ajouté après Story 2.10)
+**Branch :** `story-3.1-aggregation-historique-carte`
 **Epic :** Epic 3 — Historique & Filtrage Temporel
 
 ---

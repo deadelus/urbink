@@ -81,7 +81,7 @@ void main() {
     });
 
     test('se met à jour automatiquement quand une nouvelle session arrive', () async {
-      final controller = StreamController<List<List<String>>>();
+      final controller = StreamController<List<List<String>>>(sync: true);
       final container = _makeContainer(uid: 'user1', sessionsStream: controller.stream);
       addTearDown(container.dispose);
       addTearDown(controller.close);
@@ -96,13 +96,13 @@ void main() {
       controller.add([
         ['way:1'],
       ]);
-      await Future<void>.microtask(() {});
+      await Future<void>.delayed(Duration.zero);
 
       controller.add([
         ['way:1'],
         ['way:2'],
       ]);
-      await Future<void>.microtask(() {});
+      await Future<void>.delayed(Duration.zero);
 
       expect(emissions.length, 2);
       expect(emissions[0], {'way:1'});
