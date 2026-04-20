@@ -7,13 +7,6 @@
         { "fieldPath": "streetIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "sessionStart", "order": "ASCENDING" }
       ]
-    },
-    {
-      "collectionGroup": "sessions",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "sessionStart", "order": "DESCENDING" }
-      ]
     }
   ],
   "fieldOverrides": []
