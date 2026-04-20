@@ -52,19 +52,19 @@ class MapStreetOverlayNotifier extends Notifier<MapStreetOverlayState> {
     final point = LatLng(position.latitude, position.longitude);
     final current = state;
 
-    // Persister en Firestore si la rue est nouvelle dans cette session mémoire
-    if (!current.exploredStreets.containsKey(streetId)) {
-      final uid = ref.read(currentUidProvider);
-      if (uid != null) {
-        unawaited(
-          ref
-              .read(passiveStreetRepositoryProvider)
-              .saveStreet(uid, streetId)
-              .catchError(
-                (Object e) => debugPrint('PassiveStreet: Firestore save failed: $e'),
-              ),
-        );
-      }
+    // Persister la géométrie en Firestore (arrayUnion → delta uniquement).
+    // TODO(story-3.x): throttle — buffer local + flush périodique pour réduire
+    // le nombre d'écritures Firestore (~1/point GPS filtré actuellement).
+    final uid = ref.read(currentUidProvider);
+    if (uid != null) {
+      unawaited(
+        ref
+            .read(passiveStreetRepositoryProvider)
+            .appendStreetPoint(uid, streetId, position.latitude, position.longitude)
+            .catchError(
+              (Object e) => debugPrint('PassiveStreet: Firestore save failed: $e'),
+            ),
+      );
     }
 
     // Copie superficielle du Map + copie profonde uniquement de la rue concernée

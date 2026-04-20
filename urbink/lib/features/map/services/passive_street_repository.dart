@@ -8,6 +8,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// courante (en mémoire), que ce soit pendant ou hors session enregistrée.
 abstract interface class PassiveStreetRepository {
   Future<void> saveStreet(String userId, String streetId);
+
+  /// Ajoute un point GPS à la géométrie persistée d'une rue.
+  ///
+  /// Utilise arrayUnion pour n'écrire que le delta — idempotent si les
+  /// mêmes coordonnées sont soumises deux fois.
+  Future<void> appendStreetPoint(String userId, String streetId, double lat, double lng);
 }
 
 class FirestorePassiveStreetRepository implements PassiveStreetRepository {
@@ -16,17 +22,26 @@ class FirestorePassiveStreetRepository implements PassiveStreetRepository {
 
   final FirebaseFirestore _firestore;
 
+  DocumentReference<Map<String, dynamic>> _streetRef(String userId, String streetId) =>
+      _firestore.collection('users').doc(userId).collection('streets').doc(streetId);
+
   @override
   Future<void> saveStreet(String userId, String streetId) async {
-    await _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('streets')
-        .doc(streetId)
-        .set(
-          {'lastExploredAt': FieldValue.serverTimestamp()},
-          SetOptions(merge: true),
-        );
+    await _streetRef(userId, streetId).set(
+      {'lastExploredAt': FieldValue.serverTimestamp()},
+      SetOptions(merge: true),
+    );
+  }
+
+  @override
+  Future<void> appendStreetPoint(String userId, String streetId, double lat, double lng) async {
+    await _streetRef(userId, streetId).set(
+      {
+        'lastExploredAt': FieldValue.serverTimestamp(),
+        'points': FieldValue.arrayUnion([GeoPoint(lat, lng)]),
+      },
+      SetOptions(merge: true),
+    );
   }
 }
 
