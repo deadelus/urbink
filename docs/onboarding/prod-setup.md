@@ -74,7 +74,31 @@ base64 -i AuthKey_XXXX.p8 | pbcopy
 
 ---
 
-## 5. GitHub Environments + Secrets
+## 5. Firebase Token CI — deploy Firestore
+
+Nécessaire pour que le workflow `deploy-firestore.yml` puisse déployer les règles et indexes.
+
+### Générer le token (une fois)
+
+```bash
+firebase login:ci
+```
+
+Ça ouvre le navigateur → connecte-toi avec le compte Google Firebase → copie le token affiché dans le terminal.
+
+### Ajouter le secret dans GitHub
+
+**github.com/deadelus/urbink → Settings → Secrets and variables → Actions → New repository secret**
+
+| Secret | Valeur |
+|---|---|
+| `FIREBASE_TOKEN` | Token généré par `firebase login:ci` |
+
+> Ce secret est **repository-level** (pas lié à un environment) — il est utilisé par tous les environnements Firebase (dev, staging, prod).
+
+---
+
+## 6. GitHub Environments + Secrets
 
 Créer 3 environments dans **github.com/deadelus/urbink → Settings → Environments** :
 `ios-dev`, `ios-staging`, `ios-prod`
@@ -97,7 +121,7 @@ Les secrets ont le **même nom** dans chaque environment — c'est l'environment
 
 ---
 
-## 6. Fastlane Match — certificats et profiles
+## 7. Fastlane Match — certificats et profiles
 
 ```bash
 cd urbink/ios
@@ -109,7 +133,7 @@ bundle exec fastlane match appstore
 
 ---
 
-## 7. Déclencher un deploy
+## 8. Déclencher un deploy
 
 ```bash
 # Staging → TestFlight (tag avec suffixe -beta)

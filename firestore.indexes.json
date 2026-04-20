@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "sessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "streetIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "sessionStart", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

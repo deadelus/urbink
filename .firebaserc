@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "dev": "urbink-dev",
+    "staging": "urbink-staging"
+  }
+}
