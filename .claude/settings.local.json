@@ -11,7 +11,15 @@
       "Bash(gh pr:*)",
       "Bash(python3 -c \" import json, sys data = json.load\\(sys.stdin\\) unreplied = [c for c in data if c['user']['login'] in \\('Copilot', 'copilot-pull-request-reviewer'\\) and c.get\\('in_reply_to_id'\\) is None] for c in unreplied: print\\(f'--- ID: {c[\\\\\"id\\\\\"]} ---'\\) print\\(f'File: {c.get\\(\\\\\"path\\\\\"\\)} line {c.get\\(\\\\\"original_line\\\\\"\\)}'\\) print\\(f'Body: {c[\\\\\"body\\\\\"][:200]}'\\) print\\(\\) \")",
       "Bash(gh run:*)",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "Bash(python3 -c ' *)",
+      "Bash(dart analyze *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(python3 -c \"import json,sys; r=json.load\\(sys.stdin\\); print\\(r.get\\('id','error'\\), r.get\\('html_url',''\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; r=json.load\\(sys.stdin\\); print\\(r.get\\('id','error'\\)\\)\")"
     ]
   }
 }

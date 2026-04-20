@@ -471,6 +471,59 @@ Afin d'avoir plus d'espace carte et accéder aux sorties via le bottom sheet dé
 
 ---
 
+### Story 1.8 : Firebase Anonymous Auth au premier lancement *(avancée depuis Epic 7)*
+
+> **Priorité critique :** Sans cette story, `currentUidProvider` retourne `null` et toutes les écritures Firestore (sessions, rues, badges) sont silencieusement ignorées. À implémenter **avant Epic 3** pour que les données historiques soient réellement persistées.
+> Story 7.1 est conservée dans Epic 7 pour référence mais son implémentation se fait ici.
+
+En tant que **nouvel utilisateur**,
+Je veux explorer l'app sans créer de compte,
+Afin de découvrir la valeur d'Urbink avant de m'engager. (FR32)
+
+**Acceptance Criteria :**
+
+**Given** le premier lancement de l'app (après l'onboarding Story 2.7)
+**When** l'utilisateur accepte la politique de confidentialité
+**Then** `FirebaseAuth.instance.signInAnonymously()` est appelé silencieusement — un UID Firestore est créé, `currentUidProvider` retourne une valeur non-null, la progression commence à être sauvegardée immédiatement
+
+**Given** un utilisateur avec un UID anonyme déjà existant (app rouverte)
+**When** l'app démarre
+**Then** `FirebaseAuth.instance.currentUser` restaure la session — aucun nouveau `signInAnonymously()` n'est appelé ; l'UID persiste via iOS Keychain (NFR13)
+
+**Given** un utilisateur en mode invité
+**When** il tente d'accéder à des fonctionnalités sociales (Epic 9)
+**Then** un message s'affiche : "Crée un compte pour partager tes explorations" avec CTA "Créer un compte" — implémentation complète du compte en Story 7.2
+
+---
+
+### Story 1.9 : Firestore Security Rules + indexes
+
+> **Dépendance :** Story 1.8 done (UID non-null requis pour valider les règles). À implémenter avant toute beta TestFlight pour éviter l'exposition des données utilisateurs.
+
+En tant que **développeur / DPO**,
+Je veux que les données Firestore soient protégées par des règles d'accès strictes,
+Afin qu'aucun utilisateur ne puisse lire ou écrire les données d'un autre.
+
+**Acceptance Criteria :**
+
+**Given** les collections `/users/{userId}/sessions/`, `/users/{userId}/streets/`
+**When** un utilisateur authentifié tente de lire/écrire
+**Then** les règles Firestore autorisent uniquement `request.auth.uid == userId` — les emulators Firebase valident les règles sans erreur
+
+**Given** un utilisateur non authentifié (ou UID différent)
+**When** il tente d'accéder à `/users/{userId}/` (read ou write)
+**Then** la requête est refusée avec `PERMISSION_DENIED` — testé via `firebase emulators:exec`
+
+**Given** la query `aggregationProvider` sur `/users/{uid}/sessions/`
+**When** elle s'exécute en production
+**Then** l'index composite `sessionStart ASC + streetIds ARRAY` est déployé via `firestore.indexes.json` — pas de `FAILED_PRECONDITION` en console
+
+**Given** les queries futures (Story 3.2 filtrage par date)
+**When** elles filtrent sur `sessionStart`
+**Then** l'index `sessionStart DESC` sur la collection `sessions` est présent dans `firestore.indexes.json`
+
+---
+
 ## Epic 2 : Carte & Exploration GPS
 
 L'utilisateur ouvre l'app, voit la carte complète de Paris, marche, et ses rues se colorient en temps réel — c'est le moment "aha" fondateur d'Urbink.
