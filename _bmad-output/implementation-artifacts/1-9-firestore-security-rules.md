@@ -1,9 +1,9 @@
 # Story 1.9 : Firestore Security Rules + indexes
 
-**Status:** review
-**Branch :** `story-1.8-1.9-firebase-auth-firestore-rules`
-**Epic :** Epic 1 — Fondations Techniques
-**Dépendance :** Story 1.8 (UID non-null requis)
+Status: review
+Branch: story-1.8-1.9-firebase-auth-firestore-rules
+Epic: Epic 1 — Fondations Techniques
+Dépendance: Story 1.8 (UID non-null requis)
 
 ---
 
@@ -44,8 +44,8 @@ Afin qu'aucun utilisateur ne puisse lire ou écrire les données d'un autre.
   - [x] Index simple : collection `sessions`, champ `sessionStart` (DESC)
 
 - [x] **T4 — Tests des règles Firestore** (AC: 1, 2)
-  - [x] Créer `test/firestore/firestore_rules_test.dart` (ou noter que les tests nécessitent Firebase Emulator)
-  - [x] Documenter dans le Dev Agent Record comment lancer `firebase emulators:exec` pour valider
+  - [x] `scripts/test_firestore_rules.sh` — 3 suites curl (accès autorisé, UID différent, non auth) sur local/dev/staging
+  - [x] Purge automatique des données de test (trap EXIT) sur dev/staging
   - [x] Créer un script `scripts/test_firestore_rules.sh` si applicable
 
 ## Dev Notes

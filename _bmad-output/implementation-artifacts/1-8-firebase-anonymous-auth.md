@@ -1,8 +1,8 @@
 # Story 1.8 : Firebase Anonymous Auth au premier lancement
 
-**Status:** review
-**Branch :** `story-1.8-1.9-firebase-auth-firestore-rules`
-**Epic :** Epic 1 — Fondations Techniques
+Status: review
+Branch: story-1.8-1.9-firebase-auth-firestore-rules
+Epic: Epic 1 — Fondations Techniques
 
 ---
 

@@ -67,12 +67,14 @@ void main() {
       addTearDown(container.dispose);
       addTearDown(controller.close);
 
+      // Abonner avant d'émettre — évite la perte d'event sur stream single-subscription
+      final future = container.read(aggregationProvider.future);
       controller.add([
         ['way:10', 'way:20'],
         ['way:20', 'way:30'],
       ]);
 
-      final result = await container.read(aggregationProvider.future);
+      final result = await future;
       expect(result, equals({'way:10', 'way:20', 'way:30'}));
     });
   });
