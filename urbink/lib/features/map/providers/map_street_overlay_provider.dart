@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -52,19 +53,18 @@ class MapStreetOverlayNotifier extends Notifier<MapStreetOverlayState> {
     final point = LatLng(position.latitude, position.longitude);
     final current = state;
 
-    // Persister en Firestore si la rue est nouvelle dans cette session mémoire
-    if (!current.exploredStreets.containsKey(streetId)) {
-      final uid = ref.read(currentUidProvider);
-      if (uid != null) {
-        unawaited(
-          ref
-              .read(passiveStreetRepositoryProvider)
-              .saveStreet(uid, streetId)
-              .catchError(
-                (Object e) => debugPrint('PassiveStreet: Firestore save failed: $e'),
-              ),
-        );
-      }
+    // Persister la géométrie en Firestore (arrayUnion → delta uniquement)
+    final uid = ref.read(currentUidProvider);
+    if (uid != null) {
+      final geoPoint = GeoPoint(position.latitude, position.longitude);
+      final repo = ref.read(passiveStreetRepositoryProvider);
+      unawaited(
+        repo
+            .appendStreetPoint(uid, streetId, geoPoint)
+            .catchError(
+              (Object e) => debugPrint('PassiveStreet: Firestore save failed: $e'),
+            ),
+      );
     }
 
     // Copie superficielle du Map + copie profonde uniquement de la rue concernée
