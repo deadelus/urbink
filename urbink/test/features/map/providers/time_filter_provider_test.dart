@@ -1,35 +1,25 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:urbink/features/map/providers/time_filter_provider.dart';
 
+// Heure fixe (milieu de journée) pour éviter toute flakiness autour de minuit.
+final _fixedNow = DateTime(2024, 6, 15, 10, 30);
+
 void main() {
   group('TimeFilterX.from', () {
     test('allTime retourne null', () {
-      expect(TimeFilter.allTime.from, isNull);
+      expect(TimeFilter.allTime.from(_fixedNow), isNull);
     });
 
     test('today retourne minuit du jour courant', () {
-      final now = DateTime.now();
-      final from = TimeFilter.today.from!;
-      expect(from.year, now.year);
-      expect(from.month, now.month);
-      expect(from.day, now.day);
-      expect(from.hour, 0);
-      expect(from.minute, 0);
-      expect(from.second, 0);
+      expect(TimeFilter.today.from(_fixedNow), DateTime(2024, 6, 15));
     });
 
     test('thisWeek retourne minuit il y a 7 jours', () {
-      final now = DateTime.now();
-      final from = TimeFilter.thisWeek.from!;
-      expect(from, DateTime(now.year, now.month, now.day - 7));
+      expect(TimeFilter.thisWeek.from(_fixedNow), DateTime(2024, 6, 8));
     });
 
     test('thisMonth retourne le 1er du mois courant', () {
-      final now = DateTime.now();
-      final from = TimeFilter.thisMonth.from!;
-      expect(from.year, now.year);
-      expect(from.month, now.month);
-      expect(from.day, 1);
+      expect(TimeFilter.thisMonth.from(_fixedNow), DateTime(2024, 6, 1));
     });
   });
 

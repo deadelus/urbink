@@ -15,7 +15,7 @@ ProviderContainer _makeContainer({
   Stream<List<List<String>>>? sessionsStream,
   TimeFilter filter = TimeFilter.allTime,
 }) {
-  final from = filter.from;
+  final from = filter.from();
   return ProviderContainer(
     overrides: [
       currentUidProvider.overrideWith((ref) => uid),

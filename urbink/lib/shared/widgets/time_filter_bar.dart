@@ -48,35 +48,43 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? UrbinkColors.primary : UrbinkColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: isSelected
-              ? null
-              : Border.all(
-                  color: UrbinkColors.primary.withValues(alpha: 0.35),
-                  width: 1,
-                ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.10),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: label,
+      onTapHint: 'Filtrer par $label',
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? UrbinkColors.primary : UrbinkColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: isSelected
+                ? null
+                : Border.all(
+                    color: UrbinkColors.primary.withValues(alpha: 0.35),
+                    width: 1,
+                  ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.10),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ExcludeSemantics(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isSelected ? Colors.white : UrbinkColors.onSurface,
+              ),
             ),
-          ],
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: isSelected ? Colors.white : UrbinkColors.onSurface,
           ),
         ),
       ),

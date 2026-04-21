@@ -75,10 +75,16 @@ class MapStreetOverlay extends ConsumerWidget {
 
     if (historicalPolylines.isEmpty && livePolylines.isEmpty) return const SizedBox.shrink();
 
-    return AnimatedOpacity(
-      opacity: aggregationAsync.isLoading ? 0.0 : 1.0,
-      duration: const Duration(milliseconds: 250),
-      child: PolylineLayer(polylines: [...historicalPolylines, ...livePolylines]),
+    return Stack(
+      children: [
+        if (historicalPolylines.isNotEmpty)
+          AnimatedOpacity(
+            opacity: aggregationAsync.isLoading ? 0.0 : 1.0,
+            duration: const Duration(milliseconds: 250),
+            child: PolylineLayer(polylines: historicalPolylines),
+          ),
+        if (livePolylines.isNotEmpty) PolylineLayer(polylines: livePolylines),
+      ],
     );
   }
 }

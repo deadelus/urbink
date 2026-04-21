@@ -44,7 +44,7 @@ final aggregationProvider = StreamProvider<Set<String>>((ref) {
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return Stream.value(<String>{});
 
-  final from = ref.watch(timeFilterProvider.select((f) => f.from));
+  final from = ref.watch(timeFilterProvider.select((f) => f.from()));
 
   return ref
       .watch(sessionsStreetIdsStreamProvider((uid, from)))

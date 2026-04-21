@@ -13,13 +13,14 @@ extension TimeFilterX on TimeFilter {
       };
 
   /// Borne inférieure de la période filtrée, null = pas de filtre (tout l'historique).
-  DateTime? get from {
-    final now = DateTime.now();
+  /// [now] injectable pour les tests — utilise [DateTime.now] si omis.
+  DateTime? from([DateTime? now]) {
+    final n = now ?? DateTime.now();
     return switch (this) {
       TimeFilter.allTime => null,
-      TimeFilter.today => DateTime(now.year, now.month, now.day),
-      TimeFilter.thisWeek => DateTime(now.year, now.month, now.day - 7),
-      TimeFilter.thisMonth => DateTime(now.year, now.month, 1),
+      TimeFilter.today => DateTime(n.year, n.month, n.day),
+      TimeFilter.thisWeek => DateTime(n.year, n.month, n.day - 7),
+      TimeFilter.thisMonth => DateTime(n.year, n.month, 1),
     };
   }
 }
@@ -38,7 +39,9 @@ class TimeFilterNotifier extends StateNotifier<TimeFilter> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getString(_prefKey);
-      if (saved != null && mounted) {
+      // Guard: discard persisted value if the user already made a selection
+      // before _load() completed (avoids overwriting a recent interaction).
+      if (saved != null && mounted && state == TimeFilter.allTime) {
         state = TimeFilter.values.firstWhere(
           (f) => f.name == saved,
           orElse: () => TimeFilter.allTime,
@@ -50,6 +53,7 @@ class TimeFilterNotifier extends StateNotifier<TimeFilter> {
   }
 
   Future<void> select(TimeFilter filter) async {
+    if (filter == state) return;
     state = filter;
     try {
       final prefs = await SharedPreferences.getInstance();
