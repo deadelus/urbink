@@ -19,7 +19,17 @@
       "Bash(git push *)",
       "Bash(git checkout *)",
       "Bash(python3 -c \"import json,sys; r=json.load\\(sys.stdin\\); print\\(r.get\\('id','error'\\), r.get\\('html_url',''\\)\\)\")",
-      "Bash(python3 -c \"import json,sys; r=json.load\\(sys.stdin\\); print\\(r.get\\('id','error'\\)\\)\")"
+      "Bash(python3 -c \"import json,sys; r=json.load\\(sys.stdin\\); print\\(r.get\\('id','error'\\)\\)\")",
+      "Bash(chmod +x /Users/geoffreytrambolho/Code/urbink/scripts/test_firestore_rules.sh)",
+      "Bash(git rm *)",
+      "Bash(chmod +x /Users/geoffreytrambolho/Code/urbink/scripts/deploy_firestore.sh)",
+      "Bash(git pull *)",
+      "Bash(xargs -I {} ls -la {})",
+      "Bash(chmod +x /Users/geoffreytrambolho/Code/urbink/scripts/populate_test_sessions.py)",
+      "Bash(python3 /Users/geoffreytrambolho/Code/urbink/scripts/populate_test_sessions.py --help)",
+      "Bash(chmod +x /Users/geoffreytrambolho/Code/urbink/entrypoint.sh)",
+      "Bash(bash -n /Users/geoffreytrambolho/Code/urbink/entrypoint.sh)",
+      "Bash(python3 scripts/fetch_paris_streets.py)"
     ]
   }
 }
