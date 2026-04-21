@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:urbink/features/map/providers/streets_visible_provider.dart';
 import 'package:urbink/features/map/screens/filters_screen.dart';
 import 'package:urbink/features/map/screens/map_screen.dart';
 import 'package:urbink/features/map/widgets/itineraire_bottom_sheet.dart';
@@ -14,6 +15,7 @@ import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/widgets/filter_chips_row.dart';
 import 'package:urbink/shared/widgets/session_status_bar.dart';
+import 'package:urbink/shared/widgets/time_filter_select.dart';
 import 'package:urbink/shared/widgets/urbink_bottom_nav.dart';
 import 'package:urbink/shared/widgets/zones_toggle_pill.dart';
 
@@ -305,6 +307,7 @@ class _CreateItineraireScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final topPadding = MediaQuery.of(context).padding.top;
     final sessionState = ref.watch(sessionStateProvider);
+    final streetsVisible = ref.watch(streetsVisibleProvider);
 
     return Scaffold(
       bottomNavigationBar: UrbinkBottomNav(
@@ -412,11 +415,20 @@ class _CreateItineraireScreen extends ConsumerWidget {
             ),
           ),
 
-          // Pill "Zones explorées" — au-dessus du bottom sheet réduit
-          const Positioned(
+          // Pill "Zones explorées" + filtre temporel
+          Positioned(
             left: UrbinkSpacing.md,
             bottom: ItineraireBottomSheet.collapsedHeight + UrbinkSpacing.md,
-            child: ZonesTogglePill(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const ZonesTogglePill(),
+                if (streetsVisible) ...[
+                  const SizedBox(width: UrbinkSpacing.sm),
+                  const TimeFilterSelect(),
+                ],
+              ],
+            ),
           ),
 
           // Bottom sheet itinéraire

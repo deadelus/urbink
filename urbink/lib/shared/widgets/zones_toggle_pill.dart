@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/map/providers/streets_visible_provider.dart';
+import 'package:urbink/features/map/providers/time_filter_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/typography.dart';
 
@@ -19,7 +20,11 @@ class ZonesTogglePill extends ConsumerWidget {
       label: visible ? 'Masquer les zones explorées' : 'Voir les zones explorées',
       button: true,
       child: _ScaleTap(
-        onTap: () => ref.read(streetsVisibleProvider.notifier).state = !visible,
+        onTap: () {
+          final next = !visible;
+          ref.read(streetsVisibleProvider.notifier).state = next;
+          if (next) ref.read(timeFilterProvider.notifier).select(TimeFilter.today);
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
