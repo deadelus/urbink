@@ -116,7 +116,7 @@ start_emulators() {
   fi
 
   log "Lancement firebase emulators:start --only firestore,auth ..."
-  firebase emulators:start --only firestore,auth > /tmp/firebase-emulator.log 2>&1 &
+  firebase emulators:start --config firebase.json.local --only firestore,auth --host 0.0.0.0 > /tmp/firebase-emulator.log 2>&1 &
   EMULATOR_PID=$!
   echo "$EMULATOR_PID" > /tmp/firebase-emulator.pid
 

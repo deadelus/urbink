@@ -100,13 +100,18 @@ _not_implemented() {
 # ── 1 — Run ───────────────────────────────────────────────────────────────────
 action_run() {
   local configs=() labels=() name
-  for f in "$APP_DIR"/config/*.json; do
-    [[ "$f" == *".example"* ]] && continue
-    name="$(basename "$f" .json)"
-    configs+=("$name")
-    [[ "$name" == "dev" ]] \
-      && labels+=("$name   ${DIM}(défaut)${NC}") \
-      || labels+=("$name")
+  # local en premier, puis le reste
+  for priority in local ""; do
+    for f in "$APP_DIR"/config/*.json; do
+      [[ "$f" == *".example"* ]] && continue
+      name="$(basename "$f" .json)"
+      [[ "$priority" == "local" && "$name" != "local" ]] && continue
+      [[ "$priority" == ""      && "$name" == "local" ]] && continue
+      configs+=("$name")
+      [[ "$name" == "local" ]] \
+        && labels+=("$name   ${DIM}(défaut)${NC}") \
+        || labels+=("$name")
+    done
   done
   labels+=("← Retour")
 
@@ -160,9 +165,18 @@ action_deploy() {
 }
 
 # ── 3 — Seed ──────────────────────────────────────────────────────────────────
+pick_uid_optional() {
+  echo ""
+  echo -e "  ${BOLD}UID utilisateur${NC} ${DIM}(laisser vide = créer automatiquement)${NC}"
+  read -r -p "  UID : " PICKED_UID </dev/tty
+}
+
 _seed_sessions() {
   local extra_args=()
-  if [[ "$PICKED_ENV" != "local" ]]; then
+  if [[ "$PICKED_ENV" == "local" ]]; then
+    pick_uid_optional
+    [[ -n "$PICKED_UID" ]] && extra_args=("--uid" "$PICKED_UID")
+  else
     pick_credentials
     extra_args=("--uid" "$PICKED_UID" "--token" "$PICKED_TOKEN")
   fi
@@ -285,17 +299,172 @@ action_reset() {
   done
 }
 
+# ── 6 — Émulateur ────────────────────────────────────────────────────────────
+_emulator_running() {
+  curl -s http://localhost:9099 > /dev/null 2>&1 && curl -s http://localhost:8080 > /dev/null 2>&1
+}
+
+_emulator_stop() {
+  local killed=0
+  # Via PID file (démarré par l'entrypoint)
+  if [[ -f /tmp/firebase-emulator.pid ]]; then
+    local pid
+    pid=$(cat /tmp/firebase-emulator.pid)
+    if kill -0 "$pid" 2>/dev/null; then
+      log "Arrêt émulateur (PID $pid)..."
+      kill "$pid" 2>/dev/null || true
+      killed=1
+    fi
+    rm -f /tmp/firebase-emulator.pid
+  fi
+  # Via pkill (démarré manuellement)
+  if pkill -f "firebase.*emulators" 2>/dev/null; then
+    killed=1
+  fi
+  if [[ $killed -eq 1 ]]; then
+    sleep 1
+    ok "Émulateur arrêté."
+  else
+    warn "Aucun processus émulateur trouvé."
+  fi
+}
+
+_emulator_start() {
+  if _emulator_running; then
+    warn "Émulateur déjà actif (PID $(cat /tmp/firebase-emulator.pid))."
+    return
+  fi
+
+  local mac_ip
+  mac_ip=$(ipconfig getifaddr en0 2>/dev/null || echo "?")
+
+  log "Lancement firebase emulators:start --only firestore,auth ..."
+  firebase emulators:start --config firebase.json.local --only firestore,auth > /tmp/firebase-emulator.log 2>&1 &
+  echo "$!" > /tmp/firebase-emulator.pid
+  log "Attente démarrage (max 30s)..."
+  for i in $(seq 1 30); do
+    if curl -s http://localhost:9099 > /dev/null 2>&1 && curl -s http://localhost:8080 > /dev/null 2>&1; then
+      echo -e "\n${GREEN}✔ Émulateurs prêts${NC} (${i}s)"
+      echo -e "  ${DIM}Logs : /tmp/firebase-emulator.log${NC}"
+      return
+    fi
+    sleep 1
+    echo -n "."
+  done
+  echo ""
+  err "Timeout — voir /tmp/firebase-emulator.log"
+}
+
+_emulator_details() {
+  local mac_ip pid_info=""
+  mac_ip=$(ipconfig getifaddr en0 2>/dev/null || echo "?")
+  local pid
+  pid=$(pgrep -f "firebase.*emulators" 2>/dev/null | head -1 || true)
+  echo -e "  ${BOLD}PID       ${NC}${pid:-?}"
+  echo -e "  ${BOLD}Auth      ${NC}localhost:9099  ${DIM}→ iPhone : ${mac_ip}:9099${NC}"
+  echo -e "  ${BOLD}Firestore ${NC}localhost:8080  ${DIM}→ iPhone : ${mac_ip}:8080${NC}"
+  echo -e "  ${BOLD}UI        ${NC}http://localhost:4000"
+}
+
+action_emulator() {
+  while true; do
+    clear
+    title "Émulateur Firebase"
+    if _emulator_running; then
+      echo -e "\n  Statut : ${GREEN}● actif${NC}\n"
+      _emulator_details
+    else
+      echo -e "\n  Statut : ${DIM}○ arrêté${NC}"
+    fi
+    echo ""
+    MENU_ITEMS=(
+      "Démarrer"
+      "Redémarrer"
+      "Arrêter"
+      "← Retour"
+    )
+    menu_select
+
+    case $MENU_RESULT in
+      0) _emulator_start;  press_enter ;;
+      1) _emulator_stop; echo ""; _emulator_start; press_enter ;;
+      2) _emulator_stop;  press_enter ;;
+      3) break ;;
+    esac
+  done
+}
+
+# ── 7 — Assets (geo data) ────────────────────────────────────────────────────
+_run_asset() {
+  local script="$1" label="$2"
+  log "$script"
+  echo ""
+  python3 "$SCRIPTS/$script" || true
+  press_enter
+}
+
+_assets_paris() {
+  while true; do
+    clear
+    title "Assets — Paris"
+    MENU_ITEMS=(
+      "buildings       ${DIM}grandes emprises bâties  (paris/fetch_buildings.py)${NC}"
+      "exclusions      ${DIM}zones inaccessibles eau  (paris/fetch_exclusions.py)${NC}"
+      "streets-full    ${DIM}rues complètes            (paris/fetch_streets_full.py)${NC}"
+      "boundary        ${DIM}contour de Paris          (paris/fetch_boundary.py)${NC}"
+      "tout            ${DIM}les 4 scripts ci-dessus${NC}"
+      "← Retour"
+    )
+    menu_select
+
+    case $MENU_RESULT in
+      0) _run_asset "paris/fetch_buildings.py"    "paris buildings" ;;
+      1) _run_asset "paris/fetch_exclusions.py"   "paris exclusions" ;;
+      2) _run_asset "paris/fetch_streets_full.py" "paris streets full" ;;
+      3) _run_asset "paris/fetch_boundary.py"     "paris boundary" ;;
+      4)
+        for s in paris/fetch_boundary.py paris/fetch_exclusions.py paris/fetch_streets_full.py paris/fetch_buildings.py; do
+          log "$s"
+          echo ""
+          python3 "$SCRIPTS/$s" || true
+          echo ""
+        done
+        press_enter ;;
+      5) break ;;
+    esac
+  done
+}
+
+action_assets() {
+  while true; do
+    clear
+    title "Assets — Geo Data OSM"
+    MENU_ITEMS=(
+      "paris     ${DIM}assets geo de Paris${NC}"
+      "← Retour"
+    )
+    menu_select
+
+    case $MENU_RESULT in
+      0) _assets_paris ;;
+      1) break ;;
+    esac
+  done
+}
+
 # ── Menu principal ────────────────────────────────────────────────────────────
 main_menu() {
   while true; do
     clear
     echo -e "\n${BOLD}  🏙  Urbink — Dev Tools${NC}\n"
     MENU_ITEMS=(
-      "run      ${DIM}flutter run${NC}"
-      "deploy   ${DIM}Firestore rules & indexes${NC}"
-      "seed     ${DIM}Populate test data${NC}"
-      "test     ${DIM}flutter test${NC}"
-      "reset    ${DIM}Effacer toutes les données${NC}"
+      "run        ${DIM}flutter run${NC}"
+      "deploy     ${DIM}Firestore rules & indexes${NC}"
+      "seed       ${DIM}Populate test data${NC}"
+      "test       ${DIM}flutter test${NC}"
+      "reset      ${DIM}Effacer toutes les données${NC}"
+      "émulateur  ${DIM}Firestore + Auth${NC}"
+      "assets     ${DIM}Geo data OSM${NC}"
       "quitter"
     )
     menu_select
@@ -306,7 +475,9 @@ main_menu() {
       2) action_seed ;;
       3) action_test ;;
       4) action_reset ;;
-      5) echo ""; exit 0 ;;
+      5) action_emulator ;;
+      6) action_assets ;;
+      7) echo ""; exit 0 ;;
     esac
   done
 }
