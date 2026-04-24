@@ -36,7 +36,7 @@
   "nav_car_only": "Car only",
 
   "add_steps": "Add steps",
-  "step_count": "{count, plural, one{# step} other{# steps}}",
+  "step_count": "{count, plural, one{{count} step} other{{count} steps}}",
   "tab_manual": "Manual",
   "tab_auto": "Auto ✨",
   "steps_title": "Route steps",
@@ -61,7 +61,7 @@
 
   "filters_title": "Filters",
   "btn_reset_filters": "Reset",
-  "active_filter_count": "{count, plural, one{# active filter} other{# active filters}}",
+  "active_filter_count": "{count, plural, one{{count} active filter} other{{count} active filters}}",
 
   "session_completed": "Outing complete",
   "stat_streets": "Streets explored",

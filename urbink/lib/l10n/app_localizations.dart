@@ -293,7 +293,7 @@ abstract class AppLocalizations {
   /// Pluriel étapes pour le label collapsed
   ///
   /// In fr, this message translates to:
-  /// **'{count, plural, one{# étape} other{# étapes}}'**
+  /// **'{count, plural, one{{count} étape} other{{count} étapes}}'**
   String step_count(int count);
 
   /// Onglet mode manuel itinéraire
@@ -431,7 +431,7 @@ abstract class AppLocalizations {
   /// Bandeau compteur filtres actifs
   ///
   /// In fr, this message translates to:
-  /// **'{count, plural, one{# filtre actif} other{# filtres actifs}}'**
+  /// **'{count, plural, one{{count} filtre actif} other{{count} filtres actifs}}'**
   String active_filter_count(int count);
 
   /// Titre écran résumé session

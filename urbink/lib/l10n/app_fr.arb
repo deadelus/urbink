@@ -97,7 +97,7 @@
   "add_steps": "Ajouter des étapes",
   "@add_steps": { "description": "Label collapsed sheet itinéraire sans étapes" },
 
-  "step_count": "{count, plural, one{# étape} other{# étapes}}",
+  "step_count": "{count, plural, one{{count} étape} other{{count} étapes}}",
   "@step_count": {
     "description": "Pluriel étapes pour le label collapsed",
     "placeholders": {
@@ -176,7 +176,7 @@
   "btn_reset_filters": "Réinitialiser",
   "@btn_reset_filters": { "description": "Bouton réinitialiser tous les filtres" },
 
-  "active_filter_count": "{count, plural, one{# filtre actif} other{# filtres actifs}}",
+  "active_filter_count": "{count, plural, one{{count} filtre actif} other{{count} filtres actifs}}",
   "@active_filter_count": {
     "description": "Bandeau compteur filtres actifs",
     "placeholders": {

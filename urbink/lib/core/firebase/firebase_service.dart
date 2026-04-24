@@ -20,7 +20,7 @@ abstract final class FirebaseService {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
     if (_emulatorHost.isNotEmpty) {
-      await FirebaseAuth.instance.useAuthEmulator(_emulatorHost, 9099);
+      FirebaseAuth.instance.useAuthEmulator(_emulatorHost, 9099);
       FirebaseFirestore.instance.useFirestoreEmulator(_emulatorHost, 8080);
     }
 

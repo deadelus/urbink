@@ -48,6 +48,8 @@ void main() {
           return null;
         },
       );
+      addTearDown(() => tester.binding.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null));
 
       await tester.pumpWidget(_wrap(
         BadgeCelebration(

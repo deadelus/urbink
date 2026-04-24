@@ -109,8 +109,8 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# étapes',
-      one: '# étape',
+      other: '$count étapes',
+      one: '$count étape',
     );
     return '$_temp0';
   }
@@ -190,8 +190,8 @@ class AppLocalizationsFr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# filtres actifs',
-      one: '# filtre actif',
+      other: '$count filtres actifs',
+      one: '$count filtre actif',
     );
     return '$_temp0';
   }
