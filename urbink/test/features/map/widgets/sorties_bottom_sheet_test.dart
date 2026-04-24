@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urbink/features/map/widgets/sorties_bottom_sheet.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/theme/app_theme.dart';
 
 // ---------------------------------------------------------------------------
@@ -31,6 +32,9 @@ Widget _wrap(Widget child, {List<Override> overrides = const []}) {
     overrides: overrides,
     child: MaterialApp.router(
       theme: AppTheme.light(),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('fr'),
       routerConfig: router,
     ),
   );
@@ -205,6 +209,9 @@ void main() {
           container: container,
           child: MaterialApp.router(
             theme: AppTheme.light(),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('fr'),
             routerConfig: router,
           ),
         ),
@@ -214,13 +221,13 @@ void main() {
       // Start: hint visible (PARTIAL)
       expect(find.text('Démarrer une sortie'), findsOneWidget);
 
-      // Go active → sheet hidden
+      // Go active → sheet hidden (pumpAndSettle impossible : PulseDot.repeat() ne settle jamais)
       container.read(sessionStateProvider.notifier).state = SessionState.active;
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Back to idle → sheet visible again
       container.read(sessionStateProvider.notifier).state = SessionState.idle;
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('Démarrer une sortie'), findsOneWidget);
     });

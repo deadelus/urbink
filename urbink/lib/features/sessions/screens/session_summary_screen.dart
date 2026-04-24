@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urbink/features/sessions/models/session.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 
@@ -27,6 +28,7 @@ class SessionSummaryScreen extends StatelessWidget {
         ? '${session.distanceKm.toStringAsFixed(2)} km'
         : '${session.distanceMeters.toStringAsFixed(0)} m';
 
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: UrbinkColors.surface,
       appBar: AppBar(
@@ -34,7 +36,7 @@ class SessionSummaryScreen extends StatelessWidget {
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Text(
-          'Sortie terminée',
+          l10n.session_completed,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: UrbinkColors.onSurface,
                 fontWeight: FontWeight.bold,
@@ -50,25 +52,25 @@ class SessionSummaryScreen extends StatelessWidget {
               const SizedBox(height: UrbinkSpacing.md),
               _StatRow(
                 emoji: '🛣️',
-                label: 'Rues explorées',
+                label: l10n.stat_streets,
                 value: '${session.streetCount}',
               ),
               const Divider(height: UrbinkSpacing.xl),
               _StatRow(
                 emoji: '📍',
-                label: 'Distance',
+                label: l10n.stat_distance,
                 value: distanceLabel,
               ),
               const Divider(height: UrbinkSpacing.xl),
               _StatRow(
                 emoji: '⏱️',
-                label: 'Durée',
+                label: l10n.stat_duration,
                 value: durationLabel,
               ),
               const Divider(height: UrbinkSpacing.xl),
               _StatRow(
                 emoji: session.mode.emoji,
-                label: 'Mode',
+                label: l10n.stat_mode,
                 value: session.mode.label,
               ),
               const Spacer(),
@@ -87,7 +89,7 @@ class SessionSummaryScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Retour à la carte'),
+                  child: Text(l10n.btn_back_to_map),
                 ),
               ),
               const SizedBox(height: UrbinkSpacing.md),

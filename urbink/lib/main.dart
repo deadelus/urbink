@@ -6,30 +6,32 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:urbink/core/firebase/firebase_service.dart';
-import 'package:urbink/core/firebase/startup_auth.dart';
+import 'package:urbink/core/firebase/local_anon_uid.dart';
 import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/core/utils/tile_error_utils.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  // UUID local disponible immédiatement, même sans réseau (FR32 offline-first).
+  // Doit précéder Firebase pour que currentUidProvider ait toujours une valeur.
+  await initLocalAnonUid();
+
   await FirebaseService.initialize();
 
   // Politique de confidentialité — vérification au démarrage (FR45)
   final prefs = await SharedPreferences.getInstance();
   final privacyAccepted = prefs.getBool(kPrivacyAcceptedKey) ?? false;
 
-  // Auth anonyme si politique acceptée et pas encore connecté (FR32)
-  if (privacyAccepted) {
-    try {
-      await ensureAnonymousAuth(
-        isSignedIn: () => FirebaseAuth.instance.currentUser != null,
-        signInAnonymously: FirebaseAuth.instance.signInAnonymously,
-      );
-    } catch (error, stackTrace) {
-      debugPrint('Anonymous sign-in failed during app startup: $error\n$stackTrace');
-    }
+  // Connexion Firebase anonyme en arrière-plan — non bloquante.
+  // Si l'émulateur/réseau est indisponible, currentUidProvider retombe sur
+  // localAnonUid. La reconnexion est retentée via connectivityChangesProvider.
+  if (privacyAccepted && FirebaseAuth.instance.currentUser == null) {
+    // ignore: unawaited_futures
+    FirebaseAuth.instance.signInAnonymously().ignore();
   }
 
   // Synchroniser le notifier GoRouter avec l'état persisté
@@ -62,5 +64,7 @@ class UrbinkApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         routerConfig: appRouter,
         theme: AppTheme.light(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       );
 }

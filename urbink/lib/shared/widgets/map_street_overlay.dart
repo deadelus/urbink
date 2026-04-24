@@ -24,20 +24,18 @@ import 'package:urbink/shared/constants/colors.dart';
 class MapStreetOverlay extends ConsumerWidget {
   const MapStreetOverlay({super.key});
 
-  static const double _strokeWidth = 4.0;
-  static const double _strokeWidthRecording = 5.5;
+  static const double _strokeWidth = 7.0;
+  static const double _strokeWidthRecording = 9.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Toggle Zones : si masqué, retourner vide sans stopper le tracking
     if (!ref.watch(streetsVisibleProvider)) return const SizedBox.shrink();
 
     final liveState = ref.watch(mapStreetOverlayProvider);
-    final aggregatedIds = ref.watch(aggregationProvider).valueOrNull ?? const <String>{};
+    final aggregationAsync = ref.watch(aggregationProvider);
+    final aggregatedIds = aggregationAsync.valueOrNull ?? const <String>{};
     final allHistoricalStreets = ref.watch(historicalStreetsProvider).valueOrNull ?? {};
 
-    // aggregationProvider est la source de vérité : seules les rues dans l'union
-    // des sessions sont affichées. En Story 3.2, ce Set sera filtré par date.
     final historicalStreets = {
       for (final e in allHistoricalStreets.entries)
         if (aggregatedIds.contains(e.key)) e.key: e.value,
@@ -76,6 +74,16 @@ class MapStreetOverlay extends ConsumerWidget {
 
     if (historicalPolylines.isEmpty && livePolylines.isEmpty) return const SizedBox.shrink();
 
-    return PolylineLayer(polylines: [...historicalPolylines, ...livePolylines]);
+    return Stack(
+      children: [
+        if (historicalPolylines.isNotEmpty)
+          AnimatedOpacity(
+            opacity: aggregationAsync.isLoading ? 0.0 : 1.0,
+            duration: const Duration(milliseconds: 250),
+            child: PolylineLayer(polylines: historicalPolylines),
+          ),
+        if (livePolylines.isNotEmpty) PolylineLayer(polylines: livePolylines),
+      ],
+    );
   }
 }

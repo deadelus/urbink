@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "local (émulateur)",
+      "request": "launch",
+      "type": "dart",
+      "program": "urbink/lib/main.dart",
+      "args": ["--dart-define-from-file=config/local.json"]
+    },
+    {
+      "name": "dev (Firebase urbink-dev)",
+      "request": "launch",
+      "type": "dart",
+      "program": "urbink/lib/main.dart",
+      "args": ["--dart-define-from-file=config/dev.json"]
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,16 +8,22 @@ import 'package:urbink/firebase_options.dart';
 
 // Environnement injecté via --dart-define=FLUTTER_ENV=<env>.
 // Valeurs possibles : dev (défaut) | staging | prod.
-// Cette valeur est exposée via `currentEnv`, mais ne sélectionne pas les
-// options Firebase dans cette implémentation.
-// L'environnement Firebase effectivement utilisé dépend du contenu de
-// `firebase_options.dart` (injecté/généré pour l'environment GitHub visé),
-// puis de `DefaultFirebaseOptions.currentPlatform`.
 const String _env = String.fromEnvironment('FLUTTER_ENV', defaultValue: 'dev');
+
+// Hôte de l'émulateur Firebase local — injecté via --dart-define-from-file=config/local.json.
+// Vide en prod/staging : aucun émulateur utilisé.
+const String _emulatorHost =
+    String.fromEnvironment('EMULATOR_HOST', defaultValue: '');
 
 abstract final class FirebaseService {
   static Future<void> initialize() async {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+    if (_emulatorHost.isNotEmpty) {
+      FirebaseAuth.instance.useAuthEmulator(_emulatorHost, 9099);
+      FirebaseFirestore.instance.useFirestoreEmulator(_emulatorHost, 8080);
+    }
+
     await _setupCrashlytics();
     await _setupAnalytics();
   }

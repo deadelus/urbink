@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/constants/typography.dart';
@@ -23,16 +24,18 @@ class UrbinkBottomNav extends StatelessWidget {
   final ValueChanged<int> onTabSelected;
   final SessionState sessionState;
 
-  static const _tabs = [
-    _TabItem(icon: Icons.map_outlined,            label: 'Carte'),
-    _TabItem(icon: Icons.route_outlined,           label: 'Parcours'),
-    _TabItem(icon: Icons.people_outline,           label: 'Social'),
-    _TabItem(icon: Icons.emoji_events_outlined,    label: 'Badges'),
-    _TabItem(icon: Icons.person_outline_rounded,   label: 'Profil'),
+  static List<_TabItem> _buildTabs(AppLocalizations l10n) => [
+    _TabItem(icon: Icons.map_outlined,          label: l10n.tab_map),
+    _TabItem(icon: Icons.route_outlined,         label: l10n.tab_itineraries),
+    _TabItem(icon: Icons.people_outline,         label: l10n.tab_social),
+    _TabItem(icon: Icons.emoji_events_outlined,  label: l10n.tab_badges),
+    _TabItem(icon: Icons.person_outline_rounded, label: l10n.tab_profile),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final tabs = _buildTabs(l10n);
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Container(
@@ -54,9 +57,9 @@ class UrbinkBottomNav extends StatelessWidget {
         padding: EdgeInsets.only(bottom: bottomPadding),
         child: Row(
           children: [
-            for (var i = 0; i < _tabs.length; i++)
+            for (var i = 0; i < tabs.length; i++)
               _NavTab(
-                item: _tabs[i],
+                item: tabs[i],
                 index: i,
                 isSelected: currentIndex == i,
                 onTap: () => onTabSelected(i),
@@ -132,7 +135,7 @@ class _NavTabState extends State<_NavTab>
 
     return Expanded(
       child: Semantics(
-        label: '${widget.item.label}, onglet ${widget.index + 1} sur 5',
+        label: AppLocalizations.of(context).nav_tab_semantics(widget.item.label, widget.index + 1, 5),
         button: true,
         selected: widget.isSelected,
         excludeSemantics: true,

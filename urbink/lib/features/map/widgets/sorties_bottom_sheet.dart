@@ -1,12 +1,23 @@
 import 'dart:ui' show ImageFilter;
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/features/map/providers/bottom_sheet_state_provider.dart';
+import 'package:urbink/features/map/providers/zones_layer_provider.dart';
+import 'package:urbink/features/map/widgets/map_layers_section.dart';
+import 'package:urbink/features/session_end/controllers/session_end_flow.dart';
+import 'package:urbink/features/session_end/models/badge_unlock.dart';
+import 'package:urbink/features/session_end/services/badge_detector.dart';
+import 'package:urbink/features/sessions/models/session_data.dart';
 import 'package:urbink/features/sessions/providers/gps_tracking_provider.dart';
+import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
+import 'package:urbink/features/sessions/providers/session_metrics_provider.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
+import 'package:urbink/features/sessions/widgets/session_monitor.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/widgets/gps_required_dialog.dart';
@@ -71,6 +82,9 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet>
 
   // 0.0 = PARTIAL, 1.0 = OPEN
   double _dragFraction = 0.0;
+
+  // Hauteur parent mise en cache pour usage dans les callbacks ref.listen
+  double _parentH = 0;
 
   @override
   void initState() {
@@ -160,20 +174,83 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet>
     ref.read(sessionStateProvider.notifier).state = SessionState.active;
   }
 
+  Future<void> _stopSession() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Arrêter la session ?'),
+        content: const Text('Ta progression sera sauvegardée.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Continuer'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: UrbinkColors.destructive),
+            child: const Text('Arrêter'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final metrics = ref.read(sessionMetricsProvider);
+    final session =
+        await ref.read(sessionLifecycleProvider.notifier).stopAndSave(metrics);
+
+    if (!mounted) return;
+    ref.read(sessionStateProvider.notifier).state = SessionState.idle;
+
+    if (session == null) return;
+
+    final sessionData = SessionData(
+      active: false,
+      km: session.distanceKm,
+      streets: session.streetCount,
+      secs: session.duration.inSeconds,
+    );
+    var badges = BadgeDetector.detectUnlocks(
+      exploredStreets: metrics.exploredStreetIds,
+      currentBadgeIds: const [],
+    );
+
+    if (kDebugMode && badges.isEmpty) {
+      badges = const [
+        BadgeUnlock(id: 'dev_1', name: 'Explorateur', description: 'Tu as exploré tes premières rues !', icon: '🗺️'),
+        BadgeUnlock(id: 'dev_2', name: 'Pont de la Tournelle', description: 'Premier kilomètre parcouru sur les berges.', icon: '🌉'),
+      ];
+    }
+
+    if (!mounted) return;
+    await SessionEndFlow.show(
+      context: context,
+      session: sessionData,
+      badges: badges,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionStateProvider);
     final isSessionActive = sessionState == SessionState.active;
 
-    // When hidden, report size 0 for floating button positioning.
+    final metrics = ref.watch(sessionMetricsProvider);
+    SessionData? sessionData;
     if (isSessionActive) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) ref.read(bottomSheetSizeProvider.notifier).state = 0;
-      });
+      sessionData = SessionData(
+        active: true,
+        km: metrics.distanceKm,
+        streets: metrics.streetCount,
+        secs: metrics.elapsed.inSeconds,
+        sessionStartTime: metrics.sessionStartTime,
+      );
     }
 
-    // Reset view when session ends
     ref.listen<SessionState>(sessionStateProvider, (prev, next) {
+      if (prev == SessionState.idle && next == SessionState.active && mounted) {
+        if (_parentH > 0) _snapTo(1.0, _parentH);
+      }
       if (next == SessionState.idle && mounted) {
         setState(() {
           _view = _SheetView.selectMode;
@@ -183,58 +260,58 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet>
       }
     });
 
-    return Offstage(
-      offstage: isSessionActive,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final parentH = constraints.maxHeight;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final parentH = constraints.maxHeight;
+        _parentH = parentH;
 
-          return AnimatedBuilder(
-            animation: _anim,
-            builder: (context, child) {
-              final height = _sheetHeight(parentH);
-              return Align(
-                alignment: Alignment.bottomCenter,
-                child: GestureDetector(
-                  onVerticalDragUpdate: (d) => _onDragUpdate(d, parentH),
-                  onVerticalDragEnd: (d) => _onDragEnd(d, parentH),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: height,
-                    child: child,
-                  ),
+        return AnimatedBuilder(
+          animation: _anim,
+          builder: (context, child) {
+            final height = _sheetHeight(parentH);
+            return Align(
+              alignment: Alignment.bottomCenter,
+              child: GestureDetector(
+                onVerticalDragUpdate: (d) => _onDragUpdate(d, parentH),
+                onVerticalDragEnd: (d) => _onDragEnd(d, parentH),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: height,
+                  child: child,
                 ),
-              );
+              ),
+            );
+          },
+          child: _SheetContainer(
+            view: _view,
+            isSessionActive: isSessionActive,
+            sessionData: sessionData,
+            onStop: _stopSession,
+            selectedParcours: _selectedParcours,
+            onSelectItineraire: () => setState(() {
+              _goingForward = true;
+              _view = _SheetView.parcoursList;
+            }),
+            onSelectParcours: (p) => setState(() {
+              _goingForward = true;
+              _selectedParcours = p;
+              _view = _SheetView.itinerairesList;
+            }),
+            onBack: () => setState(() {
+              _goingForward = false;
+              _view = _view == _SheetView.itinerairesList
+                  ? _SheetView.parcoursList
+                  : _SheetView.selectMode;
+            }),
+            onStart: () => _startSession(context),
+            onCreateItineraire: () {
+              if (context.mounted) context.push(AppRoutes.createItineraire);
             },
-            child: _SheetContainer(
-              view: _view,
-              isSessionActive: isSessionActive,
-              selectedParcours: _selectedParcours,
-              onSelectItineraire: () => setState(() {
-                _goingForward = true;
-                _view = _SheetView.parcoursList;
-              }),
-              onSelectParcours: (p) => setState(() {
-                _goingForward = true;
-                _selectedParcours = p;
-                _view = _SheetView.itinerairesList;
-              }),
-              onBack: () => setState(() {
-                _goingForward = false;
-                _view = _view == _SheetView.itinerairesList
-                    ? _SheetView.parcoursList
-                    : _SheetView.selectMode;
-              }),
-              onStart: () => _startSession(context),
-              onCreateItineraire: () {
-                if (context.mounted) context.push(AppRoutes.createItineraire);
-              },
-              goingForward: _goingForward,
-              isExpanded: _isExpanded,
-            ),
-          );
-        },
-      ),
+            goingForward: _goingForward,
+            isExpanded: _isExpanded,
+          ),
+        );
+      },
     );
   }
 }
@@ -254,11 +331,15 @@ class _SheetContainer extends StatefulWidget {
     required this.onBack,
     required this.onStart,
     required this.onCreateItineraire,
+    required this.onStop,
+    this.sessionData,
     this.selectedParcours,
   });
 
   final _SheetView view;
   final bool isSessionActive;
+  final SessionData? sessionData;
+  final VoidCallback onStop;
   final bool isExpanded;
   final bool goingForward;
   final VoidCallback onSelectItineraire;
@@ -277,7 +358,6 @@ class _SheetContainerState extends State<_SheetContainer>
   late AnimationController _pushController;
   late Animation<double> _pushAnim;
   late _SheetView _prevView;
-  // Dummy controller for the exiting view — avoids double-attach error.
 
   @override
   void initState() {
@@ -286,7 +366,7 @@ class _SheetContainerState extends State<_SheetContainer>
     _pushController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 260),
-      value: 1.0, // Déjà complet au premier rendu
+      value: 1.0,
     );
     _pushAnim =
         CurvedAnimation(parent: _pushController, curve: Curves.easeOut);
@@ -324,15 +404,16 @@ class _SheetContainerState extends State<_SheetContainer>
           ),
       };
 
-  String get _collapsedLabel => switch (widget.view) {
-        _SheetView.selectMode     => 'Démarrer une sortie',
-        _SheetView.parcoursList   => 'Mes itinéraires',
-        _SheetView.itinerairesList => 'Créer un itinéraire',
-      };
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final w = MediaQuery.sizeOf(context).width;
+
+    final collapsedLabel = switch (widget.view) {
+      _SheetView.selectMode      => l10n.exit_start_session,
+      _SheetView.parcoursList    => l10n.my_itineraries,
+      _SheetView.itinerairesList => l10n.btn_create_itinerary,
+    };
 
     return Container(
       decoration: const BoxDecoration(
@@ -369,9 +450,13 @@ class _SheetContainerState extends State<_SheetContainer>
             else
               Container(color: UrbinkColors.surface),
 
-            // Content — handle + hint toujours visibles, body uniquement si expanded
+            // Content
             if (widget.isSessionActive)
-              const _CollapsedLockedContent()
+              _SessionActiveContent(
+                isExpanded: widget.isExpanded,
+                session: widget.sessionData!,
+                onStop: widget.onStop,
+              )
             else
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -393,7 +478,7 @@ class _SheetContainerState extends State<_SheetContainer>
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          widget.isExpanded ? 'Fermer' : _collapsedLabel,
+                          widget.isExpanded ? l10n.btn_close : collapsedLabel,
                           style: const TextStyle(
                             color: UrbinkColors.navInactive,
                             fontSize: 12,
@@ -437,19 +522,39 @@ class _SheetContainerState extends State<_SheetContainer>
 }
 
 // ---------------------------------------------------------------------------
-// Vue collapsed quand session active (non déroulable)
+// Contenu sheet quand session active
 // ---------------------------------------------------------------------------
 
-class _CollapsedLockedContent extends StatelessWidget {
-  const _CollapsedLockedContent();
+class _SessionActiveContent extends StatelessWidget {
+  const _SessionActiveContent({
+    required this.isExpanded,
+    required this.session,
+    required this.onStop,
+  });
+
+  final bool isExpanded;
+  final SessionData session;
+  final VoidCallback onStop;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      mainAxisSize: MainAxisSize.min,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(height: UrbinkSpacing.sm),
-        _DragHandle(),
+        const SizedBox(height: UrbinkSpacing.sm),
+        const _DragHandle(),
+        if (isExpanded)
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: UrbinkSpacing.lg),
+              child: SessionMonitor(
+                session: session,
+                mode: 'libre',
+                expanded: true,
+                onStop: onStop,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -459,7 +564,7 @@ class _CollapsedLockedContent extends StatelessWidget {
 // Vue sélection du mode (Circuit libre / Itinéraire)
 // ---------------------------------------------------------------------------
 
-class _SelectModeBody extends StatelessWidget {
+class _SelectModeBody extends ConsumerStatefulWidget {
   const _SelectModeBody({
     required this.onSelectItineraire,
     required this.onStart,
@@ -469,7 +574,23 @@ class _SelectModeBody extends StatelessWidget {
   final VoidCallback onStart;
 
   @override
+  ConsumerState<_SelectModeBody> createState() => _SelectModeBodyState();
+}
+
+class _SelectModeBodyState extends ConsumerState<_SelectModeBody> {
+  Map<String, bool> _layerValues = const {
+    'monuments': true,
+    'quartiers': false,
+    'photos': false,
+  };
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    // Sync quartiers toggle avec zonesLayerVisibleProvider (peut être activé via le pill)
+    final zonesVisible = ref.watch(zonesLayerVisibleProvider);
+    final values = {..._layerValues, 'quartiers': zonesVisible};
+
     return ListView(
       padding: const EdgeInsets.only(
           top: UrbinkSpacing.lg, bottom: UrbinkSpacing.lg),
@@ -477,7 +598,7 @@ class _SelectModeBody extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: Text(
-            'Démarrer une sortie',
+            l10n.exit_start_session,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: UrbinkColors.onSurface,
@@ -489,11 +610,11 @@ class _SelectModeBody extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: _ModeCard(
                   icon: Icons.directions_walk_rounded,
-                  title: 'Circuit libre',
-                  subtitle: 'Par défaut',
+                  title: l10n.mode_free_circuit,
+                  subtitle: l10n.mode_free_default,
                   isSelected: true,
                   onTap: null,
                 ),
@@ -502,10 +623,10 @@ class _SelectModeBody extends StatelessWidget {
               Expanded(
                 child: _ModeCard(
                   icon: Icons.map_outlined,
-                  title: 'Itinéraire',
-                  subtitle: 'Choisir →',
+                  title: l10n.mode_itinerary,
+                  subtitle: l10n.mode_itinerary_choose,
                   isSelected: false,
-                  onTap: onSelectItineraire,
+                  onTap: widget.onSelectItineraire,
                 ),
               ),
             ],
@@ -520,10 +641,22 @@ class _SelectModeBody extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: _PrimaryCTA(
-            label: 'Démarrer la sortie',
+            label: l10n.exit_start_session_cta,
             icon: Icons.play_arrow_rounded,
             color: UrbinkColors.primary,
-            onTap: onStart,
+            onTap: widget.onStart,
+          ),
+        ),
+        const SizedBox(height: UrbinkSpacing.md),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
+          child: MapLayersSection(
+            values: values,
+            onChanged: (v) {
+              setState(() => _layerValues = v);
+              ref.read(zonesLayerVisibleProvider.notifier).state =
+                  v['quartiers'] ?? false;
+            },
           ),
         ),
       ],
@@ -553,15 +686,18 @@ class _ItinerairesListBody extends StatefulWidget {
 class _ItinerairesListBodyState extends State<_ItinerairesListBody> {
   int _selectedNav = 0;
 
-  static const _navOptions = [
-    _NavOption(icon: Icons.gps_fixed_rounded,   title: 'GPS intégré',   subtitle: 'Recommandé'),
-    _NavOption(icon: Icons.map_outlined,         title: 'Apple Plans',   subtitle: 'Application Maps'),
-    _NavOption(icon: Icons.directions_rounded,   title: 'Google Maps',   subtitle: 'Application externe'),
-    _NavOption(icon: Icons.alt_route_rounded,    title: 'Waze',          subtitle: 'Voiture uniquement'),
+  List<_NavOption> _buildNavOptions(AppLocalizations l10n) => [
+    _NavOption(icon: Icons.gps_fixed_rounded,   title: l10n.nav_gps_integrated, subtitle: l10n.nav_gps_recommended),
+    _NavOption(icon: Icons.map_outlined,         title: l10n.nav_apple_plans,    subtitle: l10n.nav_apple_maps_app),
+    _NavOption(icon: Icons.directions_rounded,   title: l10n.nav_google_maps,    subtitle: l10n.nav_external_app),
+    _NavOption(icon: Icons.alt_route_rounded,    title: l10n.nav_waze,           subtitle: l10n.nav_car_only),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final navOptions = _buildNavOptions(l10n);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -573,13 +709,13 @@ class _ItinerairesListBodyState extends State<_ItinerairesListBody> {
               TextButton.icon(
                 onPressed: widget.onBack,
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
-                label: const Text('Retour'),
+                label: Text(l10n.btn_back),
                 style: TextButton.styleFrom(foregroundColor: UrbinkColors.onSurface),
               ),
               TextButton.icon(
                 onPressed: widget.onCreateItineraire,
                 icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text('Créer'),
+                label: Text(l10n.btn_create),
                 style: TextButton.styleFrom(foregroundColor: UrbinkColors.primary),
               ),
             ],
@@ -622,7 +758,7 @@ class _ItinerairesListBodyState extends State<_ItinerairesListBody> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: Text(
-            'Naviguer avec…',
+            l10n.navigate_with_title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700, color: UrbinkColors.onSurface),
           ),
@@ -631,11 +767,11 @@ class _ItinerairesListBodyState extends State<_ItinerairesListBody> {
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
-            itemCount: _navOptions.length,
+            itemCount: navOptions.length,
             itemBuilder: (_, i) => Padding(
               padding: const EdgeInsets.only(bottom: UrbinkSpacing.sm),
               child: _NavOptionCard(
-                option: _navOptions[i],
+                option: navOptions[i],
                 isSelected: _selectedNav == i,
                 onTap: () => setState(() => _selectedNav = i),
               ),
@@ -646,7 +782,7 @@ class _ItinerairesListBodyState extends State<_ItinerairesListBody> {
           padding: const EdgeInsets.fromLTRB(
               UrbinkSpacing.md, UrbinkSpacing.xs, UrbinkSpacing.md, UrbinkSpacing.md),
           child: _PrimaryCTA(
-            label: "C'est parti !",
+            label: l10n.btn_lets_go,
             icon: Icons.navigation_rounded,
             color: UrbinkColors.accent,
             onTap: widget.onCreateItineraire,
@@ -746,7 +882,7 @@ class _ModeCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Card option de navigation (Naviguer avec…)
+// Card option de navigation
 // ---------------------------------------------------------------------------
 
 class _NavOption {
@@ -849,7 +985,7 @@ class _NavOptionCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// CTA bouton principal — vert (circuit libre) ou amber (itinéraire)
+// CTA bouton principal
 // ---------------------------------------------------------------------------
 
 class _PrimaryCTA extends StatelessWidget {
@@ -903,6 +1039,8 @@ class _GpsInfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: UrbinkSpacing.sm + 2,
@@ -922,7 +1060,7 @@ class _GpsInfoChip extends StatelessWidget {
               size: 14, color: UrbinkColors.primary),
           const SizedBox(width: UrbinkSpacing.xs),
           Text(
-            'Mode auto-détecté · GPS prêt',
+            l10n.gps_mode_ready,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: UrbinkColors.primary,
                   fontWeight: FontWeight.w500,
@@ -951,6 +1089,8 @@ class _ParcourListBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -962,13 +1102,13 @@ class _ParcourListBody extends StatelessWidget {
               TextButton.icon(
                 onPressed: onBack,
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
-                label: const Text('Retour'),
+                label: Text(l10n.btn_back),
                 style: TextButton.styleFrom(foregroundColor: UrbinkColors.onSurface),
               ),
               TextButton.icon(
                 onPressed: onCreateItineraire,
                 icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text('Créer'),
+                label: Text(l10n.btn_create),
                 style: TextButton.styleFrom(foregroundColor: UrbinkColors.primary),
               ),
             ],
@@ -978,7 +1118,7 @@ class _ParcourListBody extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: Text(
-            'Mes itinéraires',
+            l10n.my_itineraries,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700, color: UrbinkColors.onSurface),
           ),
@@ -1076,7 +1216,7 @@ class _ParcoursCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Drag handle — zone de swipe velocity-based
+// Drag handle
 // ---------------------------------------------------------------------------
 
 class _DragHandle extends StatelessWidget {

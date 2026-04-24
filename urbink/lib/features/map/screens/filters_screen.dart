@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urbink/features/map/providers/active_filters_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/poi_filters.dart';
 import 'package:urbink/shared/constants/spacing.dart';
@@ -15,6 +16,7 @@ class FiltersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final active = ref.watch(activeFiltersProvider);
     final topPadding = MediaQuery.of(context).padding.top;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -43,7 +45,7 @@ class FiltersScreen extends ConsumerWidget {
                 ),
                 Expanded(
                   child: Text(
-                    'Filtres',
+                    l10n.filters_title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: UrbinkColors.onSurface,
@@ -57,9 +59,9 @@ class FiltersScreen extends ConsumerWidget {
                             const <String>{},
                     style: TextButton.styleFrom(
                         foregroundColor: UrbinkColors.destructive),
-                    child: const Text(
-                      'Réinitialiser',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.btn_reset_filters,
+                      style: const TextStyle(
                           fontSize: 13, fontWeight: FontWeight.w500),
                     ),
                   ),
@@ -84,7 +86,7 @@ class FiltersScreen extends ConsumerWidget {
                             size: 14, color: UrbinkColors.primary),
                         const SizedBox(width: 6),
                         Text(
-                          '${active.length} filtre${active.length > 1 ? 's' : ''} actif${active.length > 1 ? 's' : ''}',
+                          l10n.active_filter_count(active.length),
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,

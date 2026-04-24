@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:urbink/core/firebase/local_anon_uid.dart';
 import 'package:urbink/features/sessions/models/session.dart';
 import 'package:urbink/features/sessions/models/session_metrics.dart';
 import 'package:urbink/features/sessions/models/transport_mode.dart';
@@ -15,9 +16,24 @@ import 'package:uuid/uuid.dart';
 
 const _uuid = Uuid();
 
-/// UID de l'utilisateur courant — injectable en test pour éviter Firebase.initializeApp().
+/// Suit les changements d'état Firebase Auth (connexion anonyme, déconnexion).
+/// Privé — sert uniquement à alimenter [currentUidProvider] de façon réactive.
+final _firebaseAuthUidProvider = StreamProvider<String?>((ref) =>
+    FirebaseAuth.instance.authStateChanges().map((user) => user?.uid));
+
+/// UID effectif de l'utilisateur courant.
+///
+/// Priorité : Firebase UID (nécessaire pour les règles Firestore) → UUID local
+/// persisté (généré au 1er lancement, disponible hors-ligne).
+///
+/// Se met à jour automatiquement quand Firebase Auth signe l'utilisateur
+/// (connexion différée ou retour réseau) : tous les providers qui le regardent
+/// se reconstruisent sans redémarrage de l'app.
+///
+/// Injectable en test via [ProviderContainer.overrides].
 final currentUidProvider = Provider<String?>((ref) {
-  return FirebaseAuth.instance.currentUser?.uid;
+  final firebaseUid = ref.watch(_firebaseAuthUidProvider).valueOrNull;
+  return firebaseUid ?? localAnonUid;
 });
 
 /// Provider du repository Firestore (injectable en test).
@@ -55,11 +71,14 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
       }
     });
 
-    // Écoute connectivité : re-sync les sessions non-synced au retour réseau
+    // Retour réseau : tente la connexion Firebase si nécessaire, puis sync
     ref.listen(connectivityChangesProvider, (_, next) {
       next.whenData((results) {
         final hasNetwork = results.any((r) => r != ConnectivityResult.none);
-        if (hasNetwork) _syncPending();
+        if (hasNetwork) {
+          _tryFirebaseSignIn();
+          _syncPending();
+        }
       });
     });
 
@@ -71,7 +90,6 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
   // ---------------------------------------------------------------------------
 
   Future<void> _startSession(TransportMode mode) async {
-    // Verrou ré-entrance : idle→active→paused→active rapide ne crée qu'une session.
     if (_isStarting) return;
     _isStarting = true;
 
@@ -91,15 +109,12 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
       distanceMeters: 0.0,
     );
 
-    // Persistance locale immédiate (NFR6)
     final cache = ref.read(sessionLocalCacheProvider);
     await cache.insertSession(session);
     _isStarting = false;
     if (_disposed) return;
 
     state = session;
-
-    // Tentative Firestore non-bloquante
     _saveToFirestore(session);
   }
 
@@ -107,10 +122,6 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
   // Arrêt de session + sauvegarde
   // ---------------------------------------------------------------------------
 
-  /// Finalise et sauvegarde la session. Appelé depuis le widget après
-  /// confirmation du Dialog "Arrêter la session ?".
-  ///
-  /// Retourne la [Session] complète pour l'écran récapitulatif.
   Future<Session?> stopAndSave(SessionMetrics metrics) async {
     final current = state;
     if (current == null) return null;
@@ -122,15 +133,11 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
       distanceMeters: metrics.distanceMeters,
     );
 
-    // Mise à jour sqflite
     final cache = ref.read(sessionLocalCacheProvider);
     await cache.updateSession(completed);
     if (_disposed) return completed;
 
     state = null;
-
-    // Tentative Firestore en arrière-plan — ne bloque pas la transition UI vers le récap.
-    // Si l'appel échoue, synced=0 dans sqflite → sera re-synced à la reconnexion.
     unawaited(_saveToFirestoreAndMark(completed));
 
     return completed;
@@ -140,14 +147,11 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
   // Crash recovery
   // ---------------------------------------------------------------------------
 
-  /// Reprend une session interrompue (crash recovery).
-  /// Restaure l'état session côté UI.
   Future<void> resumeFromCrash(Session session) async {
     state = session;
     ref.read(sessionStateProvider.notifier).state = SessionState.active;
   }
 
-  /// Annule une session interrompue sans la sauvegarder.
   Future<void> cancelInterrupted(String sessionId) async {
     final cache = ref.read(sessionLocalCacheProvider);
     await cache.markCancelled(sessionId);
@@ -162,7 +166,6 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
       final repo = ref.read(sessionRepositoryProvider);
       await repo.saveSession(session);
     } catch (e) {
-      // Échec silencieux — session déjà dans sqflite, sera re-synced
       debugPrint('SessionLifecycle: Firestore save failed (will retry): $e');
     }
   }
@@ -172,17 +175,13 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
     try {
       final repo = ref.read(sessionRepositoryProvider);
       await repo.saveSession(session);
-      if (!_disposed) {
-        await cache.markSynced(session.sessionId);
-      }
+      if (!_disposed) await cache.markSynced(session.sessionId);
     } catch (e) {
       debugPrint('SessionLifecycle: Firestore save failed (queued for retry): $e');
-      // session_end déjà dans sqflite, synced=0 → sera re-synced à la reconnexion
     }
   }
 
   Future<void> _syncPending() async {
-    // Verrou anti-rafale : un seul appel de sync actif à la fois.
     if (_isSyncing) return;
     _isSyncing = true;
     try {
@@ -204,6 +203,36 @@ class SessionLifecycleNotifier extends Notifier<Session?> {
       debugPrint('SessionLifecycle: sync pending failed: $e');
     } finally {
       _isSyncing = false;
+    }
+  }
+
+  /// Tente une connexion Firebase anonyme si l'utilisateur n'est pas encore
+  /// connecté (1er lancement hors-ligne ou émulateur indisponible au démarrage).
+  ///
+  /// En cas de succès :
+  ///   1. Si Firebase UID ≠ localAnonUid → migre les sessions SQLite vers le
+  ///      nouveau UID et met à jour [localAnonUid] pour les prochains démarrages.
+  ///   2. Re-lance [_syncPending] : [currentUidProvider] vient de changer,
+  ///      les sessions peuvent maintenant être envoyées à Firestore.
+  Future<void> _tryFirebaseSignIn() async {
+    if (FirebaseAuth.instance.currentUser != null) return;
+    try {
+      final result = await FirebaseAuth.instance.signInAnonymously();
+      final firebaseUid = result.user?.uid;
+      if (firebaseUid == null || _disposed) return;
+
+      final prevUid = localAnonUid;
+      if (firebaseUid != prevUid) {
+        final cache = ref.read(sessionLocalCacheProvider);
+        await cache.migrateUserId(prevUid, firebaseUid);
+        await updateLocalAnonUid(firebaseUid);
+      }
+
+      // currentUidProvider vient de mettre à jour via _firebaseAuthUidProvider.
+      // On force une sync maintenant que Firestore est accessible.
+      _syncPending();
+    } catch (e) {
+      debugPrint('SessionLifecycle: Firebase sign-in retry failed: $e');
     }
   }
 }

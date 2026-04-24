@@ -1,6 +1,7 @@
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 
@@ -267,6 +268,7 @@ class _SheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.vertical(
@@ -329,10 +331,10 @@ class _SheetContent extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             isExpanded
-                                ? 'Fermer'
+                                ? l10n.btn_close
                                 : pois.isEmpty
-                                    ? 'Ajouter des étapes'
-                                    : '${pois.length} étape${pois.length > 1 ? 's' : ''}',
+                                    ? l10n.add_steps
+                                    : l10n.step_count(pois.length),
                             style: const TextStyle(
                               fontSize: 12,
                               color: UrbinkColors.navInactive,
@@ -353,7 +355,7 @@ class _SheetContent extends StatelessWidget {
                           children: [
                             Expanded(
                               child: _ModeTab(
-                                label: 'Manuel',
+                                label: l10n.tab_manual,
                                 icon: Icons.edit_location_alt_rounded,
                                 isActive: view == _ItineraireView.manual,
                                 onTap: onSwitchToManual,
@@ -362,7 +364,7 @@ class _SheetContent extends StatelessWidget {
                             const SizedBox(width: UrbinkSpacing.sm),
                             Expanded(
                               child: _ModeTab(
-                                label: 'Auto ✨',
+                                label: l10n.tab_auto,
                                 icon: Icons.auto_awesome_rounded,
                                 isActive: view == _ItineraireView.autoGenerate,
                                 onTap: onSwitchToAuto,
@@ -527,6 +529,7 @@ class _ManualContent extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -535,11 +538,11 @@ class _ManualContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: Row(
             children: [
-              const Flexible(
+              Flexible(
                 child: Text(
-                  'Étapes du parcours',
+                  l10n.steps_title,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: UrbinkColors.onSurface,
@@ -555,7 +558,7 @@ class _ManualContent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(UrbinkSpacing.radiusChip),
                   ),
                   child: Text(
-                    '${pois.length} / min. 3',
+                    l10n.step_counter_badge(pois.length),
                     style: const TextStyle(
                       fontSize: 11,
                       color: UrbinkColors.primary,
@@ -576,7 +579,7 @@ class _ManualContent extends StatelessWidget {
             style: const TextStyle(
                 fontSize: 14, fontWeight: FontWeight.w500, color: UrbinkColors.onSurface),
             decoration: InputDecoration(
-              hintText: 'Nommer cet itinéraire… (optionnel)',
+              hintText: l10n.itinerary_name_hint,
               hintStyle: const TextStyle(fontSize: 14, color: UrbinkColors.navInactive),
               prefixIcon: const Icon(Icons.drive_file_rename_outline_rounded,
                   size: 18, color: UrbinkColors.navInactive),
@@ -640,9 +643,9 @@ class _ManualContent extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {},
                       icon: const Icon(Icons.route_rounded, size: 20),
-                      label: const Text(
-                        'Créer l\'itinéraire',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                      label: Text(
+                        l10n.btn_create_itinerary,
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: UrbinkColors.primary,
@@ -715,16 +718,17 @@ class _AutoGenerateContentState extends State<_AutoGenerateContent> {
   }
 
   Widget _buildContent(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_isGenerating) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: UrbinkColors.primary, strokeWidth: 3),
-            SizedBox(height: UrbinkSpacing.md),
+            const CircularProgressIndicator(color: UrbinkColors.primary, strokeWidth: 3),
+            const SizedBox(height: UrbinkSpacing.md),
             Text(
-              'Génération en cours…',
-              style: TextStyle(
+              l10n.generating_loading,
+              style: const TextStyle(
                   fontSize: 13,
                   color: UrbinkColors.navInactive,
                   fontWeight: FontWeight.w500),
@@ -771,25 +775,26 @@ class _DurationSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Génération automatique',
-                style: TextStyle(
+                l10n.auto_gen_title,
+                style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: UrbinkColors.onSurface),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
-                'Maximise les rues non explorées autour de toi',
-                style: TextStyle(fontSize: 12, color: UrbinkColors.navInactive),
+                l10n.auto_gen_description,
+                style: const TextStyle(fontSize: 12, color: UrbinkColors.navInactive),
               ),
             ],
           ),
@@ -836,7 +841,7 @@ class _DurationSelector extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'min',
+                            l10n.time_unit_minutes,
                             style: TextStyle(
                               fontSize: 10,
                               color: isSelected
@@ -880,9 +885,9 @@ class _DurationSelector extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onGenerate,
               icon: const Icon(Icons.auto_awesome_rounded, size: 20),
-              label: const Text(
-                'Générer l\'itinéraire',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+              label: Text(
+                l10n.btn_generate_itinerary,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: UrbinkColors.accent,
@@ -927,6 +932,7 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final bgColor = color.withValues(alpha: 0.07);
     final borderColor = color.withValues(alpha: 0.18);
     final divColor = color.withValues(alpha: 0.18);
@@ -944,7 +950,7 @@ class _StatsRow extends StatelessWidget {
         children: [
           _StatItem(icon: Icons.straighten_rounded, label: _distance, color: color),
           Container(width: 1, height: 20, color: divColor),
-          _StatItem(icon: Icons.timer_outlined, label: '$duration min', color: color),
+          _StatItem(icon: Icons.timer_outlined, label: '$duration ${l10n.time_unit_minutes}', color: color),
           Container(width: 1, height: 20, color: divColor),
           _StatItem(icon: Icons.route_rounded, label: _streets, color: color),
         ],
@@ -1000,6 +1006,7 @@ class _AutoGenResultView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1072,7 +1079,7 @@ class _AutoGenResultView extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onRegenerate,
                   icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: const Text('Regénérer'),
+                  label: Text(l10n.btn_regenerate),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: UrbinkColors.onSurface,
                     side: const BorderSide(color: UrbinkColors.border),
@@ -1090,9 +1097,9 @@ class _AutoGenResultView extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: onApply,
                     icon: const Icon(Icons.check_rounded, size: 20),
-                    label: const Text(
-                      'Utiliser cet itinéraire',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    label: Text(
+                      l10n.btn_use_itinerary,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: UrbinkColors.accent,
@@ -1294,6 +1301,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1307,17 +1315,17 @@ class _EmptyState extends StatelessWidget {
                 size: 32, color: UrbinkColors.primary),
           ),
           const SizedBox(height: UrbinkSpacing.md),
-          const Text(
-            'Aucune étape pour l\'instant',
-            style: TextStyle(
+          Text(
+            l10n.empty_no_steps,
+            style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: UrbinkColors.onSurface),
           ),
           const SizedBox(height: UrbinkSpacing.xs),
-          const Text(
-            'Sélectionne des lieux sur la carte',
-            style: TextStyle(fontSize: 13, color: UrbinkColors.navInactive),
+          Text(
+            l10n.empty_select_places,
+            style: const TextStyle(fontSize: 13, color: UrbinkColors.navInactive),
           ),
         ],
       ),
