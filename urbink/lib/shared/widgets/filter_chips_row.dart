@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/map/providers/active_filters_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/poi_filters.dart';
 import 'package:urbink/shared/constants/typography.dart';
@@ -151,7 +152,7 @@ class _MoreChip extends StatelessWidget {
               ),
               const SizedBox(width: 5),
               Text(
-                'Voir plus',
+                AppLocalizations.of(context).btn_see_more,
                 style: TextStyle(
                   fontFamily: UrbinkTypography.bodyFamily,
                   fontSize: 13,

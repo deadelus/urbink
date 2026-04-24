@@ -1,25 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/map/providers/streets_visible_provider.dart';
+import 'package:urbink/features/map/providers/time_filter_provider.dart';
+import 'package:urbink/features/map/providers/zones_layer_provider.dart';
+import 'package:urbink/features/map/providers/zones_zoom_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/typography.dart';
 
-/// Pill flottant bas-gauche — "Voir les zones explorées" (FR10b).
+const double _kZoomThreshold = 13.5;
+
+/// Pill flottant bas-gauche — active/désactive l'overlay de zones (arrondissements
+/// ou quartiers) selon le zoom courant.
 ///
-/// Direction UI : fond vert primaire, icône + label, ombre douce,
-/// tap scale 0.97 — 200ms ease-out.
+/// Label inactif : l10n [zones_show].
+/// Label actif   : "Zones · Arr." (zoom < 13.5) ou "Zones · Quartier" (zoom ≥ 13.5).
 class ZonesTogglePill extends ConsumerWidget {
   const ZonesTogglePill({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final visible = ref.watch(streetsVisibleProvider);
+    final l10n = AppLocalizations.of(context);
+    final visible = ref.watch(zonesLayerVisibleProvider);
+    final zoom = ref.watch(zonesZoomProvider);
+    final isArrondissement = zoom < _kZoomThreshold;
+
+    final activeLabel =
+        isArrondissement ? 'Zones · Arr.' : 'Zones · Quartier';
 
     return Semantics(
-      label: visible ? 'Masquer les zones explorées' : 'Voir les zones explorées',
+      label: visible ? activeLabel : l10n.zones_show,
       button: true,
       child: _ScaleTap(
-        onTap: () => ref.read(streetsVisibleProvider.notifier).state = !visible,
+        onTap: () {
+          final next = !visible;
+          ref.read(zonesLayerVisibleProvider.notifier).state = next;
+          ref.read(streetsVisibleProvider.notifier).state = next;
+          if (next) ref.read(timeFilterProvider.notifier).select(TimeFilter.today);
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
@@ -28,9 +46,7 @@ class ZonesTogglePill extends ConsumerWidget {
             color: visible ? UrbinkColors.primary : UrbinkColors.surface,
             borderRadius: BorderRadius.circular(50),
             border: Border.all(
-              color: visible
-                  ? UrbinkColors.primary
-                  : UrbinkColors.border,
+              color: visible ? UrbinkColors.primary : UrbinkColors.border,
             ),
             boxShadow: [
               BoxShadow(
@@ -57,9 +73,7 @@ class ZonesTogglePill extends ConsumerWidget {
                   fontWeight: FontWeight.w600,
                   color: visible ? Colors.white : UrbinkColors.primary,
                 ),
-                child: Text(
-                  visible ? 'Cacher les zones explorées' : 'Voir les zones explorées',
-                ),
+                child: Text(visible ? activeLabel : l10n.zones_show),
               ),
             ],
           ),
@@ -69,8 +83,6 @@ class ZonesTogglePill extends ConsumerWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Tap scale helper
 // ---------------------------------------------------------------------------
 
 class _ScaleTap extends StatefulWidget {

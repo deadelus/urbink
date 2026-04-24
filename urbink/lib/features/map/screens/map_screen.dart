@@ -14,12 +14,17 @@ import 'package:urbink/features/sessions/models/session.dart';
 import 'package:urbink/features/sessions/providers/crash_recovery_provider.dart';
 import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/map_constants.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/constants/typography.dart';
 import 'package:urbink/shared/widgets/filter_chips_row.dart';
+import 'package:urbink/features/map/providers/zones_layer_provider.dart';
+import 'package:urbink/features/map/providers/zones_zoom_provider.dart';
 import 'package:urbink/shared/widgets/map_street_overlay.dart';
+import 'package:urbink/shared/widgets/map_zones_overlay.dart';
+import 'package:urbink/shared/widgets/time_filter_select.dart';
 import 'package:urbink/shared/widgets/urbink_snack_bar.dart';
 import 'package:urbink/shared/widgets/zones_toggle_pill.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
@@ -46,7 +51,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   Style? _mapStyle;
   bool _styleLoading = true;
-  String? _styleError;
+  bool _styleLoadFailed = false;
 
 
   @override
@@ -60,7 +65,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       if (results.every((r) => r == ConnectivityResult.none)) {
         showUrbinkSnackBar(
           context,
-          message: 'Mode hors-ligne — carte limitée au cache',
+          message: AppLocalizations.of(context).offline_mode_message,
           type: UrbinkSnackBarType.info,
         );
       }
@@ -89,23 +94,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         ? '${session.distanceKm.toStringAsFixed(1)} km'
         : '${session.distanceMeters.toStringAsFixed(0)} m';
 
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: const Text('Reprendre la session précédente ?'),
-        content: Text(
-          '$distanceLabel · $durationLabel\n'
-          'Une session a été interrompue. Tu peux la reprendre ou l\'abandonner.',
-        ),
+        title: Text(l10n.resume_session_title),
+        content: Text('$distanceLabel · $durationLabel\n${l10n.session_interrupted_message}'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Abandonner'),
+            child: Text(l10n.btn_discard),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Reprendre'),
+            child: Text(l10n.btn_resume),
           ),
         ],
       ),
@@ -138,7 +141,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       }
       if (mounted) {
         setState(() {
-          _styleError = 'Impossible de charger le style de la carte.';
+          _styleLoadFailed = true;
           _styleLoading = false;
         });
       }
@@ -160,13 +163,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       );
     }
 
-    if (_styleError != null) {
+    if (_styleLoadFailed) {
+      final l10n = AppLocalizations.of(context);
       return Scaffold(
         backgroundColor: UrbinkColors.background,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Text('Erreur chargement style :\n$_styleError'),
+            child: Text(l10n.error_map_style),
           ),
         ),
       );
@@ -174,6 +178,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     final sessionState = ref.watch(sessionStateProvider);
     final isIdle = sessionState == SessionState.idle;
+    final zonesVisible = ref.watch(zonesLayerVisibleProvider);
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
@@ -183,11 +188,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           // ── Carte plein écran ──────────────────────────────────────────────
           FlutterMap(
             mapController: _mapController,
-            options: const MapOptions(
+            options: MapOptions(
               initialCenter: MapConstants.initialCenter,
               initialZoom: MapConstants.initialZoom,
               minZoom: MapConstants.minZoom,
               maxZoom: MapConstants.maxZoom,
+              onMapEvent: (event) {
+                ref.read(zonesZoomProvider.notifier).state =
+                    event.camera.zoom;
+              },
             ),
             children: [
               VectorTileLayer(
@@ -196,6 +205,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 sprites: _mapStyle!.sprites,
               ),
               const MapStreetOverlay(),
+              const MapZonesOverlay(),
               Align(
                 alignment: Alignment.bottomRight,
                 child: Padding(
@@ -233,12 +243,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ),
             ),
 
-          // ── Pill Zones & Bottom sheet — masqués si showBottomUi = false ─
+          // ── Pill Zones + filtre temporel + Bottom sheet ──────────────
           if (widget.showBottomUi) ...[
-            const Positioned(
+            Positioned(
               left: UrbinkSpacing.md,
               bottom: SortiesBottomSheet.collapsedHeight + UrbinkSpacing.md,
-              child: ZonesTogglePill(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const ZonesTogglePill(),
+                  if (isIdle && zonesVisible) ...[
+                    const SizedBox(width: UrbinkSpacing.sm),
+                    const TimeFilterSelect(),
+                  ],
+                ],
+              ),
             ),
             const SortiesBottomSheet(),
           ],
@@ -278,10 +297,10 @@ class _FloatingSearchBar extends StatelessWidget {
           const SizedBox(width: 14),
           const Icon(Icons.search_rounded, color: UrbinkColors.navInactive, size: 20),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Rechercher un lieu…',
-              style: TextStyle(
+              AppLocalizations.of(context).search_placeholder,
+              style: const TextStyle(
                 fontFamily: UrbinkTypography.bodyFamily,
                 fontSize: 14,
                 color: UrbinkColors.navInactive,

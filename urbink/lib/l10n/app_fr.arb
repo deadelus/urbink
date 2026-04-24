@@ -1,0 +1,386 @@
+{
+  "@@locale": "fr",
+
+  "layers_title": "Affichage carte",
+  "@layers_title": { "description": "Titre section couches carte" },
+
+  "layer_monuments": "Monuments visités",
+  "@layer_monuments": { "description": "Label couche monuments" },
+
+  "layer_monuments_sub": "POIs officiels sur la carte",
+  "@layer_monuments_sub": { "description": "Sous-label couche monuments" },
+
+  "layer_quartiers": "Délimitations quartiers",
+  "@layer_quartiers": { "description": "Label couche quartiers" },
+
+  "layer_quartiers_sub": "Zones de la ville",
+  "@layer_quartiers_sub": { "description": "Sous-label couche quartiers" },
+
+  "layer_photos": "Photos épinglées",
+  "@layer_photos": { "description": "Label couche photos" },
+
+  "layer_photos_sub": "Découvertes communautaires",
+  "@layer_photos_sub": { "description": "Sous-label couche photos" },
+
+  "btn_close": "Fermer",
+  "@btn_close": { "description": "Bouton fermer" },
+
+  "btn_back": "Retour",
+  "@btn_back": { "description": "Bouton retour" },
+
+  "btn_create": "Créer",
+  "@btn_create": { "description": "Bouton créer" },
+
+  "btn_cancel": "Annuler",
+  "@btn_cancel": { "description": "Bouton annuler" },
+
+  "btn_discard": "Abandonner",
+  "@btn_discard": { "description": "Bouton abandonner session" },
+
+  "btn_resume": "Reprendre",
+  "@btn_resume": { "description": "Bouton reprendre session" },
+
+  "exit_start_session": "Démarrer une sortie",
+  "@exit_start_session": { "description": "Titre / hint collapsed bottom sheet" },
+
+  "exit_start_session_cta": "Démarrer la sortie",
+  "@exit_start_session_cta": { "description": "CTA bouton démarrer la sortie" },
+
+  "mode_free_circuit": "Circuit libre",
+  "@mode_free_circuit": { "description": "Mode de sortie sans itinéraire" },
+
+  "mode_free_default": "Par défaut",
+  "@mode_free_default": { "description": "Sous-label mode circuit libre" },
+
+  "mode_itinerary": "Itinéraire",
+  "@mode_itinerary": { "description": "Mode de sortie avec itinéraire" },
+
+  "mode_itinerary_choose": "Choisir →",
+  "@mode_itinerary_choose": { "description": "Sous-label CTA choisir un itinéraire" },
+
+  "gps_mode_ready": "Mode auto-détecté · GPS prêt",
+  "@gps_mode_ready": { "description": "Chip GPS prêt dans le sheet" },
+
+  "navigate_with_title": "Naviguer avec…",
+  "@navigate_with_title": { "description": "Titre section choix app de navigation" },
+
+  "btn_lets_go": "C'est parti !",
+  "@btn_lets_go": { "description": "CTA démarrer navigation" },
+
+  "my_itineraries": "Mes itinéraires",
+  "@my_itineraries": { "description": "Titre liste des itinéraires" },
+
+  "nav_gps_integrated": "GPS intégré",
+  "@nav_gps_integrated": { "description": "Option navigation GPS intégré" },
+
+  "nav_gps_recommended": "Recommandé",
+  "@nav_gps_recommended": { "description": "Sous-label GPS intégré" },
+
+  "nav_apple_plans": "Apple Plans",
+  "@nav_apple_plans": { "description": "Option navigation Apple Plans" },
+
+  "nav_apple_maps_app": "Application Maps",
+  "@nav_apple_maps_app": { "description": "Sous-label Apple Plans" },
+
+  "nav_google_maps": "Google Maps",
+  "@nav_google_maps": { "description": "Option navigation Google Maps" },
+
+  "nav_external_app": "Application externe",
+  "@nav_external_app": { "description": "Sous-label Google Maps" },
+
+  "nav_waze": "Waze",
+  "@nav_waze": { "description": "Option navigation Waze" },
+
+  "nav_car_only": "Voiture uniquement",
+  "@nav_car_only": { "description": "Sous-label Waze" },
+
+  "add_steps": "Ajouter des étapes",
+  "@add_steps": { "description": "Label collapsed sheet itinéraire sans étapes" },
+
+  "step_count": "{count, plural, one{# étape} other{# étapes}}",
+  "@step_count": {
+    "description": "Pluriel étapes pour le label collapsed",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "tab_manual": "Manuel",
+  "@tab_manual": { "description": "Onglet mode manuel itinéraire" },
+
+  "tab_auto": "Auto ✨",
+  "@tab_auto": { "description": "Onglet mode auto-génération itinéraire" },
+
+  "steps_title": "Étapes du parcours",
+  "@steps_title": { "description": "Titre liste étapes itinéraire" },
+
+  "step_counter_badge": "{count} / min. 3",
+  "@step_counter_badge": {
+    "description": "Badge compteur étapes avec minimum",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "itinerary_name_hint": "Nommer cet itinéraire… (optionnel)",
+  "@itinerary_name_hint": { "description": "Placeholder champ nom itinéraire" },
+
+  "empty_no_steps": "Aucune étape pour l'instant",
+  "@empty_no_steps": { "description": "Titre état vide itinéraire" },
+
+  "empty_select_places": "Sélectionne des lieux sur la carte",
+  "@empty_select_places": { "description": "Sous-titre état vide itinéraire" },
+
+  "btn_create_itinerary": "Créer l'itinéraire",
+  "@btn_create_itinerary": { "description": "Bouton créer itinéraire" },
+
+  "generating_loading": "Génération en cours…",
+  "@generating_loading": { "description": "Message chargement génération itinéraire" },
+
+  "auto_gen_title": "Génération automatique",
+  "@auto_gen_title": { "description": "Titre section génération automatique" },
+
+  "auto_gen_description": "Maximise les rues non explorées autour de toi",
+  "@auto_gen_description": { "description": "Description génération automatique" },
+
+  "time_unit_minutes": "min",
+  "@time_unit_minutes": { "description": "Unité durée en minutes" },
+
+  "btn_generate_itinerary": "Générer l'itinéraire",
+  "@btn_generate_itinerary": { "description": "Bouton générer itinéraire auto" },
+
+  "btn_regenerate": "Regénérer",
+  "@btn_regenerate": { "description": "Bouton regénérer itinéraire" },
+
+  "btn_use_itinerary": "Utiliser cet itinéraire",
+  "@btn_use_itinerary": { "description": "Bouton utiliser itinéraire généré" },
+
+  "offline_mode_message": "Mode hors-ligne — carte limitée au cache",
+  "@offline_mode_message": { "description": "SnackBar mode hors-ligne" },
+
+  "resume_session_title": "Reprendre la session précédente ?",
+  "@resume_session_title": { "description": "Titre dialog crash recovery" },
+
+  "session_interrupted_message": "Une session a été interrompue. Tu peux la reprendre ou l'abandonner.",
+  "@session_interrupted_message": { "description": "Message dialog session interrompue" },
+
+  "error_map_style": "Impossible de charger le style de la carte.",
+  "@error_map_style": { "description": "Message erreur chargement style carte" },
+
+  "search_placeholder": "Rechercher un lieu…",
+  "@search_placeholder": { "description": "Placeholder barre de recherche" },
+
+  "filters_title": "Filtres",
+  "@filters_title": { "description": "Titre écran filtres" },
+
+  "btn_reset_filters": "Réinitialiser",
+  "@btn_reset_filters": { "description": "Bouton réinitialiser tous les filtres" },
+
+  "active_filter_count": "{count, plural, one{# filtre actif} other{# filtres actifs}}",
+  "@active_filter_count": {
+    "description": "Bandeau compteur filtres actifs",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "session_completed": "Sortie terminée",
+  "@session_completed": { "description": "Titre écran résumé session" },
+
+  "stat_streets": "Rues explorées",
+  "@stat_streets": { "description": "Label stat rues explorées" },
+
+  "stat_distance": "Distance",
+  "@stat_distance": { "description": "Label stat distance" },
+
+  "stat_duration": "Durée",
+  "@stat_duration": { "description": "Label stat durée" },
+
+  "stat_mode": "Mode",
+  "@stat_mode": { "description": "Label stat mode déplacement" },
+
+  "btn_back_to_map": "Retour à la carte",
+  "@btn_back_to_map": { "description": "Bouton retour carte depuis résumé session" },
+
+  "gps_required_title": "GPS requis",
+  "@gps_required_title": { "description": "Titre dialog GPS requis" },
+
+  "gps_required_message": "Le GPS est requis pour colorier tes rues.\nActive-le dans les Réglages pour continuer.",
+  "@gps_required_message": { "description": "Message dialog GPS requis" },
+
+  "btn_open_settings": "Ouvrir les réglages",
+  "@btn_open_settings": { "description": "Bouton ouvrir paramètres système" },
+
+  "btn_see_more": "Voir plus",
+  "@btn_see_more": { "description": "Bouton voir plus de filtres" },
+
+  "zones_show": "Voir les zones explorées",
+  "@zones_show": { "description": "Label pill zones — inactif" },
+
+  "zones_hide": "Cacher les zones explorées",
+  "@zones_hide": { "description": "Label pill zones — actif" },
+
+  "tab_map": "Carte",
+  "@tab_map": { "description": "Onglet navigation Carte" },
+
+  "tab_itineraries": "Parcours",
+  "@tab_itineraries": { "description": "Onglet navigation Parcours" },
+
+  "tab_social": "Social",
+  "@tab_social": { "description": "Onglet navigation Social" },
+
+  "tab_badges": "Badges",
+  "@tab_badges": { "description": "Onglet navigation Badges" },
+
+  "tab_profile": "Profil",
+  "@tab_profile": { "description": "Onglet navigation Profil" },
+
+  "nav_tab_semantics": "{name}, onglet {index} sur {total}",
+  "@nav_tab_semantics": {
+    "description": "Label Semantics onglet de navigation",
+    "placeholders": {
+      "name":  { "type": "String" },
+      "index": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "session_counter_text": "{streets} rues · {distance} · {time}",
+  "@session_counter_text": {
+    "description": "Texte pill session counter (rues, distance, temps)",
+    "placeholders": {
+      "streets":  { "type": "int" },
+      "distance": { "type": "String" },
+      "time":     { "type": "String" }
+    }
+  },
+
+  "session_status_text": "Circuit libre · {streets} rues · {distance}",
+  "@session_status_text": {
+    "description": "Texte principal barre de statut session",
+    "placeholders": {
+      "streets":  { "type": "int" },
+      "distance": { "type": "String" }
+    }
+  },
+
+  "session_status_semantics": "Session en cours : {streets} rues, {distance}, {time}",
+  "@session_status_semantics": {
+    "description": "Label Semantics barre de statut session",
+    "placeholders": {
+      "streets":  { "type": "int" },
+      "distance": { "type": "String" },
+      "time":     { "type": "String" }
+    }
+  },
+
+  "app_tagline": "Every detour hides a discovery.",
+  "@app_tagline": { "description": "Tagline de l'application (intentionnellement en anglais)" },
+
+  "privacy_gps_title": "Localisation GPS",
+  "@privacy_gps_title": { "description": "Titre section confidentialité GPS" },
+
+  "privacy_gps_body": "Urbink utilise ton GPS pour colorier les rues que tu parcours en temps réel pendant une session active. Le tracking s'arrête lorsque la session est mise en pause ou stoppée.",
+  "@privacy_gps_body": { "description": "Corps section confidentialité GPS" },
+
+  "privacy_anon_title": "Compte anonyme",
+  "@privacy_anon_title": { "description": "Titre section confidentialité compte anonyme" },
+
+  "privacy_anon_body": "Ta progression est sauvegardée sous un identifiant anonyme. Aucune donnée personnelle n'est requise pour utiliser Urbink.",
+  "@privacy_anon_body": { "description": "Corps section confidentialité compte anonyme" },
+
+  "privacy_maps_title": "Données cartographiques",
+  "@privacy_maps_title": { "description": "Titre section confidentialité cartes" },
+
+  "privacy_maps_body": "© OpenStreetMap contributors — données cartographiques sous licence ODbL.",
+  "@privacy_maps_body": { "description": "Corps section confidentialité cartes" },
+
+  "btn_accept_continue": "Accepter et continuer",
+  "@btn_accept_continue": { "description": "Bouton accepter politique de confidentialité" },
+
+  "privacy_footer": "En continuant, tu acceptes notre politique de confidentialité.",
+  "@privacy_footer": { "description": "Avertissement acceptation confidentialité" },
+
+  "session_live": "Sortie en cours",
+  "@session_live": { "description": "Label live indicator session active" },
+
+  "session_duration": "Durée",
+  "@session_duration": { "description": "Label durée dans le moniteur de session" },
+
+  "streets": "Rues",
+  "@streets": { "description": "Label nombre de rues — stat card session monitor" },
+
+  "pace": "Allure",
+  "@pace": { "description": "Label allure — stat card session monitor" },
+
+  "btn_stop": "Arrêter la sortie",
+  "@btn_stop": { "description": "CTA arrêter la sortie (session monitor)" },
+
+  "live_progress": "Progression en direct",
+  "@live_progress": { "description": "Titre section progression session en direct" },
+
+  "zone_progress": "Zone explorée",
+  "@zone_progress": { "description": "Label zone explorée dans la section progression" },
+
+  "new_streets": "Nouvelles rues",
+  "@new_streets": { "description": "Label nouvelles rues dans la section progression" },
+
+  "calories": "Calories",
+  "@calories": { "description": "Label calories dans la section progression" },
+
+  "tip_title": "Astuce",
+  "@tip_title": { "description": "Titre carte astuce contextuelle" },
+
+  "mode_libre": "Libre",
+  "@mode_libre": { "description": "Label mode libre dans le header session monitor" },
+
+  "sum_title": "Sortie terminée !",
+  "@sum_title": { "description": "Titre bottom sheet résumé de sortie" },
+
+  "sum_sub": "Belle exploration, continuez comme ça",
+  "@sum_sub": { "description": "Sous-titre encouragement résumé de sortie" },
+
+  "sum_streets": "rues explorées",
+  "@sum_streets": { "description": "Unité stat rues explorées (résumé)" },
+
+  "sum_km": "kilomètres",
+  "@sum_km": { "description": "Unité stat distance en km (résumé)" },
+
+  "sum_duration": "durée",
+  "@sum_duration": { "description": "Unité stat durée (résumé)" },
+
+  "sum_new_badges": "nouveaux badges",
+  "@sum_new_badges": { "description": "Unité stat nouveaux badges (résumé)" },
+
+  "sum_badges_unlocked": "{count, plural, =0{} one{{count} badge débloqué !} other{{count} badges débloqués !}}",
+  "@sum_badges_unlocked": {
+    "description": "Bandeau badges débloqués avec pluralisation",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "sum_share": "Partager",
+  "@sum_share": { "description": "Bouton partager résumé de sortie" },
+
+  "sum_done": "Super !",
+  "@sum_done": { "description": "Bouton principal fermer résumé de sortie" },
+
+  "celeb_title": "Badge débloqué !",
+  "@celeb_title": { "description": "Titre overlay célébration badge" },
+
+  "celeb_continue": "Continuer l'exploration",
+  "@celeb_continue": { "description": "Bouton principal overlay célébration badge" },
+
+  "celeb_skip": "Ignorer",
+  "@celeb_skip": { "description": "Lien ignorer célébration badge" },
+
+  "celeb_progress": "{current} / {total}",
+  "@celeb_progress": {
+    "description": "Indicateur de progression badge (ex : 2 / 3)",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  }
+}

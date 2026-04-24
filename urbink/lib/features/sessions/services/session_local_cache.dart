@@ -129,6 +129,18 @@ class SessionLocalCache {
     );
   }
 
+  /// Migre toutes les sessions non-synchronisées de [oldUserId] vers [newUserId].
+  /// Appelé quand Firebase UID diffère du UUID local généré hors-ligne.
+  Future<void> migrateUserId(String oldUserId, String newUserId) async {
+    final db = await _getDb();
+    await db.update(
+      _kTable,
+      {'user_id': newUserId},
+      where: 'user_id = ? AND synced = 0',
+      whereArgs: [oldUserId],
+    );
+  }
+
   /// Ferme la base de données (utile en test).
   Future<void> close() async {
     await _db?.close();

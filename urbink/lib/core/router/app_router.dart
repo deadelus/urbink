@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:urbink/features/map/providers/streets_visible_provider.dart';
 import 'package:urbink/features/map/screens/filters_screen.dart';
 import 'package:urbink/features/map/screens/map_screen.dart';
 import 'package:urbink/features/map/widgets/itineraire_bottom_sheet.dart';
 import 'package:urbink/features/onboarding/screens/privacy_screen.dart';
 import 'package:urbink/features/sessions/models/session.dart';
 import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
-import 'package:urbink/features/sessions/providers/session_metrics_provider.dart';
 import 'package:urbink/features/sessions/screens/session_summary_screen.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/widgets/filter_chips_row.dart';
-import 'package:urbink/shared/widgets/session_status_bar.dart';
+import 'package:urbink/shared/widgets/time_filter_select.dart';
 import 'package:urbink/shared/widgets/urbink_bottom_nav.dart';
 import 'package:urbink/shared/widgets/zones_toggle_pill.dart';
 
@@ -158,7 +158,7 @@ final GoRouter appRouter = GoRouter(
 
 
 // ---------------------------------------------------------------------------
-// Scaffold principal avec bottom nav + SessionStatusBar + bouton Arrêter
+// Scaffold principal avec bottom nav
 // ---------------------------------------------------------------------------
 
 class _ScaffoldWithBottomNav extends ConsumerWidget {
@@ -173,30 +173,9 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
     // est monté — sans ce watch, le notifier n'est jamais construit et
     // _startSession() n'est jamais appelé lors du passage à active.
     ref.watch(sessionLifecycleProvider);
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          navigationShell,
-          // SessionStatusBar — barre Terra Cotta 44px top (sous safe area)
-          Positioned(
-            top: MediaQuery.of(context).padding.top,
-            left: 0,
-            right: 0,
-            child: const SessionStatusBar(),
-          ),
-          // Bouton Arrêter ■ — bas-droite 52×52px, au-dessus de la bottom nav
-          if (sessionState != SessionState.idle)
-            Positioned(
-              bottom: bottomPadding + UrbinkSpacing.bottomNavHeight + 8,
-              right: 10,
-              child: _StopSessionButton(
-                onTap: () => _onStopTapped(context, ref),
-              ),
-            ),
-        ],
-      ),
+      body: navigationShell,
       bottomNavigationBar: UrbinkBottomNav(
         currentIndex: navigationShell.currentIndex,
         sessionState: sessionState,
@@ -206,81 +185,6 @@ class _ScaffoldWithBottomNav extends ConsumerWidget {
             initialLocation: index == navigationShell.currentIndex,
           );
         },
-      ),
-    );
-  }
-
-  Future<void> _onStopTapped(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Arrêter la session ?'),
-        content: const Text('Ta progression sera sauvegardée.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Continuer'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: UrbinkColors.destructive,
-            ),
-            child: const Text('Arrêter'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !context.mounted) return;
-
-    final metrics = ref.read(sessionMetricsProvider);
-    final session = await ref
-        .read(sessionLifecycleProvider.notifier)
-        .stopAndSave(metrics);
-
-    if (!context.mounted) return;
-    ref.read(sessionStateProvider.notifier).state = SessionState.idle;
-
-    if (session != null) {
-      context.push(AppRoutes.sessionSummary, extra: session);
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Bouton Arrêter session — carré arrondi 52×52px bas-droite
-// ---------------------------------------------------------------------------
-
-class _StopSessionButton extends StatelessWidget {
-  const _StopSessionButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Arrêter la session',
-      button: true,
-      explicitChildNodes: true,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            color: UrbinkColors.destructive,
-            boxShadow: [
-              BoxShadow(
-                color: UrbinkColors.destructive.withValues(alpha: 0.45),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.stop_rounded, color: Colors.white, size: 26),
-        ),
       ),
     );
   }
@@ -305,6 +209,7 @@ class _CreateItineraireScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final topPadding = MediaQuery.of(context).padding.top;
     final sessionState = ref.watch(sessionStateProvider);
+    final streetsVisible = ref.watch(streetsVisibleProvider);
 
     return Scaffold(
       bottomNavigationBar: UrbinkBottomNav(
@@ -412,11 +317,20 @@ class _CreateItineraireScreen extends ConsumerWidget {
             ),
           ),
 
-          // Pill "Zones explorées" — au-dessus du bottom sheet réduit
-          const Positioned(
+          // Pill "Zones explorées" + filtre temporel
+          Positioned(
             left: UrbinkSpacing.md,
             bottom: ItineraireBottomSheet.collapsedHeight + UrbinkSpacing.md,
-            child: ZonesTogglePill(),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const ZonesTogglePill(),
+                if (streetsVisible) ...[
+                  const SizedBox(width: UrbinkSpacing.sm),
+                  const TimeFilterSelect(),
+                ],
+              ],
+            ),
           ),
 
           // Bottom sheet itinéraire
