@@ -9,11 +9,12 @@
     "artifact_name": "3-3-week-histogram-onglet-vous",
     "status": "building",
     "pr_number": null,
-    "error_count": 0,
-    "last_error": null,
-    "started_at": "2026-04-24T10:32:21Z",
+    "error_count": 1,
+    "last_error": "build-failed-exit-1",
+    "started_at": "2026-04-24T10:43:52Z",
     "built_at": null,
-    "done_at": null
+    "done_at": null,
+    "last_error_at": "2026-04-24T10:43:22Z"
   },
   {
     "id": "3.4",
