@@ -324,15 +324,14 @@ Implémentée par le Builder Agent via Claude Code.
 Séquence ARCHITECT → DEVELOPER → REVIEWER → OPTIMIZER → TESTER respectée.
 PR_BODY
 
-    local pr_number=""
-    pr_number="$(gh pr create \
+    local pr_number="" pr_url=""
+    pr_url="$(gh pr create \
         --repo "$GITHUB_REPO" \
         --base "$BASE_BRANCH" \
         --head "$branch" \
         --title "$pr_title" \
-        --body-file "$pr_body_file" \
-        --json number \
-        --jq '.number' 2>/dev/null)" || true
+        --body-file "$pr_body_file" 2>/dev/null)" || true
+    pr_number="$(echo "$pr_url" | grep -oE '[0-9]+$')"
 
     rm -f "$pr_body_file"
 
