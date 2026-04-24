@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:urbink/features/sessions/session_state_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/theme/app_theme.dart';
@@ -18,6 +19,9 @@ Widget wrap(
   return ProviderScope(
     child: MaterialApp(
       theme: AppTheme.light(),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('fr'),
       home: Builder(
         builder: (context) {
           final baseMediaQuery = MediaQuery.of(context);

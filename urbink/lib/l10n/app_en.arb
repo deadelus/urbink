@@ -1,0 +1,142 @@
+{
+  "@@locale": "en",
+
+  "layers_title": "Map display",
+  "layer_monuments": "Visited monuments",
+  "layer_monuments_sub": "Official POIs on the map",
+  "layer_quartiers": "District boundaries",
+  "layer_quartiers_sub": "City areas",
+  "layer_photos": "Pinned photos",
+  "layer_photos_sub": "Community discoveries",
+
+  "btn_close": "Close",
+  "btn_back": "Back",
+  "btn_create": "Create",
+  "btn_cancel": "Cancel",
+  "btn_discard": "Discard",
+  "btn_resume": "Resume",
+
+  "exit_start_session": "Start an outing",
+  "exit_start_session_cta": "Start the outing",
+  "mode_free_circuit": "Free roam",
+  "mode_free_default": "Default",
+  "mode_itinerary": "Itinerary",
+  "mode_itinerary_choose": "Choose →",
+  "gps_mode_ready": "Auto-detected mode · GPS ready",
+  "navigate_with_title": "Navigate with…",
+  "btn_lets_go": "Let's go!",
+  "my_itineraries": "My itineraries",
+  "nav_gps_integrated": "Built-in GPS",
+  "nav_gps_recommended": "Recommended",
+  "nav_apple_plans": "Apple Maps",
+  "nav_apple_maps_app": "Maps app",
+  "nav_google_maps": "Google Maps",
+  "nav_external_app": "External app",
+  "nav_waze": "Waze",
+  "nav_car_only": "Car only",
+
+  "add_steps": "Add steps",
+  "step_count": "{count, plural, one{{count} step} other{{count} steps}}",
+  "tab_manual": "Manual",
+  "tab_auto": "Auto ✨",
+  "steps_title": "Route steps",
+  "step_counter_badge": "{count} / min. 3",
+  "itinerary_name_hint": "Name this itinerary… (optional)",
+  "empty_no_steps": "No steps yet",
+  "empty_select_places": "Select places on the map",
+  "btn_create_itinerary": "Create itinerary",
+  "generating_loading": "Generating…",
+  "auto_gen_title": "Auto-generate",
+  "auto_gen_description": "Maximise unexplored streets around you",
+  "time_unit_minutes": "min",
+  "btn_generate_itinerary": "Generate itinerary",
+  "btn_regenerate": "Regenerate",
+  "btn_use_itinerary": "Use this itinerary",
+
+  "offline_mode_message": "Offline mode — map limited to cache",
+  "resume_session_title": "Resume previous session?",
+  "session_interrupted_message": "A session was interrupted. You can resume or discard it.",
+  "error_map_style": "Unable to load map style.",
+  "search_placeholder": "Search a place…",
+
+  "filters_title": "Filters",
+  "btn_reset_filters": "Reset",
+  "active_filter_count": "{count, plural, one{{count} active filter} other{{count} active filters}}",
+
+  "session_completed": "Outing complete",
+  "stat_streets": "Streets explored",
+  "stat_distance": "Distance",
+  "stat_duration": "Duration",
+  "stat_mode": "Mode",
+  "btn_back_to_map": "Back to map",
+
+  "gps_required_title": "GPS required",
+  "gps_required_message": "GPS is required to colour your streets.\nEnable it in Settings to continue.",
+  "btn_open_settings": "Open settings",
+
+  "btn_see_more": "See more",
+
+  "zones_show": "Show explored zones",
+  "zones_hide": "Hide explored zones",
+
+  "tab_map": "Map",
+  "tab_itineraries": "Routes",
+  "tab_social": "Social",
+  "tab_badges": "Badges",
+  "tab_profile": "Profile",
+  "nav_tab_semantics": "{name}, tab {index} of {total}",
+
+  "session_counter_text": "{streets} streets · {distance} · {time}",
+  "session_status_text": "Free roam · {streets} streets · {distance}",
+  "session_status_semantics": "Session in progress: {streets} streets, {distance}, {time}",
+
+  "app_tagline": "Every detour hides a discovery.",
+  "privacy_gps_title": "GPS location",
+  "privacy_gps_body": "Urbink uses your GPS to colour the streets you walk in real time during an active session. Tracking stops when the session is paused or stopped.",
+  "privacy_anon_title": "Anonymous account",
+  "privacy_anon_body": "Your progress is saved under an anonymous identifier. No personal data is required to use Urbink.",
+  "privacy_maps_title": "Map data",
+  "privacy_maps_body": "© OpenStreetMap contributors — map data under ODbL licence.",
+  "btn_accept_continue": "Accept and continue",
+  "privacy_footer": "By continuing, you accept our privacy policy.",
+
+  "session_live": "Session active",
+  "session_duration": "Duration",
+  "streets": "Streets",
+  "pace": "Pace",
+  "btn_stop": "Stop session",
+  "live_progress": "Live progress",
+  "zone_progress": "Zone explored",
+  "new_streets": "New streets",
+  "calories": "Calories",
+  "tip_title": "Tip",
+  "mode_libre": "Free",
+
+  "sum_title": "Session complete!",
+  "sum_sub": "Great exploration, keep going",
+  "sum_streets": "streets explored",
+  "sum_km": "kilometers",
+  "sum_duration": "duration",
+  "sum_new_badges": "new badges",
+  "sum_badges_unlocked": "{count, plural, =0{} one{{count} badge unlocked!} other{{count} badges unlocked!}}",
+  "@sum_badges_unlocked": {
+    "description": "Badge unlock count banner",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sum_share": "Share",
+  "sum_done": "Awesome!",
+
+  "celeb_title": "Badge unlocked!",
+  "celeb_continue": "Keep exploring",
+  "celeb_skip": "Skip",
+  "celeb_progress": "{current} / {total}",
+  "@celeb_progress": {
+    "description": "Badge celebration progress indicator (e.g. 2 / 3)",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  }
+}

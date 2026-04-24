@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:urbink/core/router/app_router.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 
@@ -29,21 +30,26 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
       // 1. Persister le consentement
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(kPrivacyAcceptedKey, true);
-
-      // 2. Auth anonyme si pas encore connecté
-      if (FirebaseAuth.instance.currentUser == null) {
-        await FirebaseAuth.instance.signInAnonymously();
-      }
-
-      // 3. Notifier GoRouter → redirect automatique vers /map
-      privacyNotifier.setAccepted();
     } catch (_) {
       if (mounted) setState(() => _loading = false);
+      return;
     }
+
+    // 2. Connexion Firebase anonyme en arrière-plan — non bloquante.
+    // currentUidProvider utilise localAnonUid si Firebase est indisponible ;
+    // la reconnexion est retentée via connectivityChangesProvider.
+    if (FirebaseAuth.instance.currentUser == null) {
+      // ignore: unawaited_futures
+      FirebaseAuth.instance.signInAnonymously().ignore();
+    }
+
+    // 3. Naviguer immédiatement — pas besoin d'attendre Firebase
+    privacyNotifier.setAccepted();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: UrbinkColors.surface,
       body: SafeArea(
@@ -67,7 +73,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               ),
               const SizedBox(height: UrbinkSpacing.sm),
               Text(
-                'Every detour hides a discovery.',
+                l10n.app_tagline,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: UrbinkColors.onSurface,
                       fontStyle: FontStyle.italic,
@@ -75,27 +81,22 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               ),
               const SizedBox(height: UrbinkSpacing.xl * 2),
               // Politique de confidentialité
-              const _PrivacySection(
+              _PrivacySection(
                 icon: Icons.location_on_outlined,
-                title: 'Localisation GPS',
-                body:
-                    'Urbink utilise ton GPS pour colorier les rues que tu parcours en temps réel pendant une session active. '
-                    'Le tracking s\'arrête lorsque la session est mise en pause ou stoppée.',
+                title: l10n.privacy_gps_title,
+                body: l10n.privacy_gps_body,
               ),
               const SizedBox(height: UrbinkSpacing.lg),
-              const _PrivacySection(
+              _PrivacySection(
                 icon: Icons.lock_outline,
-                title: 'Compte anonyme',
-                body:
-                    'Ta progression est sauvegardée sous un identifiant anonyme. '
-                    'Aucune donnée personnelle n\'est requise pour utiliser Urbink.',
+                title: l10n.privacy_anon_title,
+                body: l10n.privacy_anon_body,
               ),
               const SizedBox(height: UrbinkSpacing.lg),
-              const _PrivacySection(
+              _PrivacySection(
                 icon: Icons.map_outlined,
-                title: 'Données cartographiques',
-                body: '© OpenStreetMap contributors — données cartographiques '
-                    'sous licence ODbL.',
+                title: l10n.privacy_maps_title,
+                body: l10n.privacy_maps_body,
               ),
               const Spacer(),
               // Bouton accepter
@@ -121,9 +122,9 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
-                          'Accepter et continuer',
-                          style: TextStyle(
+                      : Text(
+                          l10n.btn_accept_continue,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -134,7 +135,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               const SizedBox(height: UrbinkSpacing.md),
               Center(
                 child: Text(
-                  'En continuant, tu acceptes notre politique de confidentialité.',
+                  l10n.privacy_footer,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: UrbinkColors.onSurface.withValues(alpha: 0.5),

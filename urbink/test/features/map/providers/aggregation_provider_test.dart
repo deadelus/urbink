@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:urbink/features/map/providers/aggregation_provider.dart';
+import 'package:urbink/features/map/providers/time_filter_provider.dart';
 import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 
 // ---------------------------------------------------------------------------
@@ -12,12 +13,17 @@ import 'package:urbink/features/sessions/providers/session_lifecycle_provider.da
 ProviderContainer _makeContainer({
   required String? uid,
   Stream<List<List<String>>>? sessionsStream,
+  TimeFilter filter = TimeFilter.allTime,
 }) {
+  final from = filter.from();
   return ProviderContainer(
     overrides: [
       currentUidProvider.overrideWith((ref) => uid),
+      timeFilterProvider.overrideWith(
+        (ref) => TimeFilterNotifier.forTest(filter),
+      ),
       if (uid != null)
-        sessionsStreetIdsStreamProvider(uid).overrideWith(
+        sessionsStreetIdsStreamProvider((uid, from)).overrideWith(
           (ref) => sessionsStream ?? const Stream.empty(),
         ),
     ],
@@ -122,6 +128,44 @@ void main() {
 
       final value = await container.read(aggregationProvider.future);
       expect(value, {'way:5'});
+    });
+
+    test('filtre today — utilise un stream filtré distinct du stream allTime', () async {
+      final controller = StreamController<List<List<String>>>();
+      final container = _makeContainer(
+        uid: 'user1',
+        sessionsStream: controller.stream,
+        filter: TimeFilter.today,
+      );
+      addTearDown(container.dispose);
+      addTearDown(controller.close);
+
+      // Le stream injectable simule le résultat post-filtre Firestore
+      controller.add([
+        ['way:10', 'way:11'],
+      ]);
+
+      final value = await container.read(aggregationProvider.future);
+      expect(value, {'way:10', 'way:11'});
+    });
+
+    test('filtre thisWeek — union correcte des sessions filtrées', () async {
+      final controller = StreamController<List<List<String>>>();
+      final container = _makeContainer(
+        uid: 'user1',
+        sessionsStream: controller.stream,
+        filter: TimeFilter.thisWeek,
+      );
+      addTearDown(container.dispose);
+      addTearDown(controller.close);
+
+      controller.add([
+        ['way:A'],
+        ['way:B', 'way:C'],
+      ]);
+
+      final value = await container.read(aggregationProvider.future);
+      expect(value, {'way:A', 'way:B', 'way:C'});
     });
   });
 }
