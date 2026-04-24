@@ -49,6 +49,12 @@ abstract final class UrbinkColors {
   // ── Vert Sauge (ancienne valeur, gardée pour compatibilité) ───────────────
   static const Color secondary = Color(0xFF256F4C);
 
+  // ── Histogramme semaine (UX-DR6) ─────────────────────────────────────────
+  /// Barre du jour courant — Ocre
+  static const Color histogramOcre = Color(0xFFB8832E);
+  /// Barre fantôme — jour sans activité
+  static const Color histogramGhost = Color(0xFFF0EDE8);
+
   // ── Séparateurs & bordures ────────────────────────────────────────────────
   static const Color border = Color(0xFFE2E8F0);
   static const Color borderSubtle = Color(0xFFF1F5F9);
