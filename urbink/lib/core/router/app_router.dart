@@ -5,7 +5,6 @@ import 'package:urbink/features/map/screens/filters_screen.dart';
 import 'package:urbink/features/map/screens/map_screen.dart';
 import 'package:urbink/features/map/widgets/itineraire_bottom_sheet.dart';
 import 'package:urbink/features/onboarding/screens/privacy_screen.dart';
-import 'package:urbink/features/profile/screens/profile_screen.dart';
 import 'package:urbink/features/sessions/models/session.dart';
 import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 import 'package:urbink/features/sessions/providers/session_metrics_provider.dart';
@@ -113,13 +112,13 @@ final GoRouter appRouter = GoRouter(
             ),
           ],
         ),
-        // 4 — Vous (historique personnel)
+        // 4 — Profil
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: AppRoutes.profile,
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: ProfileScreen(),
+                child: _PlaceholderScreen(label: 'Profil'),
               ),
             ),
           ],

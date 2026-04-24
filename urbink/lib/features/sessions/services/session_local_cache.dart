@@ -129,28 +129,6 @@ class SessionLocalCache {
     );
   }
 
-  /// Retourne toutes les sessions complètes de [userId] pour la semaine
-  /// commençant à [weekStart] (lundi minuit, heure locale).
-  Future<List<Session>> getSessionsForWeek(
-    String userId,
-    DateTime weekStart,
-  ) async {
-    final db = await _getDb();
-    final weekEnd = weekStart.add(const Duration(days: 7));
-    final rows = await db.query(
-      _kTable,
-      where:
-          'user_id = ? AND session_start >= ? AND session_start < ? AND session_end IS NOT NULL',
-      whereArgs: [
-        userId,
-        weekStart.millisecondsSinceEpoch,
-        weekEnd.millisecondsSinceEpoch,
-      ],
-      orderBy: 'session_start DESC',
-    );
-    return rows.map(Session.fromSqflite).toList();
-  }
-
   /// Ferme la base de données (utile en test).
   Future<void> close() async {
     await _db?.close();
