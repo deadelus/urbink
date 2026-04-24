@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:urbink/features/profile/providers/sessions_list_provider.dart';
@@ -28,21 +26,22 @@ Session _session({
 
 ProviderContainer _makeContainer({
   required String? uid,
-  Stream<List<Session>>? stream,
+  SessionsPageFetcher? fetcher,
   DateTime? selectedDay,
 }) {
   return ProviderContainer(
     overrides: [
       currentUidProvider.overrideWith((ref) => uid),
-      if (uid != null)
-        allSessionsRawStreamProvider(uid).overrideWith(
-          (ref) => stream ?? const Stream.empty(),
-        ),
+      if (fetcher != null) sessionsPageFetcherProvider.overrideWith((ref) => fetcher),
       if (selectedDay != null)
         selectedHistogramDayProvider.overrideWith((ref) => selectedDay),
     ],
   );
 }
+
+SessionsPageFetcher _staticFetcher(List<Session> sessions) =>
+    (uid, {required selectedDay, required cursor}) async =>
+        (sessions: sessions, nextCursor: null);
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -50,119 +49,132 @@ ProviderContainer _makeContainer({
 
 void main() {
   group('sessionsByDayProvider', () {
-    test('retourne une liste vide quand uid est null', () async {
+    test('retourne vide quand uid est null', () async {
       final container = _makeContainer(uid: null);
       addTearDown(container.dispose);
 
       final value = await container.read(sessionsByDayProvider.future);
-      expect(value, isEmpty);
+      expect(value.sessions, isEmpty);
+      expect(value.hasMore, false);
     });
 
-    test('retourne toutes les sessions quand selectedDay est null', () async {
-      final ctrl = StreamController<List<Session>>();
-      final container = _makeContainer(uid: 'user1', stream: ctrl.stream);
-      addTearDown(container.dispose);
-      addTearDown(ctrl.close);
-
+    test('retourne la première page quand selectedDay est null', () async {
       final sessions = [
-        _session(id: 's1', start: DateTime(2026, 4, 20, 8, 0)),
-        _session(id: 's2', start: DateTime(2026, 4, 21, 9, 0)),
-        _session(id: 's3', start: DateTime(2026, 4, 22, 10, 0)),
+        _session(id: 's1', start: DateTime(2026, 4, 20, 8)),
+        _session(id: 's2', start: DateTime(2026, 4, 21, 9)),
+        _session(id: 's3', start: DateTime(2026, 4, 22, 10)),
       ];
-      ctrl.add(sessions);
-
-      final value = await container.read(sessionsByDayProvider.future);
-      expect(value.length, 3);
-    });
-
-    test('filtre par jour sélectionné — retourne uniquement les sessions du jour', () async {
-      final ctrl = StreamController<List<Session>>();
-      final tuesday = DateTime(2026, 4, 21);
       final container = _makeContainer(
         uid: 'user1',
-        stream: ctrl.stream,
+        fetcher: _staticFetcher(sessions),
+      );
+      addTearDown(container.dispose);
+
+      final value = await container.read(sessionsByDayProvider.future);
+      expect(value.sessions.length, 3);
+      expect(value.hasMore, false); // 3 < kSessionsPageSize
+    });
+
+    test('hasMore est true quand la page est pleine (kSessionsPageSize)', () async {
+      final sessions = List.generate(
+        kSessionsPageSize,
+        (i) => _session(id: 's$i', start: DateTime(2026, 4, 20)),
+      );
+      final container = _makeContainer(
+        uid: 'user1',
+        fetcher: (uid, {required selectedDay, required cursor}) async =>
+            (sessions: sessions, nextCursor: 'cursor_token'),
+      );
+      addTearDown(container.dispose);
+
+      final value = await container.read(sessionsByDayProvider.future);
+      expect(value.sessions.length, kSessionsPageSize);
+      expect(value.hasMore, true);
+    });
+
+    test('filtre par jour sélectionné — le fetcher reçoit selectedDay', () async {
+      final tuesday = DateTime(2026, 4, 21);
+      final filtered = [
+        _session(id: 's2', start: DateTime(2026, 4, 21, 9)),
+        _session(id: 's3', start: DateTime(2026, 4, 21, 15)),
+      ];
+      DateTime? capturedDay;
+      final container = _makeContainer(
+        uid: 'user1',
+        fetcher: (uid, {required selectedDay, required cursor}) async {
+          capturedDay = selectedDay;
+          return (sessions: filtered, nextCursor: null);
+        },
         selectedDay: tuesday,
       );
       addTearDown(container.dispose);
-      addTearDown(ctrl.close);
-
-      ctrl.add([
-        _session(id: 's1', start: DateTime(2026, 4, 20, 8, 0)),  // lundi
-        _session(id: 's2', start: DateTime(2026, 4, 21, 9, 0)),  // mardi
-        _session(id: 's3', start: DateTime(2026, 4, 21, 15, 0)), // mardi aussi
-        _session(id: 's4', start: DateTime(2026, 4, 22, 10, 0)), // mercredi
-      ]);
 
       final value = await container.read(sessionsByDayProvider.future);
-      expect(value.length, 2);
-      expect(value.map((s) => s.sessionId), containsAll(['s2', 's3']));
+      expect(capturedDay, tuesday);
+      expect(value.sessions.length, 2);
+      expect(value.hasMore, false);
     });
 
     test('retourne liste vide si aucune session ce jour', () async {
-      final ctrl = StreamController<List<Session>>();
       final container = _makeContainer(
         uid: 'user1',
-        stream: ctrl.stream,
+        fetcher: _staticFetcher([]),
         selectedDay: DateTime(2026, 4, 25),
       );
       addTearDown(container.dispose);
-      addTearDown(ctrl.close);
-
-      ctrl.add([
-        _session(id: 's1', start: DateTime(2026, 4, 20, 8, 0)),
-      ]);
 
       final value = await container.read(sessionsByDayProvider.future);
-      expect(value, isEmpty);
+      expect(value.sessions, isEmpty);
     });
 
-    test('filtre correctement les sessions à minuit et en fin de journée', () async {
-      final ctrl = StreamController<List<Session>>();
-      final wednesday = DateTime(2026, 4, 22);
+    test('loadMore appende les sessions de la page suivante', () async {
+      final page1 = List.generate(
+        kSessionsPageSize,
+        (i) => _session(id: 'p1_s$i', start: DateTime(2026, 4, 20)),
+      );
+      final page2 = [
+        _session(id: 'p2_s0', start: DateTime(2026, 4, 19)),
+      ];
+      int callCount = 0;
       final container = _makeContainer(
         uid: 'user1',
-        stream: ctrl.stream,
-        selectedDay: wednesday,
+        fetcher: (uid, {required selectedDay, required cursor}) async {
+          callCount++;
+          return callCount == 1
+              ? (sessions: page1, nextCursor: 'cursor_1')
+              : (sessions: page2, nextCursor: null);
+        },
       );
       addTearDown(container.dispose);
-      addTearDown(ctrl.close);
 
-      ctrl.add([
-        _session(id: 's1', start: DateTime(2026, 4, 22, 0, 0, 0)),   // minuit
-        _session(id: 's2', start: DateTime(2026, 4, 22, 23, 59, 59)), // fin de journée
-        _session(id: 's3', start: DateTime(2026, 4, 23, 0, 0, 0)),   // lendemain
-      ]);
+      await container.read(sessionsByDayProvider.future);
+      await container.read(sessionsByDayProvider.notifier).loadMore();
 
-      final value = await container.read(sessionsByDayProvider.future);
-      expect(value.length, 2);
-      expect(value.map((s) => s.sessionId), containsAll(['s1', 's2']));
+      final value = container.read(sessionsByDayProvider).requireValue;
+      expect(value.sessions.length, kSessionsPageSize + 1);
+      expect(value.sessions.last.sessionId, 'p2_s0');
+      expect(value.hasMore, false);
+      expect(value.isLoadingMore, false);
     });
 
-    test('se met à jour réactivement quand le stream émet de nouvelles sessions', () async {
-      final ctrl = StreamController<List<Session>>(sync: true);
-      final container = _makeContainer(uid: 'user1', stream: ctrl.stream);
-      addTearDown(container.dispose);
-      addTearDown(ctrl.close);
-
-      final emissions = <List<Session>>[];
-      final sub = container.listen(
-        sessionsByDayProvider,
-        (_, next) => next.whenData(emissions.add),
+    test('loadMore est no-op si hasMore est false', () async {
+      int callCount = 0;
+      final container = _makeContainer(
+        uid: 'user1',
+        fetcher: (uid, {required selectedDay, required cursor}) async {
+          callCount++;
+          return (
+            sessions: [_session(id: 's1', start: DateTime(2026, 4, 20))],
+            nextCursor: null,
+          );
+        },
       );
-      addTearDown(sub.close);
+      addTearDown(container.dispose);
 
-      ctrl.add([_session(id: 's1', start: DateTime(2026, 4, 20))]);
-      await Future<void>.delayed(Duration.zero);
+      await container.read(sessionsByDayProvider.future);
+      await container.read(sessionsByDayProvider.notifier).loadMore();
 
-      ctrl.add([
-        _session(id: 's1', start: DateTime(2026, 4, 20)),
-        _session(id: 's2', start: DateTime(2026, 4, 21)),
-      ]);
-      await Future<void>.delayed(Duration.zero);
-
-      expect(emissions.length, 2);
-      expect(emissions[0].length, 1);
-      expect(emissions[1].length, 2);
+      expect(callCount, 1); // loadMore ignoré car hasMore == false
     });
   });
 }

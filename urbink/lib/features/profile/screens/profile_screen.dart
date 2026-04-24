@@ -139,6 +139,26 @@ class _SessionsList extends ConsumerStatefulWidget {
 
 class _SessionsListState extends ConsumerState<_SessionsList> {
   bool _simpleView = true;
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final pos = _scrollController.position;
+    if (pos.pixels >= pos.maxScrollExtent - 150) {
+      ref.read(sessionsByDayProvider.notifier).loadMore();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +198,8 @@ class _SessionsListState extends ConsumerState<_SessionsList> {
           child: sessionsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (_, _) => const Center(child: Text('Erreur de chargement')),
-            data: (sessions) {
+            data: (pageState) {
+              final sessions = pageState.sessions;
               if (sessions.isEmpty) {
                 return UrbinkEmptyState(
                   emoji: '🗺️',
@@ -188,14 +209,21 @@ class _SessionsListState extends ConsumerState<_SessionsList> {
                 );
               }
               if (_simpleView) {
-                return ListView.separated(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: UrbinkSpacing.xs,
-                  ),
-                  itemCount: sessions.length,
-                  separatorBuilder: (_, _) =>
-                      const Divider(height: 1, indent: UrbinkSpacing.md),
-                  itemBuilder: (ctx, i) => _SortieListTile(session: sessions[i]),
+                return Column(
+                  children: [
+                    Expanded(
+                      child: ListView.separated(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.only(top: UrbinkSpacing.xs),
+                        itemCount: sessions.length,
+                        separatorBuilder: (_, _) =>
+                            const Divider(height: 1, indent: UrbinkSpacing.md),
+                        itemBuilder: (ctx, i) =>
+                            _SortieListTile(session: sessions[i]),
+                      ),
+                    ),
+                    _PaginationFooter(pageState: pageState),
+                  ],
                 );
               }
               // Vue feed — placeholder Epic 9
@@ -219,6 +247,43 @@ class _SessionsListState extends ConsumerState<_SessionsList> {
         ),
       ],
     );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Footer de pagination
+// ---------------------------------------------------------------------------
+
+class _PaginationFooter extends StatelessWidget {
+  const _PaginationFooter({required this.pageState});
+
+  final SessionsPageState pageState;
+
+  @override
+  Widget build(BuildContext context) {
+    if (pageState.isLoadingMore) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: UrbinkSpacing.md),
+        child: Center(
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+    if (!pageState.hasMore && pageState.sessions.isNotEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: UrbinkSpacing.sm),
+        child: Center(
+          child: Text(
+            'Tout affiché',
+            style: TextStyle(
+              fontSize: 12,
+              color: UrbinkColors.navInactive,
+            ),
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 }
 
