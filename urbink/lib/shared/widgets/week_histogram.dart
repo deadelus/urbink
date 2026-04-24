@@ -33,10 +33,10 @@ class WeekHistogram extends ConsumerWidget {
     final selectedDay = ref.watch(selectedHistogramDayProvider);
 
     return weekAsync.when(
-      loading: () => _HistogramSkeleton(),
+      loading: () => const _HistogramSkeleton(),
       error: (_, _) => const SizedBox.shrink(),
       data: (dayStreets) {
-        final now = DateTime.now();
+        final now = ref.watch(nowProvider);
         final start = weekStart(now);
         final days = List.generate(7, (i) => start.add(Duration(days: i)));
         final hasActivity = dayStreets.values.any((c) => c > 0);
@@ -252,6 +252,8 @@ class _EmptyState extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _HistogramSkeleton extends StatelessWidget {
+  const _HistogramSkeleton();
+
   @override
   Widget build(BuildContext context) {
     return Row(

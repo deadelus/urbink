@@ -9,11 +9,13 @@ import 'package:urbink/features/sessions/providers/session_lifecycle_provider.da
 /// Exposé comme `Provider.family` pour être surchargé en test sans Firebase.
 final allSessionsRawStreamProvider =
     Provider.family<Stream<List<Session>>, String>(
+  // TODO(pagination): remplacer .limit par un curseur quand l'historique dépasse 100 sessions.
   (ref, uid) => FirebaseFirestore.instance
       .collection('users')
       .doc(uid)
       .collection('sessions')
       .orderBy('sessionStart', descending: true)
+      .limit(100)
       .snapshots()
       .map(
         (snap) => snap.docs
@@ -35,13 +37,18 @@ final sessionsByDayProvider = StreamProvider<List<Session>>((ref) {
 
   return ref.watch(allSessionsRawStreamProvider(uid)).map((sessions) {
     if (selectedDay == null) return sessions;
+    final filterDay = DateTime(
+      selectedDay.year,
+      selectedDay.month,
+      selectedDay.day,
+    );
     return sessions.where((s) {
       final day = DateTime(
         s.sessionStart.year,
         s.sessionStart.month,
         s.sessionStart.day,
       );
-      return day == selectedDay;
+      return day == filterDay;
     }).toList();
   });
 });

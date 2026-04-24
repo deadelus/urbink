@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/features/map/providers/bottom_sheet_state_provider.dart';
-import 'package:urbink/features/map/providers/zones_layer_provider.dart';
 import 'package:urbink/features/map/widgets/map_layers_section.dart';
 import 'package:urbink/features/session_end/controllers/session_end_flow.dart';
 import 'package:urbink/features/session_end/models/badge_unlock.dart';
@@ -564,7 +563,7 @@ class _SessionActiveContent extends StatelessWidget {
 // Vue sélection du mode (Circuit libre / Itinéraire)
 // ---------------------------------------------------------------------------
 
-class _SelectModeBody extends ConsumerStatefulWidget {
+class _SelectModeBody extends StatefulWidget {
   const _SelectModeBody({
     required this.onSelectItineraire,
     required this.onStart,
@@ -574,10 +573,10 @@ class _SelectModeBody extends ConsumerStatefulWidget {
   final VoidCallback onStart;
 
   @override
-  ConsumerState<_SelectModeBody> createState() => _SelectModeBodyState();
+  State<_SelectModeBody> createState() => _SelectModeBodyState();
 }
 
-class _SelectModeBodyState extends ConsumerState<_SelectModeBody> {
+class _SelectModeBodyState extends State<_SelectModeBody> {
   Map<String, bool> _layerValues = const {
     'monuments': true,
     'quartiers': false,
@@ -587,9 +586,6 @@ class _SelectModeBodyState extends ConsumerState<_SelectModeBody> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    // Sync quartiers toggle avec zonesLayerVisibleProvider (peut être activé via le pill)
-    final zonesVisible = ref.watch(zonesLayerVisibleProvider);
-    final values = {..._layerValues, 'quartiers': zonesVisible};
 
     return ListView(
       padding: const EdgeInsets.only(
@@ -651,12 +647,8 @@ class _SelectModeBodyState extends ConsumerState<_SelectModeBody> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: MapLayersSection(
-            values: values,
-            onChanged: (v) {
-              setState(() => _layerValues = v);
-              ref.read(zonesLayerVisibleProvider.notifier).state =
-                  v['quartiers'] ?? false;
-            },
+            values: _layerValues,
+            onChanged: (v) => setState(() => _layerValues = v),
           ),
         ),
       ],

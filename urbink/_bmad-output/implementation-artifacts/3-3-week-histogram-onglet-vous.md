@@ -14,7 +14,7 @@
 
 - `weekStart(DateTime now)` — helper qui retourne le lundi de la semaine courante à minuit (ex: vendredi 24/04 → lundi 20/04)
 - `weekSessionsRawStreamProvider((uid, weekStart))` — `Provider.family` injectable, query Firestore filtrée sur `sessionStart` entre lundi et lundi+7j
-- `weekSessionsProvider` — `StreamProvider<Map<DateTime, int>>` : agrège les streetIds uniques par jour (sessions sans rues ignorées), retourne `{DateTime(midi) → count}`
+- `weekSessionsProvider` — `StreamProvider.autoDispose<Map<DateTime, int>>` : agrège les streetIds uniques par jour (sessions sans rues ignorées), retourne `{DateTime(minuit) → count}`
 - `selectedHistogramDayProvider` — `StateProvider<DateTime?>` : jour sélectionné dans l'histogramme, null = toutes les sorties. Tap sur le même jour → toggle (reset à null)
 
 ### 2. sessionsListProvider — stream toutes sessions + filtre
@@ -153,8 +153,9 @@ Cas couverts `sessionsByDayProvider` :
 
 ## Status
 
-`review`
+`done`
 
 ## Change Log
 
 - 2026-04-24 : Implémentation Story 3.3 — WeekHistogram + onglet Vous (228 tests ✅)
+- 2026-04-24 : Corrections review (PR#29) — nowProvider, autoDispose, .limit(100), normalisation selectedDay, abréviations FR, découplage toggle quartier

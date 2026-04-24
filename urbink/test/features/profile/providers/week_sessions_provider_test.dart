@@ -32,6 +32,9 @@ ProviderContainer _makeContainer({
 }) {
   return ProviderContainer(
     overrides: [
+      // weekStartDate est un lundi → weekStart(weekStartDate) == weekStartDate,
+      // ce qui garantit que weekSessionsProvider utilise le même override key.
+      nowProvider.overrideWith((ref) => weekStartDate),
       currentUidProvider.overrideWith((ref) => uid),
       if (uid != null)
         weekSessionsRawStreamProvider((uid, weekStartDate)).overrideWith(

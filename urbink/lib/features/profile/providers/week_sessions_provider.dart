@@ -9,6 +9,12 @@ DateTime weekStart(DateTime now) {
   return today.subtract(Duration(days: today.weekday - 1));
 }
 
+/// Date courante injectable — surchargeable en test pour des dates déterministes.
+///
+/// Partagé par [weekSessionsProvider] et [WeekHistogram] pour garantir
+/// que les clés `dayStreets` et les barres utilisent exactement le même `weekStart`.
+final nowProvider = Provider<DateTime>((ref) => DateTime.now());
+
 /// Stream brut injectable des sessions pour la semaine donnée.
 ///
 /// Paramètre : `(uid, weekStart)` — borne inférieure = lundi à minuit,
@@ -40,11 +46,13 @@ final weekSessionsRawStreamProvider =
 /// Clés : minuit du jour (DateTime local).
 /// Valeurs : nombre de streetIds uniques explorés ce jour.
 /// Retourne une Map vide si l'utilisateur n'est pas authentifié.
-final weekSessionsProvider = StreamProvider<Map<DateTime, int>>((ref) {
+/// `.autoDispose` : le provider est recalculé quand l'onglet est réouvert,
+/// ce qui garantit un `weekStart` frais après un changement de semaine.
+final weekSessionsProvider = StreamProvider.autoDispose<Map<DateTime, int>>((ref) {
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return Stream.value({});
 
-  final now = DateTime.now();
+  final now = ref.watch(nowProvider);
   final start = weekStart(now);
 
   return ref.watch(weekSessionsRawStreamProvider((uid, start))).map((sessions) {
