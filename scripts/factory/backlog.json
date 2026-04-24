@@ -7,11 +7,11 @@
     "pr_title": "[Epic 3 · Story 3.3] Composant WeekHistogram + onglet Vous",
     "pr_body_story": "Epic 3 · Story 3.3 — Composant WeekHistogram + onglet Vous (historique personnel)",
     "artifact_name": "3-3-week-histogram-onglet-vous",
-    "status": "pending",
+    "status": "building",
     "pr_number": null,
     "error_count": 0,
     "last_error": null,
-    "started_at": null,
+    "started_at": "2026-04-24T10:32:21Z",
     "built_at": null,
     "done_at": null
   },
