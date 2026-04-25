@@ -9,6 +9,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:urbink/core/providers/active_map_style_provider.dart';
+import 'package:urbink/core/providers/city_config_provider.dart';
 import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/features/map/providers/map_state_provider.dart';
 import 'package:urbink/features/map/providers/zones_layer_provider.dart';
@@ -24,6 +26,7 @@ import 'package:urbink/shared/constants/map_constants.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/constants/typography.dart';
 import 'package:urbink/shared/widgets/filter_chips_row.dart';
+import 'package:urbink/shared/widgets/map_monuments_overlay.dart';
 import 'package:urbink/shared/widgets/map_street_overlay.dart';
 import 'package:urbink/shared/widgets/map_zones_overlay.dart';
 import 'package:urbink/shared/widgets/time_filter_select.dart';
@@ -61,7 +64,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   void initState() {
     super.initState();
     _mapController = ref.read(mapControllerProvider);
-    _loadStyle();
+    _loadStyle(MapConstants.styleUrl(ref.read(activeMapStyleProvider).tileId));
+
+    // Recharge le style si l'utilisateur en change un via les settings.
+    ref.listenManual(activeMapStyleProvider, (prev, next) {
+      if (prev?.tileId != next.tileId) {
+        _loadStyle(MapConstants.styleUrl(next.tileId));
+      }
+    });
 
     _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
       if (!mounted) return;
@@ -130,16 +140,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
   }
 
-  Future<void> _loadStyle() async {
+  Future<void> _loadStyle(String styleUrl) async {
     try {
       // Load providers + sprites via StyleReader (handles URL mapping, auth).
-      final baseStyle = await StyleReader(uri: MapConstants.mapTilerStyleUrl).read();
+      final baseStyle = await StyleReader(uri: styleUrl).read();
 
       // Fetch raw JSON separately to scale down natural-feature label sizes.
       Style style = baseStyle;
       try {
         final response = await http
-            .get(Uri.parse(MapConstants.mapTilerStyleUrl))
+            .get(Uri.parse(styleUrl))
             .timeout(const Duration(seconds: 10));
         if (response.statusCode == 200) {
           final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -215,7 +225,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: MapConstants.initialCenter,
+              initialCenter: ref.watch(cityConfigProvider).center,
               initialZoom: MapConstants.initialZoom,
               minZoom: MapConstants.minZoom,
               maxZoom: MapConstants.maxZoom,
@@ -232,6 +242,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ),
               const MapStreetOverlay(),
               const MapZonesOverlay(),
+              const MapMonumentsOverlay(),
               Align(
                 alignment: Alignment.bottomRight,
                 child: Padding(

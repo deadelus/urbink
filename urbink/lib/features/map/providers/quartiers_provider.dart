@@ -1,14 +1,5 @@
-import 'dart:convert';
+import 'package:urbink/features/map/providers/zones_provider.dart';
 
-import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:urbink/features/map/models/zone_data.dart';
-
-final quartiersProvider = FutureProvider<List<ZoneData>>((ref) async {
-  final raw =
-      await rootBundle.loadString('assets/geo/paris/quartiers.json');
-  final list = jsonDecode(raw) as List<dynamic>;
-  return list
-      .map((e) => ZoneData.fromJson(e as Map<String, dynamic>))
-      .toList();
-});
+/// Alias vers zonesProviderFamily('quartiers').
+/// Conservé pour la compatibilité avec les widgets/tests existants.
+final quartiersProvider = zonesProviderFamily('quartiers');
