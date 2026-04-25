@@ -34,7 +34,7 @@
 
 **Fichier :** `lib/shared/widgets/week_histogram.dart`
 
-- 7 barres L→D générées depuis le lundi de la semaine courante
+- 7 barres `['L', 'Ma', 'Me', 'J', 'V', 'S', 'D']` générées depuis le lundi de la semaine courante
 - Couleurs :
   - Jour courant avec activité → Ocre `#B8832E`
   - Autre jour avec activité → Vert Sauge `#256F4C` (primary)
@@ -43,7 +43,7 @@
 - `AnimatedContainer(200ms, Curves.easeInOut)` sur chaque barre
 - Tap barre active → met à jour `selectedHistogramDayProvider` (toggle)
 - Barre sélectionnée : bordure `onSurface 60%` épaisseur 2dp
-- `_EmptyState` (aucune activité cette semaine) : toutes barres fantômes + message "Ta première sortie cette semaine n'attend que toi" + TextButton "Démarrer" → `context.go('/map')`
+- `_EmptyState` (aucune activité cette semaine) : barres fantômes + `l10n.histogram_empty_message` + TextButton `l10n.histogram_start_cta` → `context.go('/map')`
 - `_HistogramSkeleton` pendant le chargement
 
 ### 4. ProfileScreen — onglet Vous
@@ -64,8 +64,10 @@ ProfileScreen
 
 - `_DayFilterChip` : chip cliquable pour réinitialiser le filtre (×)
 - `_SortieListTile` : ListTile compact — emoji mode · date · `N rues · X km · Xmin`
-- Vue feed : placeholder "Vue feed disponible à l'Epic 9"
-- Empty state via `UrbinkEmptyState` avec message contextuel (global ou par jour)
+- Vue feed : placeholder `l10n.profile_feed_placeholder`
+- Empty state via `UrbinkEmptyState` avec message contextuel (`l10n.profile_no_sessions` / `l10n.profile_no_sessions_day`)
+- Titre section : `l10n.profile_all_sessions` ou `l10n.profile_sessions_of(day)` selon filtre actif
+- Tous les libellés UI via `AppLocalizations` (clés `profile_*`, `histogram_*`)
 - Formatage des dates en français **sans** dépendance locale `intl` : helpers `_formatDayShort`, `_formatDayLong`, `_formatSessionDate` (fonctions top-level)
 
 ### 5. Branchement dans app_router.dart
