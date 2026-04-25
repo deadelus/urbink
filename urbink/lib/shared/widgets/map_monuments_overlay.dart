@@ -6,16 +6,17 @@ import 'package:urbink/features/map/providers/monument_category_filter_provider.
 import 'package:urbink/features/map/providers/monuments_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 
-// Zoom minimum pour afficher les monuments.
-// En-dessous, trop de POIs seraient visibles sur la vue complète de Paris.
+// Zoom minimum — visible seulement au niveau quartier/rue (≥ 14)
 const double _kMonumentsMinZoom = 14.0;
 
-/// Couche flutter_map affichant les monuments parisiens sous forme de cercles.
+/// Couche flutter_map affichant les monuments filtrés par [activeFiltersProvider].
 ///
-/// Trois mécanismes de réduction du nombre de points rendus :
-/// 1. Seuil de zoom — masqué si zoom < 14 (trop de points à vue d'ensemble)
-/// 2. Filtre catégories — [monumentHiddenCategoriesProvider] (bâtiments/hôtels masqués par défaut)
-/// 3. Viewport culling — seuls les monuments dans les bounds visibles sont rendu
+/// Un monument est rendu si :
+///   1. Le toggle "Monuments" du bottom sheet est activé (mapLayersProvider)
+///   2. Le zoom est ≥ 14
+///   3. Sa catégorie Mérimée correspond à au moins un filtre actif
+///      (ex: 'monuments' → Palais, Statues ; 'musees' → Musées & Bibliothèques)
+///   4. Il est dans le viewport courant (viewport culling via MapCamera)
 ///
 /// À placer dans les `children` de [FlutterMap] après [MapZonesOverlay].
 class MapMonumentsOverlay extends ConsumerWidget {
@@ -26,12 +27,14 @@ class MapMonumentsOverlay extends ConsumerWidget {
     final layers = ref.watch(mapLayersProvider);
     if (!(layers['monuments'] ?? true)) return const SizedBox.shrink();
 
-    // MapCamera.of(context) crée une dépendance sur l'inherited model :
-    // le widget se reconstruit automatiquement à chaque pan/zoom.
+    // MapCamera.of(context) crée une dépendance inherited :
+    // rebuild automatique à chaque pan/zoom.
     final camera = MapCamera.of(context);
     if (camera.zoom < _kMonumentsMinZoom) return const SizedBox.shrink();
 
-    final hiddenCategories = ref.watch(monumentHiddenCategoriesProvider);
+    final visibleCategories = ref.watch(visibleMonumentCategoriesProvider);
+    if (visibleCategories.isEmpty) return const SizedBox.shrink();
+
     final monumentsAsync = ref.watch(monumentsProvider);
 
     return monumentsAsync.when(
@@ -42,7 +45,7 @@ class MapMonumentsOverlay extends ConsumerWidget {
         final circles = <CircleMarker>[];
 
         for (final m in monuments) {
-          if (hiddenCategories.contains(m.category)) continue;
+          if (!visibleCategories.contains(m.category)) continue;
           if (!bounds.contains(m.position)) continue;
           circles.add(CircleMarker(
             point: m.position,
