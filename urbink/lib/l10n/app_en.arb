@@ -138,5 +138,18 @@
       "current": { "type": "int" },
       "total": { "type": "int" }
     }
-  }
+  },
+
+  "profile_title": "You",
+  "profile_all_sessions": "All outings",
+  "profile_sessions_of": "Outings from {day}",
+  "profile_error_loading": "Loading error",
+  "profile_no_sessions": "No outings yet — explore your city!",
+  "profile_no_sessions_day": "No outings that day",
+  "profile_all_shown": "All shown",
+  "profile_view_simple": "Simple",
+  "profile_view_feed": "Feed",
+  "profile_feed_placeholder": "Feed view coming in Epic 9",
+  "histogram_empty_message": "Your first outing this week is waiting for you",
+  "histogram_start_cta": "Start"
 }

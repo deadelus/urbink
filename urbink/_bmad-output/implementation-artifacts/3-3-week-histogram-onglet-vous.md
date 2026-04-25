@@ -17,12 +17,18 @@
 - `weekSessionsProvider` — `StreamProvider.autoDispose<Map<DateTime, int>>` : agrège les streetIds uniques par jour (sessions sans rues ignorées), retourne `{DateTime(minuit) → count}`
 - `selectedHistogramDayProvider` — `StateProvider<DateTime?>` : jour sélectionné dans l'histogramme, null = toutes les sorties. Tap sur le même jour → toggle (reset à null)
 
-### 2. sessionsListProvider — stream toutes sessions + filtre
+### 2. sessionsListProvider — liste paginée + filtre
 
 **Fichier :** `lib/features/profile/providers/sessions_list_provider.dart`
 
-- `allSessionsRawStreamProvider(uid)` — `Provider.family` injectable, query Firestore ordonnée par `sessionStart` décroissant
-- `sessionsByDayProvider` — `StreamProvider<List<Session>>` : watch `currentUidProvider` + `selectedHistogramDayProvider`, filtre la liste par jour si sélectionné
+- `SessionsPageFetcher` typedef — signature du fetcher injectable (uid, selectedDay?, cursor?) → `({sessions, nextCursor})`
+- `sessionsPageFetcherProvider` — `Provider<SessionsPageFetcher>` : implémentation Firestore surchargeable en test
+  - Mode `selectedDay != null` : query bornée sur le jour, `.limit(100)`, pas de pagination
+  - Mode `selectedDay == null` : query complète ordonnée desc, `.limit(kSessionsPageSize)`, curseur Firestore
+- `SessionsListNotifier extends AutoDisposeAsyncNotifier<SessionsPageState>` — notifier paginé
+  - Compteur `_gen` : protège contre les résultats périmés si `build()` est relancé pendant un `loadMore()`
+  - `loadMore()` : append la page suivante, no-op si `hasMore == false` ou chargement en cours
+- `sessionsByDayProvider` — `AsyncNotifierProvider.autoDispose<SessionsListNotifier, SessionsPageState>`
 
 ### 3. WeekHistogram — widget 7 barres
 
@@ -75,9 +81,10 @@ Route `/profile` (branche 4 du `StatefulShellRoute`) branchée sur `ProfileScree
 ```
 WeekHistogram (tap barre)
     └─ selectedHistogramDayProvider (StateProvider<DateTime?>)
-         └─ sessionsByDayProvider (filtre)
-              └─ allSessionsRawStreamProvider(uid) → List<Session>
-                    └─ _SessionsList → _SortieListTile
+         └─ sessionsByDayProvider (AsyncNotifierProvider.autoDispose)
+              └─ sessionsPageFetcherProvider → Firestore (paginé ou borné/jour)
+                    └─ SessionsPageState { sessions, hasMore, isLoadingMore }
+                          └─ _SessionsList → _SortieListTile
 
 weekSessionsProvider
     └─ weekSessionsRawStreamProvider((uid, weekStart))
@@ -159,3 +166,4 @@ Cas couverts `sessionsByDayProvider` :
 
 - 2026-04-24 : Implémentation Story 3.3 — WeekHistogram + onglet Vous (228 tests ✅)
 - 2026-04-24 : Corrections review (PR#29) — nowProvider, autoDispose, .limit(100), normalisation selectedDay, abréviations FR, découplage toggle quartier
+- 2026-04-25 : Corrections review Copilot #2 — Ma/Me labels, l10n strings (profile + histogram), zones_hide pill, .limit(100) day query, timeout http.get, artifact mis à jour

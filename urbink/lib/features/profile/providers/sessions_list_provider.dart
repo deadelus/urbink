@@ -62,7 +62,8 @@ final sessionsPageFetcherProvider = Provider<SessionsPageFetcher>((ref) {
           .where('sessionStart',
               isGreaterThanOrEqualTo: Timestamp.fromDate(selectedDay))
           .where('sessionStart', isLessThan: Timestamp.fromDate(dayEnd))
-          .orderBy('sessionStart', descending: true);
+          .orderBy('sessionStart', descending: true)
+          .limit(100);
       final snap = await query.get();
       return (
         sessions: snap.docs

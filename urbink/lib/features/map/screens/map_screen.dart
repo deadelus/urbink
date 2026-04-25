@@ -138,7 +138,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       // Fetch raw JSON separately to scale down natural-feature label sizes.
       Style style = baseStyle;
       try {
-        final response = await http.get(Uri.parse(MapConstants.mapTilerStyleUrl));
+        final response = await http
+            .get(Uri.parse(MapConstants.mapTilerStyleUrl))
+            .timeout(const Duration(seconds: 10));
         if (response.statusCode == 200) {
           final json = jsonDecode(response.body) as Map<String, dynamic>;
           _scaleNaturalLabelSizes(json);

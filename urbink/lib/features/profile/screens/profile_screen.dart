@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/profile/providers/sessions_list_provider.dart';
 import 'package:urbink/features/profile/providers/week_sessions_provider.dart';
 import 'package:urbink/features/sessions/models/session.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/widgets/urbink_empty_state.dart';
@@ -62,7 +63,7 @@ class _ProfileHeader extends ConsumerWidget {
           Row(
             children: [
               Text(
-                'Vous',
+                AppLocalizations.of(context).profile_title,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       color: UrbinkColors.onSurface,
                       fontWeight: FontWeight.w700,
@@ -165,6 +166,7 @@ class _SessionsListState extends ConsumerState<_SessionsList> {
     final sessionsAsync = ref.watch(sessionsByDayProvider);
     final selectedDay = ref.watch(selectedHistogramDayProvider);
 
+    final l10n = AppLocalizations.of(context);
     return Column(
       children: [
         // Toggle Vue simple / Vue feed
@@ -177,8 +179,8 @@ class _SessionsListState extends ConsumerState<_SessionsList> {
             children: [
               Text(
                 selectedDay != null
-                    ? 'Sorties du ${_formatDayLong(selectedDay)}'
-                    : 'Toutes les sorties',
+                    ? l10n.profile_sessions_of(_formatDayLong(selectedDay))
+                    : l10n.profile_all_sessions,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: UrbinkColors.onSurface,
                       fontWeight: FontWeight.w600,
@@ -197,15 +199,15 @@ class _SessionsListState extends ConsumerState<_SessionsList> {
         Expanded(
           child: sessionsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, _) => const Center(child: Text('Erreur de chargement')),
+            error: (_, _) => Center(child: Text(l10n.profile_error_loading)),
             data: (pageState) {
               final sessions = pageState.sessions;
               if (sessions.isEmpty) {
                 return UrbinkEmptyState(
                   emoji: '🗺️',
                   title: selectedDay != null
-                      ? 'Aucune sortie ce jour-là'
-                      : 'Pas encore de sortie — explore ta ville !',
+                      ? l10n.profile_no_sessions_day
+                      : l10n.profile_no_sessions,
                 );
               }
               if (_simpleView) {
@@ -234,7 +236,7 @@ class _SessionsListState extends ConsumerState<_SessionsList> {
                     const Text('📸', style: TextStyle(fontSize: 40)),
                     const SizedBox(height: UrbinkSpacing.sm),
                     Text(
-                      "Vue feed disponible à l'Epic 9",
+                      l10n.profile_feed_placeholder,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: UrbinkColors.navInactive,
                           ),
@@ -270,12 +272,12 @@ class _PaginationFooter extends StatelessWidget {
       );
     }
     if (!pageState.hasMore && pageState.sessions.isNotEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: UrbinkSpacing.sm),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: UrbinkSpacing.sm),
         child: Center(
           child: Text(
-            'Tout affiché',
-            style: TextStyle(
+            AppLocalizations.of(context).profile_all_shown,
+            style: const TextStyle(
               fontSize: 12,
               color: UrbinkColors.navInactive,
             ),
@@ -299,18 +301,19 @@ class _ViewToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         _ToggleButton(
-          label: 'Simple',
+          label: l10n.profile_view_simple,
           icon: Icons.list_rounded,
           isActive: isSimple,
           onTap: () => onChanged(true),
         ),
         const SizedBox(width: 4),
         _ToggleButton(
-          label: 'Feed',
+          label: l10n.profile_view_feed,
           icon: Icons.grid_view_rounded,
           isActive: !isSimple,
           onTap: () => onChanged(false),

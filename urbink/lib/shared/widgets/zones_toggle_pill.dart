@@ -20,7 +20,7 @@ class ZonesTogglePill extends ConsumerWidget {
     final visible = ref.watch(streetsVisibleProvider);
 
     return Semantics(
-      label: l10n.zones_show,
+      label: visible ? l10n.zones_hide : l10n.zones_show,
       button: true,
       child: _ScaleTap(
         onTap: () {
@@ -63,7 +63,7 @@ class ZonesTogglePill extends ConsumerWidget {
                   fontWeight: FontWeight.w600,
                   color: visible ? Colors.white : UrbinkColors.primary,
                 ),
-                child: Text(l10n.zones_show),
+                child: Text(visible ? l10n.zones_hide : l10n.zones_show),
               ),
             ],
           ),

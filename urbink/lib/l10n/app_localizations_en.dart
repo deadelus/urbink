@@ -379,4 +379,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String celeb_progress(int current, int total) {
     return '$current / $total';
   }
+
+  @override
+  String get profile_title => 'You';
+
+  @override
+  String get profile_all_sessions => 'All outings';
+
+  @override
+  String profile_sessions_of(String day) {
+    return 'Outings from $day';
+  }
+
+  @override
+  String get profile_error_loading => 'Loading error';
+
+  @override
+  String get profile_no_sessions => 'No outings yet — explore your city!';
+
+  @override
+  String get profile_no_sessions_day => 'No outings that day';
+
+  @override
+  String get profile_all_shown => 'All shown';
+
+  @override
+  String get profile_view_simple => 'Simple';
+
+  @override
+  String get profile_view_feed => 'Feed';
+
+  @override
+  String get profile_feed_placeholder => 'Feed view coming in Epic 9';
+
+  @override
+  String get histogram_empty_message =>
+      'Your first outing this week is waiting for you';
+
+  @override
+  String get histogram_start_cta => 'Start';
 }

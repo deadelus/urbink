@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/features/profile/providers/week_sessions_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 
@@ -231,7 +232,7 @@ class _EmptyState extends StatelessWidget {
         ),
         const SizedBox(height: UrbinkSpacing.md),
         Text(
-          "Ta première sortie cette semaine n'attend que toi",
+          AppLocalizations.of(context).histogram_empty_message,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: UrbinkColors.navInactive,
               ),
@@ -240,7 +241,7 @@ class _EmptyState extends StatelessWidget {
         const SizedBox(height: UrbinkSpacing.sm),
         TextButton(
           onPressed: () => context.go(AppRoutes.map),
-          child: const Text('Démarrer'),
+          child: Text(AppLocalizations.of(context).histogram_start_cta),
         ),
       ],
     );
@@ -297,6 +298,6 @@ class _HistogramSkeleton extends StatelessWidget {
 bool _isSameDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
 
-const _dayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+const _dayLabels = ['L', 'Ma', 'Me', 'J', 'V', 'S', 'D'];
 
 String _dayLabel(DateTime day) => _dayLabels[day.weekday - 1];
