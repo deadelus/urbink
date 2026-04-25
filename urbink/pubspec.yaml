@@ -43,6 +43,7 @@ dependencies:
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
   vector_map_tiles: ^8.0.0
+  vector_tile_renderer: ^5.2.0
 
   # Firebase
   firebase_core: ^3.8.0

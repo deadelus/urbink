@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/features/map/providers/bottom_sheet_state_provider.dart';
+import 'package:urbink/features/map/providers/zones_layer_provider.dart';
 import 'package:urbink/features/map/widgets/map_layers_section.dart';
 import 'package:urbink/features/session_end/controllers/session_end_flow.dart';
 import 'package:urbink/features/session_end/models/badge_unlock.dart';
@@ -563,7 +564,7 @@ class _SessionActiveContent extends StatelessWidget {
 // Vue sélection du mode (Circuit libre / Itinéraire)
 // ---------------------------------------------------------------------------
 
-class _SelectModeBody extends StatefulWidget {
+class _SelectModeBody extends ConsumerStatefulWidget {
   const _SelectModeBody({
     required this.onSelectItineraire,
     required this.onStart,
@@ -573,15 +574,18 @@ class _SelectModeBody extends StatefulWidget {
   final VoidCallback onStart;
 
   @override
-  State<_SelectModeBody> createState() => _SelectModeBodyState();
+  ConsumerState<_SelectModeBody> createState() => _SelectModeBodyState();
 }
 
-class _SelectModeBodyState extends State<_SelectModeBody> {
-  Map<String, bool> _layerValues = const {
-    'monuments': true,
-    'quartiers': false,
-    'photos': false,
-  };
+class _SelectModeBodyState extends ConsumerState<_SelectModeBody> {
+  late Map<String, bool> _layerValues;
+
+  @override
+  void initState() {
+    super.initState();
+    final quartiersVisible = ref.read(zonesLayerVisibleProvider);
+    _layerValues = {'monuments': true, 'quartiers': quartiersVisible, 'photos': false};
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -648,7 +652,11 @@ class _SelectModeBodyState extends State<_SelectModeBody> {
           padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: MapLayersSection(
             values: _layerValues,
-            onChanged: (v) => setState(() => _layerValues = v),
+            onChanged: (v) {
+              setState(() => _layerValues = v);
+              ref.read(zonesLayerVisibleProvider.notifier).state =
+                  v['quartiers'] ?? false;
+            },
           ),
         ),
       ],
