@@ -757,6 +757,78 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'{current} / {total}'**
   String celeb_progress(int current, int total);
+
+  /// Titre de l'onglet Vous (historique personnel)
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous'**
+  String get profile_title;
+
+  /// Titre section liste — aucun filtre jour
+  ///
+  /// In fr, this message translates to:
+  /// **'Toutes les sorties'**
+  String get profile_all_sessions;
+
+  /// Titre section liste — filtrée par jour
+  ///
+  /// In fr, this message translates to:
+  /// **'Sorties du {day}'**
+  String profile_sessions_of(String day);
+
+  /// Message d'erreur liste sorties
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur de chargement'**
+  String get profile_error_loading;
+
+  /// Empty state liste — aucune sortie globale
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas encore de sortie — explore ta ville !'**
+  String get profile_no_sessions;
+
+  /// Empty state liste — aucune sortie ce jour
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune sortie ce jour-là'**
+  String get profile_no_sessions_day;
+
+  /// Footer pagination — toutes les sorties chargées
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout affiché'**
+  String get profile_all_shown;
+
+  /// Label toggle vue simple
+  ///
+  /// In fr, this message translates to:
+  /// **'Simple'**
+  String get profile_view_simple;
+
+  /// Label toggle vue feed
+  ///
+  /// In fr, this message translates to:
+  /// **'Feed'**
+  String get profile_view_feed;
+
+  /// Placeholder vue feed (à venir)
+  ///
+  /// In fr, this message translates to:
+  /// **'Vue feed disponible à l\'Epic 9'**
+  String get profile_feed_placeholder;
+
+  /// Message empty state histogramme hebdomadaire
+  ///
+  /// In fr, this message translates to:
+  /// **'Ta première sortie cette semaine n\'attend que toi'**
+  String get histogram_empty_message;
+
+  /// CTA empty state histogramme — démarrer une sortie
+  ///
+  /// In fr, this message translates to:
+  /// **'Démarrer'**
+  String get histogram_start_cta;
 }
 
 class _AppLocalizationsDelegate

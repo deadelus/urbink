@@ -1,6 +1,9 @@
+import 'dart:math' show min, max;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:urbink/features/map/models/zone_data.dart';
 import 'package:urbink/features/map/providers/arrondissements_provider.dart';
 import 'package:urbink/features/map/providers/quartiers_provider.dart';
@@ -45,14 +48,16 @@ class MapZonesOverlay extends ConsumerWidget {
               labelSize: 11.0,
               uppercase: false,
               labelBuilder: _arrLabel,
+              dynamicWidth: false,
             )
           : _ZonesLayer(
               key: const ValueKey('qrt'),
               provider: quartiersProvider,
               strokeWidth: 1.4,
-              labelSize: 9.0,
+              labelSize: 9.5,
               uppercase: true,
               labelBuilder: _qrtLabel,
+              dynamicWidth: true,
             ),
     );
   }
@@ -70,6 +75,7 @@ class _ZonesLayer extends ConsumerWidget {
   final double strokeWidth;
   final double labelSize;
   final bool uppercase;
+  final bool dynamicWidth;
   final String Function(ZoneData) labelBuilder;
 
   const _ZonesLayer({
@@ -79,10 +85,12 @@ class _ZonesLayer extends ConsumerWidget {
     required this.labelSize,
     required this.uppercase,
     required this.labelBuilder,
+    required this.dynamicWidth,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final camera = MapCamera.of(context);
     final zonesAsync = ref.watch(provider);
     return zonesAsync.when(
       data: (zones) => Stack(
@@ -102,29 +110,33 @@ class _ZonesLayer extends ConsumerWidget {
           ),
           MarkerLayer(
             rotate: true,
-            markers: zones
-                .map(
-                  (z) => Marker(
-                    point: z.centroid,
-                    width: 90,
-                    height: 22,
-                    alignment: Alignment.center,
-                    child: Text(
-                      labelBuilder(z),
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                        fontSize: labelSize,
-                        color: _kLabel,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+            markers: zones.map((z) {
+              final (w, h) = dynamicWidth
+                  ? _zoneBounds(camera, z.polygon)
+                  : (90.0, 22.0);
+              return Marker(
+                point: z.centroid,
+                width: w,
+                height: h,
+                alignment: Alignment.center,
+                child: Text(
+                  labelBuilder(z),
+                  textAlign: TextAlign.center,
+                  softWrap: dynamicWidth,
+                  overflow: dynamicWidth
+                      ? TextOverflow.visible
+                      : TextOverflow.ellipsis,
+                  maxLines: dynamicWidth ? 3 : 1,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w600,
+                    fontSize: labelSize,
+                    color: _kLabel,
+                    letterSpacing: 0.4,
                   ),
-                )
-                .toList(),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -132,4 +144,25 @@ class _ZonesLayer extends ConsumerWidget {
       error: (_, _) => const SizedBox.shrink(),
     );
   }
+}
+
+/// Computes the screen-space bounding box of a polygon at the current camera.
+/// Width is clamped to [60, 220], height to [20, 80].
+(double, double) _zoneBounds(MapCamera camera, List<LatLng> polygon) {
+  if (polygon.isEmpty) return (80.0, 30.0);
+  var minLat = polygon[0].latitude;
+  var maxLat = minLat;
+  var minLng = polygon[0].longitude;
+  var maxLng = minLng;
+  for (final p in polygon) {
+    minLat = min(minLat, p.latitude);
+    maxLat = max(maxLat, p.latitude);
+    minLng = min(minLng, p.longitude);
+    maxLng = max(maxLng, p.longitude);
+  }
+  final sw = camera.latLngToScreenPoint(LatLng(minLat, minLng));
+  final ne = camera.latLngToScreenPoint(LatLng(maxLat, maxLng));
+  final w = (ne.x - sw.x).abs().clamp(60.0, 220.0);
+  final h = (sw.y - ne.y).abs().clamp(20.0, 80.0);
+  return (w, h);
 }

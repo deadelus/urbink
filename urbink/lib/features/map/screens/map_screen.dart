@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert' show jsonDecode;
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/features/map/providers/map_state_provider.dart';
 import 'package:urbink/features/map/providers/zones_layer_provider.dart';
@@ -28,6 +30,7 @@ import 'package:urbink/shared/widgets/time_filter_select.dart';
 import 'package:urbink/shared/widgets/urbink_snack_bar.dart';
 import 'package:urbink/shared/widgets/zones_toggle_pill.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
+import 'package:vector_tile_renderer/vector_tile_renderer.dart' show ThemeReader;
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key, this.hideSearchBar = false, this.showBottomUi = true});
@@ -129,9 +132,32 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   Future<void> _loadStyle() async {
     try {
-      final style = await StyleReader(
-        uri: MapConstants.mapTilerStyleUrl,
-      ).read();
+      // Load providers + sprites via StyleReader (handles URL mapping, auth).
+      final baseStyle = await StyleReader(uri: MapConstants.mapTilerStyleUrl).read();
+
+      // Fetch raw JSON separately to scale down natural-feature label sizes.
+      Style style = baseStyle;
+      try {
+        final response = await http
+            .get(Uri.parse(MapConstants.mapTilerStyleUrl))
+            .timeout(const Duration(seconds: 10));
+        if (response.statusCode == 200) {
+          final json = jsonDecode(response.body) as Map<String, dynamic>;
+          _scaleNaturalLabelSizes(json);
+          final modifiedTheme = ThemeReader().read(json);
+          style = Style(
+            name: baseStyle.name,
+            theme: modifiedTheme,
+            providers: baseStyle.providers,
+            sprites: baseStyle.sprites,
+            center: baseStyle.center,
+            zoom: baseStyle.zoom,
+          );
+        }
+      } catch (_) {
+        // Fall back to unmodified style on any error.
+      }
+
       if (mounted) setState(() { _mapStyle = style; _styleLoading = false; });
     } catch (e, s) {
       debugPrint('MapStyle loading error: ${e.runtimeType}');
@@ -265,6 +291,70 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ),
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Style post-processing — scale down natural/water feature label sizes.
+// Reduces visual clutter for large area labels (parks, lakes, forests).
+// ---------------------------------------------------------------------------
+
+// Le renderer fait floor() sur minzoom → 14.0 donne floor=14, ce qui garantit
+// que les labels n'apparaissent qu'à zoom entier ≥ 14 (mode quartier uniquement).
+const double _kNaturalLabelMinZoom = 14.0;
+
+void _scaleNaturalLabelSizes(Map<String, dynamic> styleJson) {
+  final layers = styleJson['layers'];
+  if (layers is! List) return;
+  for (final layer in layers) {
+    if (layer is! Map<String, dynamic>) continue;
+    if (layer['type'] != 'symbol') continue;
+    final src = (layer['source-layer'] as String?) ?? '';
+    final id = (layer['id'] as String?) ?? '';
+    final currentMin = (layer['minzoom'] as num?)?.toDouble() ?? 0.0;
+
+    final isNatural = _isNaturalLabelLayer(src, id);
+    // Toute couche symbol visible avant zoom 12 est un label de grande zone
+    // (lac, parc, forêt…) — même si son nom de couche ne correspond pas.
+    final appearsVeryEarly = currentMin < 12.0;
+
+    if (!isNatural && !appearsVeryEarly) continue;
+
+    if (currentMin < _kNaturalLabelMinZoom) {
+      layer['minzoom'] = _kNaturalLabelMinZoom;
+    }
+
+    if (isNatural) {
+      final layout = layer['layout'];
+      if (layout is Map<String, dynamic>) {
+        final size = layout['text-size'];
+        if (size != null) layout['text-size'] = _scaleTextSize(size, 0.65);
+      }
+    }
+  }
+}
+
+bool _isNaturalLabelLayer(String src, String id) {
+  const keywords = ['water', 'natural', 'park', 'landuse', 'landcover', 'land'];
+  for (final kw in keywords) {
+    if (src.contains(kw) || id.contains(kw)) return true;
+  }
+  return false;
+}
+
+dynamic _scaleTextSize(dynamic size, double factor) {
+  if (size is num) return size.toDouble() * factor;
+  if (size is List) {
+    final r = List<dynamic>.from(size);
+    if (r.isNotEmpty && r[0] == 'interpolate') {
+      // ["interpolate", method, ["zoom"], z0, v0, z1, v1, ...]
+      // output values at indices 4, 6, 8, …
+      for (var i = 4; i < r.length; i += 2) {
+        if (r[i] is num) r[i] = (r[i] as num).toDouble() * factor;
+      }
+      return r;
+    }
+  }
+  return size;
 }
 
 // ---------------------------------------------------------------------------

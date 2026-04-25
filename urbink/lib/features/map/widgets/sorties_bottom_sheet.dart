@@ -578,18 +578,18 @@ class _SelectModeBody extends ConsumerStatefulWidget {
 }
 
 class _SelectModeBodyState extends ConsumerState<_SelectModeBody> {
-  Map<String, bool> _layerValues = const {
-    'monuments': true,
-    'quartiers': false,
-    'photos': false,
-  };
+  late Map<String, bool> _layerValues;
+
+  @override
+  void initState() {
+    super.initState();
+    final quartiersVisible = ref.read(zonesLayerVisibleProvider);
+    _layerValues = {'monuments': true, 'quartiers': quartiersVisible, 'photos': false};
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    // Sync quartiers toggle avec zonesLayerVisibleProvider (peut être activé via le pill)
-    final zonesVisible = ref.watch(zonesLayerVisibleProvider);
-    final values = {..._layerValues, 'quartiers': zonesVisible};
 
     return ListView(
       padding: const EdgeInsets.only(
@@ -651,7 +651,7 @@ class _SelectModeBodyState extends ConsumerState<_SelectModeBody> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: MapLayersSection(
-            values: values,
+            values: _layerValues,
             onChanged: (v) {
               setState(() => _layerValues = v);
               ref.read(zonesLayerVisibleProvider.notifier).state =

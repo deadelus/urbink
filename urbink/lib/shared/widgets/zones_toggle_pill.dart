@@ -2,39 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/map/providers/streets_visible_provider.dart';
 import 'package:urbink/features/map/providers/time_filter_provider.dart';
-import 'package:urbink/features/map/providers/zones_layer_provider.dart';
-import 'package:urbink/features/map/providers/zones_zoom_provider.dart';
 import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/typography.dart';
 
-const double _kZoomThreshold = 13.5;
-
-/// Pill flottant bas-gauche — active/désactive l'overlay de zones (arrondissements
-/// ou quartiers) selon le zoom courant.
+/// Pill flottant bas-gauche — active/désactive l'overlay des rues explorées.
 ///
-/// Label inactif : l10n [zones_show].
-/// Label actif   : "Zones · Arr." (zoom < 13.5) ou "Zones · Quartier" (zoom ≥ 13.5).
+/// Contrôle uniquement [streetsVisibleProvider].
+/// Les délimitations de zones (arrondissements / quartiers) sont gérées
+/// indépendamment par le toggle "Délimitations quartiers" de la bottom sheet.
 class ZonesTogglePill extends ConsumerWidget {
   const ZonesTogglePill({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final visible = ref.watch(zonesLayerVisibleProvider);
-    final zoom = ref.watch(zonesZoomProvider);
-    final isArrondissement = zoom < _kZoomThreshold;
-
-    final activeLabel =
-        isArrondissement ? 'Zones · Arr.' : 'Zones · Quartier';
+    final visible = ref.watch(streetsVisibleProvider);
 
     return Semantics(
-      label: visible ? activeLabel : l10n.zones_show,
+      label: visible ? l10n.zones_hide : l10n.zones_show,
       button: true,
       child: _ScaleTap(
         onTap: () {
           final next = !visible;
-          ref.read(zonesLayerVisibleProvider.notifier).state = next;
           ref.read(streetsVisibleProvider.notifier).state = next;
           if (next) ref.read(timeFilterProvider.notifier).select(TimeFilter.today);
         },
@@ -73,7 +63,7 @@ class ZonesTogglePill extends ConsumerWidget {
                   fontWeight: FontWeight.w600,
                   color: visible ? Colors.white : UrbinkColors.primary,
                 ),
-                child: Text(visible ? activeLabel : l10n.zones_show),
+                child: Text(visible ? l10n.zones_hide : l10n.zones_show),
               ),
             ],
           ),

@@ -382,5 +382,46 @@
       "current": { "type": "int" },
       "total": { "type": "int" }
     }
-  }
+  },
+
+  "profile_title": "Vous",
+  "@profile_title": { "description": "Titre de l'onglet Vous (historique personnel)" },
+
+  "profile_all_sessions": "Toutes les sorties",
+  "@profile_all_sessions": { "description": "Titre section liste — aucun filtre jour" },
+
+  "profile_sessions_of": "Sorties du {day}",
+  "@profile_sessions_of": {
+    "description": "Titre section liste — filtrée par jour",
+    "placeholders": {
+      "day": { "type": "String" }
+    }
+  },
+
+  "profile_error_loading": "Erreur de chargement",
+  "@profile_error_loading": { "description": "Message d'erreur liste sorties" },
+
+  "profile_no_sessions": "Pas encore de sortie — explore ta ville !",
+  "@profile_no_sessions": { "description": "Empty state liste — aucune sortie globale" },
+
+  "profile_no_sessions_day": "Aucune sortie ce jour-là",
+  "@profile_no_sessions_day": { "description": "Empty state liste — aucune sortie ce jour" },
+
+  "profile_all_shown": "Tout affiché",
+  "@profile_all_shown": { "description": "Footer pagination — toutes les sorties chargées" },
+
+  "profile_view_simple": "Simple",
+  "@profile_view_simple": { "description": "Label toggle vue simple" },
+
+  "profile_view_feed": "Feed",
+  "@profile_view_feed": { "description": "Label toggle vue feed" },
+
+  "profile_feed_placeholder": "Vue feed disponible à l'Epic 9",
+  "@profile_feed_placeholder": { "description": "Placeholder vue feed (à venir)" },
+
+  "histogram_empty_message": "Ta première sortie cette semaine n'attend que toi",
+  "@histogram_empty_message": { "description": "Message empty state histogramme hebdomadaire" },
+
+  "histogram_start_cta": "Démarrer",
+  "@histogram_start_cta": { "description": "CTA empty state histogramme — démarrer une sortie" }
 }
