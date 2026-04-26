@@ -32,12 +32,13 @@ final quartiersProgressionProvider =
 
   final sessionsStream =
       ref.watch(sessionsStreetIdsStreamProvider((uid, null)));
+  final streetsMapFuture = ref.watch(arrondissementStreetsProvider.future);
+  final zonesFuture =
+      ref.watch(zonesProviderFamily('arrondissements').future);
 
   return sessionsStream.asyncMap((sessions) async {
-    final streetsMap =
-        await ref.read(arrondissementStreetsProvider.future);
-    final zones =
-        await ref.read(zonesProviderFamily('arrondissements').future);
+    final streetsMap = await streetsMapFuture;
+    final zones = await zonesFuture;
 
     final nameMap = {for (final z in zones) z.id: z.name};
     final explored = sessions.expand((ids) => ids).toSet();
@@ -52,7 +53,12 @@ final quartiersProgressionProvider =
         exploredStreets: totalSet.intersection(explored).length,
       );
     }).toList()
-      ..sort((a, b) => b.completionPercent.compareTo(a.completionPercent));
+      ..sort((a, b) {
+        final byCompletion =
+            b.completionPercent.compareTo(a.completionPercent);
+        if (byCompletion != 0) return byCompletion;
+        return a.id.compareTo(b.id);
+      });
 
     return progressions;
   });
