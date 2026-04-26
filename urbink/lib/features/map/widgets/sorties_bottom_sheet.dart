@@ -651,6 +651,7 @@ class _SelectModeBodyState extends ConsumerState<_SelectModeBody> {
               ref.read(mapLayersProvider.notifier).state = {
                 'monuments': v['monuments'] ?? true,
                 'photos': v['photos'] ?? false,
+                'quartiers': v['quartiers'] ?? false,
               };
               ref.read(zonesLayerVisibleProvider.notifier).state =
                   v['quartiers'] ?? false;

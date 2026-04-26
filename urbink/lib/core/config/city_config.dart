@@ -49,7 +49,7 @@ class CityConfig {
         return level;
       }
     }
-    return zoneLevels.isNotEmpty ? zoneLevels.first : null;
+    return null;
   }
 }
 
@@ -70,7 +70,7 @@ final citiesRegistry = <String, CityConfig>{
         strokeWidth: 1.2,
         labelSize: 11.0,
         dynamicWidth: false,
-        // "14ème arrondissement" → "14", "1er arrondissement" → "1"
+        // "1er" → "1", "2e" → "2", "14e" → "14"
         labelBuilder: (name) => name.replaceAll(RegExp(r'[erème]+$'), ''),
       ),
       ZoneLevelConfig(

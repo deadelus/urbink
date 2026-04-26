@@ -10,7 +10,7 @@ import 'package:urbink/features/map/models/zone_data.dart';
 ///
 /// Utilisé par [MapZonesOverlay] via [ZoneLevelConfig.assetKey].
 final zonesProviderFamily =
-    FutureProvider.autoDispose.family<List<ZoneData>, String>((ref, assetKey) async {
+    FutureProvider.family<List<ZoneData>, String>((ref, assetKey) async {
   final city = ref.watch(currentCityProvider);
   final raw = await rootBundle.loadString('assets/geo/$city/$assetKey.json');
   final list = jsonDecode(raw) as List<dynamic>;

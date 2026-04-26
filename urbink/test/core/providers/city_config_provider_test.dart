@@ -31,19 +31,16 @@ void main() {
       final c = ProviderContainer();
       addTearDown(c.dispose);
 
-      // Ajouter une ville de test dans le registre
       citiesRegistry['test_city'] = CityConfig(
         id: 'test_city',
         center: citiesRegistry['paris']!.center,
         initialZoom: 12.0,
         zoneLevels: const [],
       );
+      addTearDown(() => citiesRegistry.remove('test_city'));
 
       c.read(currentCityProvider.notifier).state = 'test_city';
       expect(c.read(cityConfigProvider).id, 'test_city');
-
-      // Nettoyage
-      citiesRegistry.remove('test_city');
     });
   });
 }

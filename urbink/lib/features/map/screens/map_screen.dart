@@ -226,7 +226,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             mapController: _mapController,
             options: MapOptions(
               initialCenter: ref.watch(cityConfigProvider).center,
-              initialZoom: MapConstants.initialZoom,
+              initialZoom: ref.watch(cityConfigProvider).initialZoom,
               minZoom: MapConstants.minZoom,
               maxZoom: MapConstants.maxZoom,
               onMapEvent: (event) {
