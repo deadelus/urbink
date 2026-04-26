@@ -1,10 +1,6 @@
-import 'package:latlong2/latlong.dart';
-
 abstract final class MapConstants {
-  /// Centre initial de la carte : Paris.
-  static const LatLng initialCenter = LatLng(48.8566, 2.3522);
-
-  /// Zoom initial affiché au démarrage.
+  /// Zoom initial affiché au démarrage (commun à toutes les villes).
+  /// Le centre initial est défini par [CityConfig.center] dans le registre des villes.
   static const double initialZoom = 13.0;
 
   /// Zoom minimum autorisé (vue grande région).
@@ -17,13 +13,10 @@ abstract final class MapConstants {
   static const String _mapTilerKey =
       String.fromEnvironment('MAPTILER_KEY');
 
-  /// ID de la map MapTiler.
-  static const String _mapTilerId =
-      '019d8380-71b7-7e7b-9a8e-db45546c20e5';
-
-  /// URL style.json MapTiler (vector tiles).
-  static String get mapTilerStyleUrl =>
-      'https://api.maptiler.com/maps/$_mapTilerId/style.json?key=$_mapTilerKey';
+  /// URL style.json pour un ID de style MapTiler donné.
+  /// Le style actif est fourni par [activeMapStyleProvider].
+  static String styleUrl(String tileId) =>
+      'https://api.maptiler.com/maps/$tileId/style.json?key=$_mapTilerKey';
 
   /// User-Agent envoyé aux serveurs de tuiles (conformité politique OSM).
   static const String userAgent = 'com.urbink.app';

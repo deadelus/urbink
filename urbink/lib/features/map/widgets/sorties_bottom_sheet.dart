@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/features/map/providers/bottom_sheet_state_provider.dart';
+import 'package:urbink/features/map/providers/map_layers_provider.dart';
 import 'package:urbink/features/map/providers/zones_layer_provider.dart';
 import 'package:urbink/features/map/widgets/map_layers_section.dart';
 import 'package:urbink/features/session_end/controllers/session_end_flow.dart';
@@ -578,18 +579,12 @@ class _SelectModeBody extends ConsumerStatefulWidget {
 }
 
 class _SelectModeBodyState extends ConsumerState<_SelectModeBody> {
-  late Map<String, bool> _layerValues;
-
-  @override
-  void initState() {
-    super.initState();
-    final quartiersVisible = ref.read(zonesLayerVisibleProvider);
-    _layerValues = {'monuments': true, 'quartiers': quartiersVisible, 'photos': false};
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final layers = ref.watch(mapLayersProvider);
+    final quartiersVisible = ref.watch(zonesLayerVisibleProvider);
+    final layerValues = {...layers, 'quartiers': quartiersVisible};
 
     return ListView(
       padding: const EdgeInsets.only(
@@ -651,9 +646,13 @@ class _SelectModeBodyState extends ConsumerState<_SelectModeBody> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
           child: MapLayersSection(
-            values: _layerValues,
+            values: layerValues,
             onChanged: (v) {
-              setState(() => _layerValues = v);
+              ref.read(mapLayersProvider.notifier).state = {
+                'monuments': v['monuments'] ?? true,
+                'photos': v['photos'] ?? false,
+                'quartiers': v['quartiers'] ?? false,
+              };
               ref.read(zonesLayerVisibleProvider.notifier).state =
                   v['quartiers'] ?? false;
             },

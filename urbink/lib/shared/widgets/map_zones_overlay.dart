@@ -4,28 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:urbink/core/providers/city_config_provider.dart';
 import 'package:urbink/features/map/models/zone_data.dart';
-import 'package:urbink/features/map/providers/arrondissements_provider.dart';
-import 'package:urbink/features/map/providers/quartiers_provider.dart';
 import 'package:urbink/features/map/providers/zones_layer_provider.dart';
+import 'package:urbink/features/map/providers/zones_provider.dart';
 import 'package:urbink/features/map/providers/zones_zoom_provider.dart';
-
-// Seuil de bascule arrondissements ↔ quartiers (spec V1)
-const double _kZoomThreshold = 13.5;
 
 // Couleurs spec V1 — #0F172A @ 35% opacité
 const Color _kStroke = Color(0x590F172A);
 // Labels — #64748B (token muted)
 const Color _kLabel = Color(0xFF64748B);
 
-/// Couche flutter_map affichant les délimitations de zones parisiennes.
+/// Couche flutter_map affichant les délimitations de zones géographiques.
 ///
-/// - Zoom < 13.5 → 20 arrondissements, strokeWidth 1.2, labels numériques
-/// - Zoom ≥ 13.5 → ~110 quartiers, strokeWidth 1.4, labels en MAJUSCULES
-///
-/// Contour pointillé (StrokePattern.dashed [3, 2.5]), aucun remplissage.
-/// Crossfade 250ms à la bascule de zoom.
-/// Aucune interaction (purement informatif).
+/// Les niveaux et seuils de zoom sont définis par [CityConfig.zoneLevels],
+/// ce qui rend ce widget agnostique à la ville et à ses subdivisions.
 ///
 /// À placer dans les `children` de [FlutterMap] après [VectorTileLayer].
 class MapZonesOverlay extends ConsumerWidget {
@@ -36,36 +29,25 @@ class MapZonesOverlay extends ConsumerWidget {
     if (!ref.watch(zonesLayerVisibleProvider)) return const SizedBox.shrink();
 
     final zoom = ref.watch(zonesZoomProvider);
-    final isArrondissement = zoom < _kZoomThreshold;
+    final cityConfig = ref.watch(cityConfigProvider);
+    final level = cityConfig.activeLevelFor(zoom);
+
+    if (level == null) return const SizedBox.shrink();
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),
-      child: isArrondissement
-          ? _ZonesLayer(
-              key: const ValueKey('arr'),
-              provider: arrondissementsProvider,
-              strokeWidth: 1.2,
-              labelSize: 11.0,
-              uppercase: false,
-              labelBuilder: _arrLabel,
-              dynamicWidth: false,
-            )
-          : _ZonesLayer(
-              key: const ValueKey('qrt'),
-              provider: quartiersProvider,
-              strokeWidth: 1.4,
-              labelSize: 9.5,
-              uppercase: true,
-              labelBuilder: _qrtLabel,
-              dynamicWidth: true,
-            ),
+      child: _ZonesLayer(
+        key: ValueKey(level.assetKey),
+        provider: zonesProviderFamily(level.assetKey),
+        strokeWidth: level.strokeWidth,
+        labelSize: level.labelSize,
+        dynamicWidth: level.dynamicWidth,
+        labelBuilder: level.labelBuilder != null
+            ? (z) => level.labelBuilder!(z.name)
+            : (z) => z.name,
+      ),
     );
   }
-
-  static String _arrLabel(ZoneData z) =>
-      z.name.replaceAll(RegExp(r'[erème]+$'), '');
-
-  static String _qrtLabel(ZoneData z) => z.name.toUpperCase();
 }
 
 // ---------------------------------------------------------------------------
@@ -74,7 +56,6 @@ class _ZonesLayer extends ConsumerWidget {
   final ProviderListenable<AsyncValue<List<ZoneData>>> provider;
   final double strokeWidth;
   final double labelSize;
-  final bool uppercase;
   final bool dynamicWidth;
   final String Function(ZoneData) labelBuilder;
 
@@ -83,9 +64,8 @@ class _ZonesLayer extends ConsumerWidget {
     required this.provider,
     required this.strokeWidth,
     required this.labelSize,
-    required this.uppercase,
-    required this.labelBuilder,
     required this.dynamicWidth,
+    required this.labelBuilder,
   });
 
   @override
