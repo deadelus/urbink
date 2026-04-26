@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:urbink/features/gamification/screens/challenges_screen.dart';
 import 'package:urbink/features/map/providers/streets_visible_provider.dart';
 import 'package:urbink/features/map/screens/filters_screen.dart';
 import 'package:urbink/features/map/screens/map_screen.dart';
@@ -102,13 +103,13 @@ final GoRouter appRouter = GoRouter(
             ),
           ],
         ),
-        // 3 — Badges
+        // 3 — Challenges (onglet Badges)
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: AppRoutes.badges,
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: _PlaceholderScreen(label: 'Badges'),
+                child: ChallengesScreen(),
               ),
             ),
           ],
