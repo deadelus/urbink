@@ -39,6 +39,18 @@ const poiFilterCategories = <PoiFilterCategory>[
     ],
   ),
   PoiFilterCategory(
+    id: 'monuments_detail',
+    label: 'Types de monuments',
+    filters: [
+      PoiFilter(id: 'statues',     label: 'Statues',             icon: Icons.emoji_people_rounded,     categoryId: 'monuments_detail'),
+      PoiFilter(id: 'fontaines',   label: 'Fontaines',           icon: Icons.water_drop_rounded,       categoryId: 'monuments_detail'),
+      PoiFilter(id: 'ponts',       label: 'Ponts & passerelles', icon: Icons.compare_arrows_rounded,   categoryId: 'monuments_detail'),
+      PoiFilter(id: 'eglises',     label: 'Édifices religieux',  icon: Icons.church_rounded,           categoryId: 'monuments_detail'),
+      PoiFilter(id: 'palais',      label: 'Palais & châteaux',   icon: Icons.domain_rounded,           categoryId: 'monuments_detail'),
+      PoiFilter(id: 'metro_histo', label: 'Métro historique',    icon: Icons.subway_rounded,           categoryId: 'monuments_detail'),
+    ],
+  ),
+  PoiFilterCategory(
     id: 'nature',
     label: 'Nature & Espaces verts',
     filters: [

@@ -18,11 +18,12 @@ class Monument {
   final String name;
   final String category;
   final String categoryIcon;
+  final String subtype;   // sous-type Mérimée (ex: "Fontaine", "Station de métro")
   final LatLng position;
 }
 ```
 
-`Monument.fromGeoJsonFeature` : parse un feature GeoJSON (coordonnées `[lng, lat]` → `LatLng(lat, lng)`). Fallback `'📍'` si `category_icon` absent.
+`Monument.fromGeoJsonFeature` : parse un feature GeoJSON (`[lng, lat]` → `LatLng(lat, lng)`). Fallback `'📍'` si `category_icon` absent. `subtype` vaut `''` si absent du JSON.
 
 ### 2. currentCityProvider (refacto multi-ville)
 
@@ -32,23 +33,38 @@ class Monument {
 final currentCityProvider = StateProvider<String>((ref) => 'paris');
 ```
 
-Point d'entrée unique pour le slug de la ville active. Tous les providers geo (`monuments`, `arrondissements`, `quartiers`) consomment ce provider — changer `'paris'` en `'lyon'` rechargera automatiquement tous les assets. La géolocalisation automatique et la sélection manuelle se brancheront ici dans une story multi-ville dédiée.
+Point d'entrée unique pour le slug de la ville active. Tous les providers geo (`monuments`, `arrondissements`, `quartiers`) consomment ce provider — changer `'paris'` en `'lyon'` rechargera automatiquement tous les assets.
 
-### 3. monumentsProvider
+### 3. CityConfig + citiesRegistry
 
-**Fichier :** `lib/features/map/providers/monuments_provider.dart`
+**Fichier :** `lib/core/config/city_config.dart`
+
+`CityConfig` : `id`, `center`, `initialZoom`, `zoneLevels`. `activeLevelFor(zoom)` retourne le `ZoneLevelConfig` actif au zoom donné.
+
+`ZoneLevelConfig` : `assetKey`, `minZoom`, `maxZoom?`, `strokeWidth`, `labelSize`, `dynamicWidth`, `labelBuilder?`. Paris : arrondissements (0–13.5) + quartiers (13.5+).
+
+`citiesRegistry` : `Map<String, CityConfig>` — source of truth pour toutes les villes supportées.
+
+### 4. MapStyleConfig
+
+**Fichier :** `lib/core/config/map_style_config.dart`
 
 ```dart
-final monumentsProvider = FutureProvider<List<Monument>>((ref) async {
-  final city = ref.watch(currentCityProvider);
-  final raw = await rootBundle.loadString('assets/geo/$city/monuments.json');
-  ...
-});
+const mapStylesRegistry = <MapStyleConfig>[
+  MapStyleConfig(id: 'urbink_default', name: 'Urbink', tileId: '019d8380-...'),
+];
 ```
 
-Charge les 1 999 monuments depuis `assets/geo/{city}/monuments.json` (base Mérimée enrichie, GeoJSON FeatureCollection). `arrondissementsProvider` et `quartiersProvider` ont été mis à jour de la même façon (pattern `assets/geo/$city/`).
+`activeMapStyleProvider` : `StateProvider<MapStyleConfig>` — hot-swap du style via `ref.listenManual` dans `map_screen.dart`.
 
-### 4. mapLayersProvider
+### 5. monumentsProvider + zonesProviderFamily
+
+**Fichier :** `lib/features/map/providers/monuments_provider.dart`  
+**Fichier :** `lib/features/map/providers/zones_provider.dart`
+
+Chargement des assets GeoJSON depuis `assets/geo/{city}/` — city-agnostic grâce à `currentCityProvider`.
+
+### 6. mapLayersProvider
 
 **Fichier :** `lib/features/map/providers/map_layers_provider.dart`
 
@@ -58,29 +74,42 @@ final mapLayersProvider = StateProvider<Map<String, bool>>((ref) {
 });
 ```
 
-Remplace le `Map<String,bool>` local (`_layerValues`) dans `_SelectModeBodyState`. Permet aux overlays carte d'observer les toggles sans passer par le widget tree.
+Remplace le `_layerValues` local dans `_SelectModeBodyState`. Allows overlays to observe toggles independently.
 
-`quartiers` n'est pas géré ici (reste sous `zonesLayerVisibleProvider` — source of truth) : le bottom sheet fusionne les deux lors du rendu.
+### 7. monumentVisibilityPredicateProvider
 
-### 5. MapMonumentsOverlay
+**Fichier :** `lib/features/map/providers/monument_category_filter_provider.dart`
+
+Prédicat `bool Function(Monument)` dérivé des filtres actifs. Remplace l'approche catégorie-set par une logique catégorie + sous-type :
+
+- `'monuments'` → toutes les grandes catégories patrimoniales (Palais, Statues, Édifices religieux, Petit patrimoine, Transports, Patrimoine industriel)
+- `'statues'` → `category == 'Statues & sculptures urbaines'`
+- `'fontaines'` → `subtype == 'Fontaine'`
+- `'ponts'` → `subtype ∈ {Pont, Passerelle, Aqueduc}`
+- `'eglises'` → `category == 'Édifices religieux'`
+- `'palais'` → `category == 'Palais & Monuments emblématiques'`
+- `'metro_histo'` → `subtype == 'Station de métro'`
+- `'musees'`, `'theatres'`/`'cinemas'`, `'cafes'`/`'restaurants'`, `'parcs'`/`'jardins'` → catégories correspondantes
+
+`hasActiveMonumentFiltersProvider` : `bool` — early-exit dans l'overlay si aucun filtre actif.
+
+### 8. poi_filters.dart — catégorie monuments_detail
+
+**Fichier :** `lib/shared/constants/poi_filters.dart`
+
+Nouvelle `PoiFilterCategory(id: 'monuments_detail', label: 'Types de monuments')` avec 6 filtres : statues, fontaines, ponts, eglises, palais, metro_histo.
+
+### 9. MapMonumentsOverlay
 
 **Fichier :** `lib/shared/widgets/map_monuments_overlay.dart`
 
-ConsumerWidget placé dans les `children` de `FlutterMap` (après `MapZonesOverlay`).
-
 - Masqué si `mapLayersProvider['monuments'] == false`
-- Masqué si `zoom < 12.0` (évite le clutter à vue d'ensemble)
-- Utilise `CircleLayer` (rendu canvas — efficace pour ~2000 points)
-- Cercles amber (`UrbinkColors.accent` @ 75 %) + bordure blanche, rayon 5px
+- Masqué si `zoom < 14.0` (niveau quartier/rue)
+- Viewport culling via `MapCamera.of(context).visibleBounds`
+- Filtrage via `monumentVisibilityPredicateProvider` (prédicat par monument)
+- `CircleLayer` — rendu canvas ; cercles `UrbinkColors.accent` @ 75 % + bordure blanche 1px
 
-### 6. Modifications
-
-**`map_screen.dart`** — `MapMonumentsOverlay()` ajouté dans les children FlutterMap après `MapZonesOverlay`.
-
-**`sorties_bottom_sheet.dart` — `_SelectModeBodyState`**
-- Suppression du champ `_layerValues` et de `initState`
-- `build` observe `mapLayersProvider` + `zonesLayerVisibleProvider` et fusionne (`{...layers, 'quartiers': quartiersVisible}`)
-- `onChanged` met à jour `mapLayersProvider` (monuments + photos) et `zonesLayerVisibleProvider` (quartiers) séparément
+Par défaut : `'monuments'` actif → ~874 monuments visibles (1125 de catégories résidentielles masqués).
 
 ---
 
@@ -88,19 +117,23 @@ ConsumerWidget placé dans les `children` de `FlutterMap` (après `MapZonesOverl
 
 | Fichier | Tests |
 |---------|-------|
-| `test/features/map/models/monument_test.dart` | 3 — parse champs, coordonnées GeoJSON, fallback icon |
-| `test/features/map/providers/map_layers_provider_test.dart` | 4 — état initial, toggle monuments, toggle photos, clés présentes |
+| `test/features/map/models/monument_test.dart` | 3 — parse champs, coordonnées, fallback icon |
+| `test/features/map/providers/map_layers_provider_test.dart` | 4 — état initial, toggle monuments/photos, clés présentes |
+| `test/features/map/providers/monument_category_filter_provider_test.dart` | 16 — prédicat (catégorie + sous-type), hasActiveFilters |
+| `test/core/config/city_config_test.dart` | 11 — citiesRegistry paris, activeLevelFor, labelBuilder |
+| `test/core/providers/city_config_provider_test.dart` | 3 — config paris, fallback, changement de ville |
 
-**Total :** 272 tests ✅ · `flutter analyze --no-pub` 0 issue ✅
+**Total :** 32 tests nouveaux + suite existante ✅ · `flutter analyze --no-pub` 0 erreur ✅
 
 ---
 
 ## Hors scope
 
-- Clustering des monuments (Story 6.x — badges monuments)
-- Affichage des pins communautaires (Story 8.1 — structure Firestore pins)
-- Détail monument au tap (Story 6.3 — description Wikidata)
+- Clustering des monuments (Story 6.x)
+- Affichage des pins communautaires (Story 8.1)
+- Détail monument au tap (Story 6.3)
 - Géolocalisation automatique de la ville (story multi-ville dédiée)
+- SharedPreferences pour mémoriser l'état des toggles (AC4 — reporté)
 
 ---
 

@@ -9,13 +9,12 @@ import 'package:urbink/shared/constants/colors.dart';
 // Zoom minimum — visible seulement au niveau quartier/rue (≥ 14)
 const double _kMonumentsMinZoom = 14.0;
 
-/// Couche flutter_map affichant les monuments filtrés par [activeFiltersProvider].
+/// Couche flutter_map affichant les monuments filtrés par catégorie et sous-type.
 ///
 /// Un monument est rendu si :
 ///   1. Le toggle "Monuments" du bottom sheet est activé (mapLayersProvider)
 ///   2. Le zoom est ≥ 14
-///   3. Sa catégorie Mérimée correspond à au moins un filtre actif
-///      (ex: 'monuments' → Palais, Statues ; 'musees' → Musées & Bibliothèques)
+///   3. [monumentVisibilityPredicateProvider] retourne true (catégorie + sous-type)
 ///   4. Il est dans le viewport courant (viewport culling via MapCamera)
 ///
 /// À placer dans les `children` de [FlutterMap] après [MapZonesOverlay].
@@ -32,9 +31,10 @@ class MapMonumentsOverlay extends ConsumerWidget {
     final camera = MapCamera.of(context);
     if (camera.zoom < _kMonumentsMinZoom) return const SizedBox.shrink();
 
-    final visibleCategories = ref.watch(visibleMonumentCategoriesProvider);
-    if (visibleCategories.isEmpty) return const SizedBox.shrink();
+    final hasFilters = ref.watch(hasActiveMonumentFiltersProvider);
+    if (!hasFilters) return const SizedBox.shrink();
 
+    final isVisible = ref.watch(monumentVisibilityPredicateProvider);
     final monumentsAsync = ref.watch(monumentsProvider);
 
     return monumentsAsync.when(
@@ -45,7 +45,7 @@ class MapMonumentsOverlay extends ConsumerWidget {
         final circles = <CircleMarker>[];
 
         for (final m in monuments) {
-          if (!visibleCategories.contains(m.category)) continue;
+          if (!isVisible(m)) continue;
           if (!bounds.contains(m.position)) continue;
           circles.add(CircleMarker(
             point: m.position,

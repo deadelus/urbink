@@ -5,6 +5,7 @@ class Monument {
   final String name;
   final String category;
   final String categoryIcon;
+  final String subtype;
   final LatLng position;
 
   const Monument({
@@ -12,6 +13,7 @@ class Monument {
     required this.name,
     required this.category,
     required this.categoryIcon,
+    required this.subtype,
     required this.position,
   });
 
@@ -23,6 +25,7 @@ class Monument {
       name: props['name'] as String,
       category: props['category'] as String,
       categoryIcon: props['category_icon'] as String? ?? '📍',
+      subtype: props['subtype'] as String? ?? '',
       // GeoJSON: [lng, lat]
       position: LatLng((coords[1] as num).toDouble(), (coords[0] as num).toDouble()),
     );

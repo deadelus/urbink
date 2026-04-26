@@ -1,7 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:urbink/features/map/models/monument.dart';
 import 'package:urbink/features/map/providers/active_filters_provider.dart';
 import 'package:urbink/features/map/providers/monument_category_filter_provider.dart';
+
+Monument _m({String category = '', String subtype = ''}) => Monument(
+      id: 'test',
+      name: 'Test',
+      category: category,
+      categoryIcon: '📍',
+      subtype: subtype,
+      position: const LatLng(48.85, 2.35),
+    );
 
 ProviderContainer _makeContainer({Set<String> activeFilters = const {'monuments'}}) {
   return ProviderContainer(
@@ -12,79 +23,130 @@ ProviderContainer _makeContainer({Set<String> activeFilters = const {'monuments'
 }
 
 void main() {
-  group('visibleMonumentCategoriesProvider', () {
-    test('filtre "monuments" actif → Palais, Statues, Édifices, etc. visibles', () {
-      final c = _makeContainer(activeFilters: {'monuments'});
-      addTearDown(c.dispose);
-
-      final visible = c.read(visibleMonumentCategoriesProvider);
-      expect(visible, contains('Palais & Monuments emblématiques'));
-      expect(visible, contains('Statues & sculptures urbaines'));
-      expect(visible, contains('Édifices religieux'));
-      expect(visible, contains('Petit patrimoine urbain'));
-    });
-
-    test('filtre "monuments" actif → bâtiments et hôtels ABSENTS', () {
-      final c = _makeContainer(activeFilters: {'monuments'});
-      addTearDown(c.dispose);
-
-      final visible = c.read(visibleMonumentCategoriesProvider);
-      expect(visible, isNot(contains('Architecture résidentielle')));
-      expect(visible, isNot(contains('Hôtels particuliers')));
-    });
-
-    test('filtre "musees" actif → Musées & Bibliothèques visibles', () {
-      final c = _makeContainer(activeFilters: {'musees'});
-      addTearDown(c.dispose);
-
-      final visible = c.read(visibleMonumentCategoriesProvider);
-      expect(visible, contains('Musées & Bibliothèques'));
-      expect(visible, isNot(contains('Palais & Monuments emblématiques')));
-    });
-
-    test('filtres "cafes" + "restaurants" → Cafés historiques visibles', () {
-      final c = _makeContainer(activeFilters: {'cafes'});
-      addTearDown(c.dispose);
-
-      final visible = c.read(visibleMonumentCategoriesProvider);
-      expect(visible, contains('Cafés, restaurants & commerces historiques'));
-    });
-
-    test('filtres "theatres" ou "cinemas" → Théâtres & cinémas visibles', () {
-      final c = _makeContainer(activeFilters: {'cinemas'});
-      addTearDown(c.dispose);
-
-      expect(
-        c.read(visibleMonumentCategoriesProvider),
-        contains('Théâtres, cinémas & lieux culturels'),
-      );
-    });
-
-    test('filtres "parcs" ou "jardins" → Parcs visibles', () {
-      final c = _makeContainer(activeFilters: {'jardins'});
-      addTearDown(c.dispose);
-
-      expect(
-        c.read(visibleMonumentCategoriesProvider),
-        contains('Parcs, jardins & cimetières funéraires'),
-      );
-    });
-
-    test('aucun filtre actif → aucune catégorie visible', () {
+  group('monumentVisibilityPredicateProvider', () {
+    test('aucun filtre actif → false pour tout monument', () {
       final c = _makeContainer(activeFilters: const {});
       addTearDown(c.dispose);
-
-      expect(c.read(visibleMonumentCategoriesProvider), isEmpty);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(category: 'Palais & Monuments emblématiques')), isFalse);
+      expect(pred(_m(category: 'Musées & Bibliothèques')), isFalse);
     });
 
-    test('tous les filtres → toutes les catégories mappées visibles', () {
-      final c = _makeContainer(
-        activeFilters: {'monuments', 'musees', 'theatres', 'cafes', 'parcs'},
-      );
+    test('filtre "monuments" → catégories patrimoniales larges visibles', () {
+      final c = _makeContainer(activeFilters: {'monuments'});
       addTearDown(c.dispose);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(category: 'Palais & Monuments emblématiques')), isTrue);
+      expect(pred(_m(category: 'Statues & sculptures urbaines')), isTrue);
+      expect(pred(_m(category: 'Édifices religieux')), isTrue);
+      expect(pred(_m(category: 'Petit patrimoine urbain')), isTrue);
+    });
 
-      final visible = c.read(visibleMonumentCategoriesProvider);
-      expect(visible.length, 10); // toutes les catégories mappées
+    test('filtre "monuments" → Musées & Architecture ABSENTS', () {
+      final c = _makeContainer(activeFilters: {'monuments'});
+      addTearDown(c.dispose);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(category: 'Musées & Bibliothèques')), isFalse);
+      expect(pred(_m(category: 'Architecture résidentielle')), isFalse);
+    });
+
+    test('filtre "statues" sans "monuments" → statues seulement', () {
+      final c = _makeContainer(activeFilters: {'statues'});
+      addTearDown(c.dispose);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(category: 'Statues & sculptures urbaines')), isTrue);
+      expect(pred(_m(category: 'Palais & Monuments emblématiques')), isFalse);
+    });
+
+    test('filtre "fontaines" → sous-type Fontaine visible, autres non', () {
+      final c = _makeContainer(activeFilters: {'fontaines'});
+      addTearDown(c.dispose);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(category: 'Petit patrimoine urbain', subtype: 'Fontaine')), isTrue);
+      expect(pred(_m(category: 'Petit patrimoine urbain', subtype: 'Kiosque')), isFalse);
+    });
+
+    test('filtre "ponts" → Pont et Passerelle visibles', () {
+      final c = _makeContainer(activeFilters: {'ponts'});
+      addTearDown(c.dispose);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(subtype: 'Pont')), isTrue);
+      expect(pred(_m(subtype: 'Passerelle')), isTrue);
+      expect(pred(_m(subtype: 'Aqueduc')), isTrue);
+      expect(pred(_m(subtype: 'Fontaine')), isFalse);
+    });
+
+    test('filtre "eglises" → Édifices religieux visible', () {
+      final c = _makeContainer(activeFilters: {'eglises'});
+      addTearDown(c.dispose);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(category: 'Édifices religieux')), isTrue);
+      expect(pred(_m(category: 'Palais & Monuments emblématiques')), isFalse);
+    });
+
+    test('filtre "metro_histo" → Station de métro visible', () {
+      final c = _makeContainer(activeFilters: {'metro_histo'});
+      addTearDown(c.dispose);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(subtype: 'Station de métro')), isTrue);
+      expect(pred(_m(subtype: 'Fontaine')), isFalse);
+    });
+
+    test('filtre "musees" → Musées & Bibliothèques visible', () {
+      final c = _makeContainer(activeFilters: {'musees'});
+      addTearDown(c.dispose);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(category: 'Musées & Bibliothèques')), isTrue);
+      expect(pred(_m(category: 'Palais & Monuments emblématiques')), isFalse);
+    });
+
+    test('filtre "cinemas" → Théâtres & cinémas visible', () {
+      final c = _makeContainer(activeFilters: {'cinemas'});
+      addTearDown(c.dispose);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(category: 'Théâtres, cinémas & lieux culturels')), isTrue);
+    });
+
+    test('filtre "jardins" → Parcs & cimetières visible', () {
+      final c = _makeContainer(activeFilters: {'jardins'});
+      addTearDown(c.dispose);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(category: 'Parcs, jardins & cimetières funéraires')), isTrue);
+    });
+
+    test('filtres combinés "statues" + "musees" → union', () {
+      final c = _makeContainer(activeFilters: {'statues', 'musees'});
+      addTearDown(c.dispose);
+      final pred = c.read(monumentVisibilityPredicateProvider);
+      expect(pred(_m(category: 'Statues & sculptures urbaines')), isTrue);
+      expect(pred(_m(category: 'Musées & Bibliothèques')), isTrue);
+      expect(pred(_m(category: 'Palais & Monuments emblématiques')), isFalse);
+    });
+  });
+
+  group('hasActiveMonumentFiltersProvider', () {
+    test('filtres vides → false', () {
+      final c = _makeContainer(activeFilters: const {});
+      addTearDown(c.dispose);
+      expect(c.read(hasActiveMonumentFiltersProvider), isFalse);
+    });
+
+    test('filtre "monuments" → true', () {
+      final c = _makeContainer(activeFilters: {'monuments'});
+      addTearDown(c.dispose);
+      expect(c.read(hasActiveMonumentFiltersProvider), isTrue);
+    });
+
+    test('filtre "fontaines" → true', () {
+      final c = _makeContainer(activeFilters: {'fontaines'});
+      addTearDown(c.dispose);
+      expect(c.read(hasActiveMonumentFiltersProvider), isTrue);
+    });
+
+    test('filtre non-monument ("velos") → false', () {
+      final c = _makeContainer(activeFilters: {'velos'});
+      addTearDown(c.dispose);
+      expect(c.read(hasActiveMonumentFiltersProvider), isFalse);
     });
   });
 }
