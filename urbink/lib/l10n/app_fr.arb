@@ -423,5 +423,30 @@
   "@histogram_empty_message": { "description": "Message empty state histogramme hebdomadaire" },
 
   "histogram_start_cta": "Démarrer",
-  "@histogram_start_cta": { "description": "CTA empty state histogramme — démarrer une sortie" }
+  "@histogram_start_cta": { "description": "CTA empty state histogramme — démarrer une sortie" },
+
+  "challenges_badges_section_title": "Badges Quartiers",
+  "@challenges_badges_section_title": { "description": "Titre section badges quartiers débloqués dans l'écran Challenges" },
+
+  "celeb_district_title": "🏆 Quartier {name} complété !",
+  "@celeb_district_title": {
+    "description": "Titre overlay célébration quartier complété",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "celeb_secret_local_label": "Secret local",
+  "@celeb_secret_local_label": { "description": "Label section secret local dans l'overlay quartier" },
+
+  "celeb_share": "Partager",
+  "@celeb_share": { "description": "Bouton partager overlay quartier" },
+
+  "celeb_district_semantics": "Badge quartier {name} débloqué. Secret local révélé.",
+  "@celeb_district_semantics": {
+    "description": "Label Semantics VoiceOver overlay quartier complété",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  }
 }

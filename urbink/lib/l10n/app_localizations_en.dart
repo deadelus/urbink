@@ -418,4 +418,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get histogram_start_cta => 'Start';
+
+  @override
+  String get challenges_badges_section_title => 'District Badges';
+
+  @override
+  String celeb_district_title(String name) {
+    return '🏆 District $name completed!';
+  }
+
+  @override
+  String get celeb_secret_local_label => 'Local secret';
+
+  @override
+  String get celeb_share => 'Share';
+
+  @override
+  String celeb_district_semantics(String name) {
+    return 'District badge $name unlocked. Local secret revealed.';
+  }
 }

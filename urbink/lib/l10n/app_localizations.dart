@@ -829,6 +829,36 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Démarrer'**
   String get histogram_start_cta;
+
+  /// Titre section badges quartiers débloqués dans l'écran Challenges
+  ///
+  /// In fr, this message translates to:
+  /// **'Badges Quartiers'**
+  String get challenges_badges_section_title;
+
+  /// Titre overlay célébration quartier complété
+  ///
+  /// In fr, this message translates to:
+  /// **'🏆 Quartier {name} complété !'**
+  String celeb_district_title(String name);
+
+  /// Label section secret local dans l'overlay quartier
+  ///
+  /// In fr, this message translates to:
+  /// **'Secret local'**
+  String get celeb_secret_local_label;
+
+  /// Bouton partager overlay quartier
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager'**
+  String get celeb_share;
+
+  /// Label Semantics VoiceOver overlay quartier complété
+  ///
+  /// In fr, this message translates to:
+  /// **'Badge quartier {name} débloqué. Secret local révélé.'**
+  String celeb_district_semantics(String name);
 }
 
 class _AppLocalizationsDelegate

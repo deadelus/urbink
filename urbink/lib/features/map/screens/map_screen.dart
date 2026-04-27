@@ -12,6 +12,11 @@ import 'package:http/http.dart' as http;
 import 'package:urbink/core/providers/active_map_style_provider.dart';
 import 'package:urbink/core/providers/city_config_provider.dart';
 import 'package:urbink/core/router/app_router.dart';
+import 'package:urbink/features/gamification/models/quartier_badge.dart';
+import 'package:urbink/features/gamification/providers/quartier_badges_provider.dart';
+import 'package:urbink/features/gamification/providers/quartiers_progression_provider.dart';
+import 'package:urbink/features/gamification/providers/secrets_locaux_provider.dart';
+import 'package:urbink/features/gamification/widgets/quartier_celebration_overlay.dart';
 import 'package:urbink/features/map/providers/map_state_provider.dart';
 import 'package:urbink/features/map/providers/zones_layer_provider.dart';
 import 'package:urbink/features/map/providers/zones_zoom_provider.dart';
@@ -54,11 +59,16 @@ class MapScreen extends ConsumerStatefulWidget {
 class _MapScreenState extends ConsumerState<MapScreen> {
   late final MapController _mapController;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+  VoidCallback? _closeStyleSub;
+  VoidCallback? _closeQuartierSub;
 
   Style? _mapStyle;
   bool _styleLoading = true;
   bool _styleLoadFailed = false;
 
+  // Quartiers déjà traités dans cette session (évite les doublons).
+  final _triggeredQuartiers = <String>{};
+  bool _isCelebrating = false;
 
   @override
   void initState() {
@@ -67,11 +77,30 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     _loadStyle(MapConstants.styleUrl(ref.read(activeMapStyleProvider).tileId));
 
     // Recharge le style si l'utilisateur en change un via les settings.
-    ref.listenManual(activeMapStyleProvider, (prev, next) {
+    _closeStyleSub = ref.listenManual(activeMapStyleProvider, (prev, next) {
       if (prev?.tileId != next.tileId) {
         _loadStyle(MapConstants.styleUrl(next.tileId));
       }
-    });
+    }).close;
+
+    // Détecte les quartiers nouvellement complétés à 100%.
+    _closeQuartierSub = ref.listenManual(quartiersProgressionProvider, (prev, next) {
+      final progressions = next.valueOrNull;
+      if (progressions == null) return;
+      // Attend que les badges soient chargés pour éviter les faux positifs.
+      if (!ref.read(quartierBadgesStreamProvider).hasValue) return;
+      for (final q in progressions) {
+        if (q.completionPercent < 100.0) continue;
+        if (_triggeredQuartiers.contains(q.id)) continue;
+        final alreadyBadged = ref.read(quartierBadgeIdsProvider).contains(q.id);
+        if (alreadyBadged) {
+          _triggeredQuartiers.add(q.id);
+          continue;
+        }
+        _triggeredQuartiers.add(q.id);
+        _handleQuartierCompleted(q.id, q.name);
+      }
+    }).close;
 
     _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
       if (!mounted) return;
@@ -94,6 +123,43 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         await _showCrashRecoveryDialog(interrupted);
       }
     });
+  }
+
+  Future<void> _handleQuartierCompleted(
+      String quartierId, String quartierName) async {
+    if (_isCelebrating) return; // file d'attente MVP : on ignore les simultanés
+    _isCelebrating = true;
+
+    try {
+      final uid = ref.read(currentUidProvider);
+      if (uid == null) return;
+
+      final secretsMap = await ref.read(secretsLocauxProvider.future);
+      final secret = secretsMap[quartierId] ?? '';
+
+      final badge = QuartierBadge(
+        id: QuartierBadge.idFor(quartierId),
+        quartierId: quartierId,
+        name: quartierName,
+        secretLocal: secret,
+        unlockedAt: DateTime.now(),
+      );
+
+      await writeQuartierBadge(
+        firestore: ref.read(firestoreProvider),
+        uid: uid,
+        badge: badge,
+      );
+
+      if (!mounted) return;
+      await showQuartierCelebration(
+        context: context,
+        quartierName: quartierName,
+        secretLocal: secret,
+      );
+    } finally {
+      _isCelebrating = false;
+    }
   }
 
   Future<void> _showCrashRecoveryDialog(Session session) async {
@@ -186,6 +252,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   @override
   void dispose() {
+    _closeStyleSub?.call();
+    _closeQuartierSub?.call();
     _connectivitySub?.cancel();
     super.dispose();
   }
