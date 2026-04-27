@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,10 +16,13 @@ import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/features/gamification/models/celebration_event.dart';
 import 'package:urbink/features/gamification/models/quartier_badge.dart';
 import 'package:urbink/features/gamification/providers/celebration_queue_provider.dart';
+import 'package:urbink/features/gamification/providers/monument_badges_provider.dart';
 import 'package:urbink/features/gamification/providers/quartier_badges_provider.dart';
 import 'package:urbink/features/gamification/providers/quartiers_progression_provider.dart';
 import 'package:urbink/features/gamification/providers/secrets_locaux_provider.dart';
+import 'package:urbink/features/map/models/monument.dart';
 import 'package:urbink/features/map/providers/map_state_provider.dart';
+import 'package:urbink/features/map/providers/monument_proximity_provider.dart';
 import 'package:urbink/features/map/providers/zones_layer_provider.dart';
 import 'package:urbink/features/map/providers/zones_zoom_provider.dart';
 import 'package:urbink/features/map/widgets/sorties_bottom_sheet.dart';
@@ -62,13 +66,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   VoidCallback? _closeStyleSub;
   VoidCallback? _closeQuartierSub;
+  VoidCallback? _closeMonumentProximitySub;
+  VoidCallback? _closeMonumentBadgeSub;
 
   Style? _mapStyle;
   bool _styleLoading = true;
   bool _styleLoadFailed = false;
 
-  // Quartiers déjà traités dans cette session (évite les doublons).
+  // Quartiers/monuments déjà traités dans cette session (évite les doublons).
   final _triggeredQuartiers = <String>{};
+  final _triggeredMonuments = <String>{};
 
   @override
   void initState() {
@@ -102,6 +109,42 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       }
     }).close;
 
+    // Détecte les monuments à ≤ 100m pendant la session → écrit un proximity event.
+    _closeMonumentProximitySub =
+        ref.listenManual(monumentProximityStreamProvider, (prev, next) {
+      final monument = next.valueOrNull;
+      if (monument == null) return;
+      if (_triggeredMonuments.contains(monument.id)) return;
+      if (ref.read(monumentBadgeIdsProvider).contains(monument.id)) {
+        _triggeredMonuments.add(monument.id);
+        return;
+      }
+      _triggeredMonuments.add(monument.id);
+      _handleMonumentProximity(monument);
+    }).close;
+
+    // Quand un nouveau badge monument apparaît dans Firestore → célébration + haptics.
+    _closeMonumentBadgeSub =
+        ref.listenManual(monumentBadgesStreamProvider, (prev, next) {
+      final badges = next.valueOrNull;
+      if (badges == null) return;
+      final prevBadges = prev?.valueOrNull ?? const [];
+      final newBadges = badges.where(
+        (b) => !prevBadges.any((p) => p.id == b.id),
+      );
+      for (final badge in newBadges) {
+        HapticFeedback.heavyImpact();
+        ref.read(celebrationQueueProvider.notifier).push(
+              CelebrationEvent(
+                id: 'badge-${badge.monumentId}',
+                mode: CelebrationMode.badge,
+                title: badge.name,
+                iconEmoji: badge.emoji,
+              ),
+            );
+      }
+    }).close;
+
     _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
       if (!mounted) return;
       if (results.every((r) => r == ConnectivityResult.none)) {
@@ -123,6 +166,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         await _showCrashRecoveryDialog(interrupted);
       }
     });
+  }
+
+  Future<void> _handleMonumentProximity(Monument monument) async {
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return;
+    await writeMonumentProximityEvent(
+      firestore: ref.read(firestoreProvider),
+      uid: uid,
+      monumentId: monument.id,
+      monumentName: monument.name,
+      monumentEmoji: monument.categoryIcon,
+    );
   }
 
   Future<void> _handleQuartierCompleted(
@@ -250,6 +305,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   void dispose() {
     _closeStyleSub?.call();
     _closeQuartierSub?.call();
+    _closeMonumentProximitySub?.call();
+    _closeMonumentBadgeSub?.call();
     _connectivitySub?.cancel();
     super.dispose();
   }
