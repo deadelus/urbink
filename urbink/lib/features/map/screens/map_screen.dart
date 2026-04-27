@@ -59,6 +59,8 @@ class MapScreen extends ConsumerStatefulWidget {
 class _MapScreenState extends ConsumerState<MapScreen> {
   late final MapController _mapController;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
+  VoidCallback? _closeStyleSub;
+  VoidCallback? _closeQuartierSub;
 
   Style? _mapStyle;
   bool _styleLoading = true;
@@ -75,16 +77,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     _loadStyle(MapConstants.styleUrl(ref.read(activeMapStyleProvider).tileId));
 
     // Recharge le style si l'utilisateur en change un via les settings.
-    ref.listenManual(activeMapStyleProvider, (prev, next) {
+    _closeStyleSub = ref.listenManual(activeMapStyleProvider, (prev, next) {
       if (prev?.tileId != next.tileId) {
         _loadStyle(MapConstants.styleUrl(next.tileId));
       }
-    });
+    }).close;
 
     // Détecte les quartiers nouvellement complétés à 100%.
-    ref.listenManual(quartiersProgressionProvider, (prev, next) {
+    _closeQuartierSub = ref.listenManual(quartiersProgressionProvider, (prev, next) {
       final progressions = next.valueOrNull;
       if (progressions == null) return;
+      // Attend que les badges soient chargés pour éviter les faux positifs.
+      if (!ref.read(quartierBadgesStreamProvider).hasValue) return;
       for (final q in progressions) {
         if (q.completionPercent < 100.0) continue;
         if (_triggeredQuartiers.contains(q.id)) continue;
@@ -96,7 +100,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         _triggeredQuartiers.add(q.id);
         _handleQuartierCompleted(q.id, q.name);
       }
-    });
+    }).close;
 
     _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
       if (!mounted) return;
@@ -248,6 +252,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   @override
   void dispose() {
+    _closeStyleSub?.call();
+    _closeQuartierSub?.call();
     _connectivitySub?.cancel();
     super.dispose();
   }

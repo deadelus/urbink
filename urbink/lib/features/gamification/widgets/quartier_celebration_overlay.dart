@@ -128,6 +128,7 @@ class _QuartierCelebrationOverlayState
     if (_exiting) return;
     setState(() => _exiting = true);
     _autoDismissTimer?.cancel();
+    _hapticTimer?.cancel();
     _countdownTimer?.cancel();
     await _ctrl.animateBack(
       0,

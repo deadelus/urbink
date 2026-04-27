@@ -5,7 +5,7 @@
 // where badgeId starts with "quartier_"
 //
 // Actions:
-//  1. Reads FCM token from /users/{userId}/fcmToken
+//  1. Reads the FCM token from the `fcmToken` field of /users/{userId}
 //  2. Sends a push notification via FCM
 //
 // The badge document is written by the Flutter client on completion detection.
@@ -57,7 +57,7 @@ func OnQuartierCompleted(ctx context.Context, event FirestoreEvent) error {
 	// Extract resource path: projects/.../databases/.../documents/users/{uid}/badges/{badgeId}
 	resourceName := event.Value.Name
 	parts := strings.Split(resourceName, "/")
-	if len(parts) < 2 {
+	if len(parts) < 4 {
 		return fmt.Errorf("unexpected resource name: %s", resourceName)
 	}
 
