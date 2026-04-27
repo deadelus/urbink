@@ -1692,6 +1692,32 @@ Afin de rester connecté à la communauté à mon rythme. (FR38, FR39)
 **When** l'événement correspondant se produit
 **Then** le provider Riverpod vérifie les préférences dans Firestore avant d'appeler FCM — aucune notification envoyée si le type est désactivé
 
+### Story 10.5 : Tests intégration Cloud Functions Go — Firebase Emulator Suite
+
+En tant que **développeur**,
+Je veux pouvoir tester les Cloud Functions Go avec de vraies données Firestore en local,
+Afin de valider le comportement de bout en bout sans déployer sur Firebase.
+
+**Acceptance Criteria :**
+
+**Given** la Firebase Emulator Suite configurée (Firestore + Functions)
+**When** un badge `quartier_*` est créé dans l'émulateur Firestore
+**Then** la Cloud Function `OnQuartierCompleted` est déclenchée et le test vérifie que FCM serait appelé
+
+**Given** un test d'intégration Go avec `go test -tags integration`
+**When** le test tourne avec `FIRESTORE_EMULATOR_HOST` et `FIREBASE_AUTH_EMULATOR_HOST` définis
+**Then** `firestoreReader.readBadge` et `firestoreReader.readFCMToken` s'exécutent contre l'émulateur réel
+
+**Given** l'émulateur non disponible
+**When** le test tourne sans les variables d'environnement émulateur
+**Then** les tests d'intégration sont skippés (`t.Skip`) — les tests unitaires passent toujours
+
+**Notes techniques :**
+- Ajouter `functions-framework-go` pour l'enregistrement + démarrage HTTP local
+- Configurer `firebase.json` avec `"emulators": { "firestore": { "port": 8080 }, "functions": { "port": 5001 } }`
+- Les tests d'intégration utilisent le build tag `//go:build integration`
+- Voir la doc Firebase Emulator Go : `FIRESTORE_EMULATOR_HOST=localhost:8080`
+
 ---
 
 ## Epic 11 : Administration & Cold Start

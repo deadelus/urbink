@@ -226,6 +226,7 @@ class _SortiesBottomSheetState extends ConsumerState<SortiesBottomSheet>
     if (!mounted) return;
     await SessionEndFlow.show(
       context: context,
+      ref: ref,
       session: sessionData,
       badges: badges,
     );

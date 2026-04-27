@@ -12,11 +12,12 @@ import 'package:http/http.dart' as http;
 import 'package:urbink/core/providers/active_map_style_provider.dart';
 import 'package:urbink/core/providers/city_config_provider.dart';
 import 'package:urbink/core/router/app_router.dart';
+import 'package:urbink/features/gamification/models/celebration_event.dart';
 import 'package:urbink/features/gamification/models/quartier_badge.dart';
+import 'package:urbink/features/gamification/providers/celebration_queue_provider.dart';
 import 'package:urbink/features/gamification/providers/quartier_badges_provider.dart';
 import 'package:urbink/features/gamification/providers/quartiers_progression_provider.dart';
 import 'package:urbink/features/gamification/providers/secrets_locaux_provider.dart';
-import 'package:urbink/features/gamification/widgets/quartier_celebration_overlay.dart';
 import 'package:urbink/features/map/providers/map_state_provider.dart';
 import 'package:urbink/features/map/providers/zones_layer_provider.dart';
 import 'package:urbink/features/map/providers/zones_zoom_provider.dart';
@@ -68,7 +69,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   // Quartiers déjà traités dans cette session (évite les doublons).
   final _triggeredQuartiers = <String>{};
-  bool _isCelebrating = false;
 
   @override
   void initState() {
@@ -127,39 +127,35 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   Future<void> _handleQuartierCompleted(
       String quartierId, String quartierName) async {
-    if (_isCelebrating) return; // file d'attente MVP : on ignore les simultanés
-    _isCelebrating = true;
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return;
 
-    try {
-      final uid = ref.read(currentUidProvider);
-      if (uid == null) return;
+    final secretsMap = await ref.read(secretsLocauxProvider.future);
+    final secret = secretsMap[quartierId] ?? '';
 
-      final secretsMap = await ref.read(secretsLocauxProvider.future);
-      final secret = secretsMap[quartierId] ?? '';
+    final badge = QuartierBadge(
+      id: QuartierBadge.idFor(quartierId),
+      quartierId: quartierId,
+      name: quartierName,
+      secretLocal: secret,
+      unlockedAt: DateTime.now(),
+    );
 
-      final badge = QuartierBadge(
-        id: QuartierBadge.idFor(quartierId),
-        quartierId: quartierId,
-        name: quartierName,
-        secretLocal: secret,
-        unlockedAt: DateTime.now(),
-      );
+    await writeQuartierBadge(
+      firestore: ref.read(firestoreProvider),
+      uid: uid,
+      badge: badge,
+    );
 
-      await writeQuartierBadge(
-        firestore: ref.read(firestoreProvider),
-        uid: uid,
-        badge: badge,
-      );
-
-      if (!mounted) return;
-      await showQuartierCelebration(
-        context: context,
-        quartierName: quartierName,
-        secretLocal: secret,
-      );
-    } finally {
-      _isCelebrating = false;
-    }
+    if (!mounted) return;
+    ref.read(celebrationQueueProvider.notifier).push(
+      CelebrationEvent(
+        id: 'district-$quartierId',
+        mode: CelebrationMode.district,
+        title: quartierName,
+        subtitle: secret.isNotEmpty ? secret : null,
+      ),
+    );
   }
 
   Future<void> _showCrashRecoveryDialog(Session session) async {

@@ -42,8 +42,19 @@ type FirestoreEvent struct {
 
 // FirestoreValue wraps the document data.
 type FirestoreValue struct {
-	Name   string                 `json:"name"`
-	Fields map[string]interface{} `json:"fields"`
+	Name   string         `json:"name"`
+	Fields map[string]any `json:"fields"`
+}
+
+// badgeReader abstracts Firestore reads — allows mocking in tests.
+type badgeReader interface {
+	readBadge(ctx context.Context, userId, badgeId string) (BadgeDocument, error)
+	readFCMToken(ctx context.Context, userId string) (string, bool, error)
+}
+
+// messageSender abstracts FCM sends — allows mocking in tests.
+type messageSender interface {
+	send(ctx context.Context, msg *messaging.Message) error
 }
 
 // OnQuartierCompleted is the Cloud Function entry point.
@@ -54,19 +65,13 @@ type FirestoreValue struct {
 //
 // Only processes documents where badgeId starts with "quartier_".
 func OnQuartierCompleted(ctx context.Context, event FirestoreEvent) error {
-	// Extract resource path: projects/.../databases/.../documents/users/{uid}/badges/{badgeId}
-	resourceName := event.Value.Name
-	parts := strings.Split(resourceName, "/")
-	if len(parts) < 4 {
-		return fmt.Errorf("unexpected resource name: %s", resourceName)
+	userId, badgeId, err := parseEventResource(event.Value.Name)
+	if err != nil {
+		return err
 	}
-
-	badgeId := parts[len(parts)-1]
-	if !strings.HasPrefix(badgeId, "quartier_") {
-		// Not a quartier badge — skip silently.
-		return nil
+	if badgeId == "" {
+		return nil // non-quartier badge — skip silently
 	}
-	userId := parts[len(parts)-3]
 
 	app, err := firebase.NewApp(ctx, nil)
 	if err != nil {
@@ -79,38 +84,60 @@ func OnQuartierCompleted(ctx context.Context, event FirestoreEvent) error {
 	}
 	defer fsClient.Close()
 
-	// Read badge data.
-	badgeRef := fsClient.Collection("users").Doc(userId).Collection("badges").Doc(badgeId)
-	badgeSnap, err := badgeRef.Get(ctx)
-	if err != nil {
-		return fmt.Errorf("badge Get: %w", err)
-	}
-	var badge BadgeDocument
-	if err := badgeSnap.DataTo(&badge); err != nil {
-		return fmt.Errorf("DataTo badge: %w", err)
-	}
-
-	// Read FCM token.
-	userRef := fsClient.Doc(fmt.Sprintf("users/%s", userId))
-	userSnap, err := userRef.Get(ctx)
-	if err != nil {
-		log.Printf("user Get error (non-fatal): %v", err)
-		return nil
-	}
-	fcmToken, ok := userSnap.Data()["fcmToken"].(string)
-	if !ok || fcmToken == "" {
-		log.Printf("no FCM token for user %s — skipping notification", userId)
-		return nil
-	}
-
-	// Send FCM push notification.
 	msgClient, err := app.Messaging(ctx)
 	if err != nil {
 		return fmt.Errorf("app.Messaging: %w", err)
 	}
 
-	msg := &messaging.Message{
-		Token: fcmToken,
+	return process(ctx, userId, badgeId,
+		&firestoreReader{fs: fsClient},
+		&fcmSender{mc: msgClient},
+	)
+}
+
+// parseEventResource extracts userId and badgeId from the Firestore resource path.
+// Returns empty badgeId (no error) when the badge is not a quartier badge.
+func parseEventResource(resourceName string) (userId, badgeId string, err error) {
+	parts := strings.Split(resourceName, "/")
+	if len(parts) < 4 {
+		return "", "", fmt.Errorf("unexpected resource name: %s", resourceName)
+	}
+	bid := parts[len(parts)-1]
+	if !strings.HasPrefix(bid, "quartier_") {
+		return "", "", nil
+	}
+	return parts[len(parts)-3], bid, nil
+}
+
+// process is the core handler — fully testable via injected interfaces.
+func process(ctx context.Context, userId, badgeId string, reader badgeReader, sender messageSender) error {
+	badge, err := reader.readBadge(ctx, userId, badgeId)
+	if err != nil {
+		return fmt.Errorf("badge Get: %w", err)
+	}
+
+	token, ok, err := reader.readFCMToken(ctx, userId)
+	if err != nil {
+		log.Printf("user Get error (non-fatal): %v", err)
+		return nil
+	}
+	if !ok {
+		log.Printf("no FCM token for user %s — skipping notification", userId)
+		return nil
+	}
+
+	if err := sender.send(ctx, buildFCMMessage(token, badge)); err != nil {
+		return fmt.Errorf("messaging Send: %w", err)
+	}
+
+	log.Printf("notification sent to user %s for quartier %s", userId, badge.Name)
+	return nil
+}
+
+// buildFCMMessage constructs the FCM payload for a quartier completion.
+func buildFCMMessage(token string, badge BadgeDocument) *messaging.Message {
+	return &messaging.Message{
+		Token: token,
 		Notification: &messaging.Notification{
 			Title: fmt.Sprintf("🏆 Quartier %s complété !", badge.Name),
 			Body:  "Secret local révélé — ouvre l'app pour le découvrir.",
@@ -129,24 +156,37 @@ func OnQuartierCompleted(ctx context.Context, event FirestoreEvent) error {
 			},
 		},
 	}
-
-	if _, err := msgClient.Send(ctx, msg); err != nil {
-		return fmt.Errorf("messaging Send: %w", err)
-	}
-
-	log.Printf("notification sent to user %s for quartier %s", userId, badge.Name)
-	return nil
 }
 
-// writeQuartierCompletion is used in tests to pre-populate Firestore.
-func writeQuartierCompletion(
-	ctx context.Context,
-	client *firestore.Client,
-	userId, badgeId string,
-	data BadgeDocument,
-) error {
-	_, err := client.Collection("users").Doc(userId).
-		Collection("badges").Doc(badgeId).Set(ctx, data)
+// firestoreReader implements badgeReader against a real Firestore client.
+type firestoreReader struct{ fs *firestore.Client }
+
+func (r *firestoreReader) readBadge(ctx context.Context, userId, badgeId string) (BadgeDocument, error) {
+	snap, err := r.fs.Collection("users").Doc(userId).Collection("badges").Doc(badgeId).Get(ctx)
+	if err != nil {
+		return BadgeDocument{}, err
+	}
+	var badge BadgeDocument
+	if err := snap.DataTo(&badge); err != nil {
+		return BadgeDocument{}, err
+	}
+	return badge, nil
+}
+
+func (r *firestoreReader) readFCMToken(ctx context.Context, userId string) (string, bool, error) {
+	snap, err := r.fs.Doc(fmt.Sprintf("users/%s", userId)).Get(ctx)
+	if err != nil {
+		return "", false, err
+	}
+	token, ok := snap.Data()["fcmToken"].(string)
+	return token, ok && token != "", nil
+}
+
+// fcmSender implements messageSender against a real FCM client.
+type fcmSender struct{ mc *messaging.Client }
+
+func (s *fcmSender) send(ctx context.Context, msg *messaging.Message) error {
+	_, err := s.mc.Send(ctx, msg)
 	return err
 }
 
