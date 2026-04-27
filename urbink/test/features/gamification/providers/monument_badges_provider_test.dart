@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:urbink/features/gamification/models/monument_badge.dart';
 import 'package:urbink/features/gamification/providers/monument_badges_provider.dart';
 import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 
@@ -33,10 +34,11 @@ void main() {
   });
 
   group('writeMonumentProximityEvent', () {
-    test('badgeId format monument_X dans idFor', () {
-      // Vérifie indirectement le document ID utilisé pour la déduplication
-      // (même logique que MonumentBadge.idFor)
-      // Pas de test Firestore réel — couvert par les tests Go de la CF
+    test('le docId utilisé pour l\'event correspond à MonumentBadge.idFor', () {
+      // writeMonumentProximityEvent utilise MonumentBadge.idFor(monumentId)
+      // comme ID de document (déduplication Firestore côté client).
+      expect(MonumentBadge.idFor('tour-eiffel'), 'monument_tour-eiffel');
+      expect(MonumentBadge.idFor('louvre'), 'monument_louvre');
     });
   });
 }

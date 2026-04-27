@@ -39,19 +39,28 @@ void main() {
       expect(badge.toFirestore().containsKey('id'), isFalse);
     });
 
-    test('emoji par défaut quand absent du Firestore', () {
-      // Simule un document sans champ emoji (lecture fromFirestore)
-      // On vérifie la logique du provider Go avec un emoji null → '🏛️'
-      // Côté Dart, le modèle utilise ?? '🏛️' dans fromFirestore
-      final badge = MonumentBadge(
-        id: 'monument_X',
-        monumentId: 'X',
-        name: 'Monument inconnu',
-        emoji: '🏛️',
-        unlockedAt: DateTime(2026, 4, 27),
-      );
+    test('fromMap — emoji par défaut quand champ absent', () {
+      final badge = MonumentBadge.fromMap('monument_X', {
+        'monumentId': 'X',
+        'name': 'Monument inconnu',
+        // 'emoji' absent → doit fallback sur '🏛️'
+        'unlockedAt': Timestamp.fromDate(DateTime(2026, 4, 27)),
+      });
 
       expect(badge.emoji, '🏛️');
+    });
+
+    test('fromMap — emoji fourni est conservé', () {
+      final badge = MonumentBadge.fromMap('monument_tour-eiffel', {
+        'monumentId': 'tour-eiffel',
+        'name': 'Tour Eiffel',
+        'emoji': '🗼',
+        'unlockedAt': Timestamp.fromDate(DateTime(2026, 4, 27)),
+      });
+
+      expect(badge.emoji, '🗼');
+      expect(badge.id, 'monument_tour-eiffel');
+      expect(badge.monumentId, 'tour-eiffel');
     });
   });
 }

@@ -110,11 +110,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }).close;
 
     // Détecte les monuments à ≤ 100m pendant la session → écrit un proximity event.
+    // Guard : attend que monumentBadgesStreamProvider soit résolu pour éviter d'écrire
+    // un event pour un badge déjà débloqué (Set vide par défaut pendant le loading).
     _closeMonumentProximitySub =
         ref.listenManual(monumentProximityStreamProvider, (prev, next) {
       final monument = next.valueOrNull;
       if (monument == null) return;
       if (_triggeredMonuments.contains(monument.id)) return;
+      if (!ref.read(monumentBadgesStreamProvider).hasValue) return;
       if (ref.read(monumentBadgeIdsProvider).contains(monument.id)) {
         _triggeredMonuments.add(monument.id);
         return;
@@ -124,11 +127,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }).close;
 
     // Quand un nouveau badge monument apparaît dans Firestore → célébration + haptics.
+    // Guard : ignore l'initial load (prev sans valeur) pour ne pas déclencher
+    // une rafale de célébrations pour les badges déjà débloqués au chargement.
     _closeMonumentBadgeSub =
         ref.listenManual(monumentBadgesStreamProvider, (prev, next) {
+      if (prev?.hasValue != true) return;
       final badges = next.valueOrNull;
       if (badges == null) return;
-      final prevBadges = prev?.valueOrNull ?? const [];
+      final prevBadges = prev!.valueOrNull ?? const [];
       final newBadges = badges.where(
         (b) => !prevBadges.any((p) => p.id == b.id),
       );

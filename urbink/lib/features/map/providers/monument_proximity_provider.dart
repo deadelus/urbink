@@ -1,3 +1,5 @@
+import 'dart:math' show cos, pi;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:urbink/features/map/models/monument.dart';
@@ -23,7 +25,16 @@ final monumentProximityStreamProvider =
 
   final gpsService = ref.watch(gpsTrackingServiceProvider);
   await for (final position in gpsService.positionStream()) {
-    for (final monument in monuments) {
+    // Bounding box pre-filter : élimine ~99 % des monuments avant le calcul Vincenty.
+    const deltaLat = kMonumentProximityRadiusMeters / 111000.0;
+    final deltaLon = kMonumentProximityRadiusMeters /
+        (111000.0 * cos(position.latitude * pi / 180.0));
+
+    final candidates = monuments.where((m) =>
+        (m.position.latitude - position.latitude).abs() <= deltaLat &&
+        (m.position.longitude - position.longitude).abs() <= deltaLon);
+
+    for (final monument in candidates) {
       final distance = Geolocator.distanceBetween(
         position.latitude,
         position.longitude,

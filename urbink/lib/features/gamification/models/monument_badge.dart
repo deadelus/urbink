@@ -17,9 +17,12 @@ class MonumentBadge {
 
   factory MonumentBadge.fromFirestore(
       DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+    return MonumentBadge.fromMap(doc.id, doc.data()!);
+  }
+
+  factory MonumentBadge.fromMap(String id, Map<String, dynamic> data) {
     return MonumentBadge(
-      id: doc.id,
+      id: id,
       monumentId: data['monumentId'] as String,
       name: data['name'] as String,
       emoji: data['emoji'] as String? ?? '🏛️',

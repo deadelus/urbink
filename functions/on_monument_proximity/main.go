@@ -132,7 +132,10 @@ func process(ctx context.Context, userId, eventId string, checker badgeChecker, 
 	}
 
 	if err := sender.send(ctx, buildFCMMessage(token, event)); err != nil {
-		return fmt.Errorf("messaging Send: %w", err)
+		// Non-fatal : le badge est déjà créé — un échec FCM ne doit pas bloquer
+		// la CF ni empêcher la déduplication sur les retries.
+		log.Printf("messaging Send (non-fatal): %v", err)
+		return nil
 	}
 
 	log.Printf("badge monument_%s unlocked + notification sent to user %s", event.MonumentId, userId)

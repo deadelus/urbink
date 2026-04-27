@@ -66,4 +66,4 @@ Epic 4 · Story 4.4 — Badges monuments — détection proximité GPS
 
 ## Status
 
-`review`
+`done`

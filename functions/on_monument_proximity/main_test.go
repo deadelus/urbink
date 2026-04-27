@@ -180,6 +180,22 @@ func TestProcess_BadgeExistsCheckError(t *testing.T) {
 	}
 }
 
+func TestProcess_FCMErrorIsNonFatal(t *testing.T) {
+	checker := &mockChecker{
+		event:       ProximityEventDocument{MonumentId: "louvre", MonumentName: "Louvre", MonumentEmoji: "🏛️"},
+		exists:      false,
+		hasFCMToken: true,
+		fcmToken:    "tok123",
+	}
+	sender := &mockSender{sendErr: errors.New("fcm unavailable")}
+
+	// L'erreur FCM ne doit pas remonter — le badge est déjà créé
+	err := process(context.Background(), "uid1", "monument_louvre", checker, sender)
+	if err != nil {
+		t.Fatalf("erreur FCM doit être non-fatale, got: %v", err)
+	}
+}
+
 func TestProcess_WriteBadgeError(t *testing.T) {
 	checker := &mockChecker{
 		event:    ProximityEventDocument{MonumentId: "X"},
