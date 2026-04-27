@@ -42,17 +42,26 @@ class _CelebrationQueueListenerState
 
   Future<void> _showNext(CelebrationEvent event) async {
     _isShowing = true;
-    await showCelebrationOverlay(
-      context: context,
-      event: event,
-      onDone: () {
-        if (mounted) {
-          ref.read(celebrationQueueProvider.notifier).pop();
-          _isShowing = false;
-          final remaining = ref.read(celebrationQueueProvider);
-          if (remaining.isNotEmpty) _showNext(remaining.first);
-        }
-      },
-    );
+    try {
+      await showCelebrationOverlay(
+        context: context,
+        event: event,
+        onDone: () {
+          if (mounted) ref.read(celebrationQueueProvider.notifier).pop();
+        },
+      );
+    } finally {
+      _isShowing = false;
+      if (mounted) {
+        // Vérifie si d'autres events sont en attente, que l'overlay ait été
+        // dismissé normalement (onDone) ou via un pop externe (navigation, etc.).
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && !_isShowing) {
+            final remaining = ref.read(celebrationQueueProvider);
+            if (remaining.isNotEmpty) _showNext(remaining.first);
+          }
+        });
+      }
+    }
   }
 }

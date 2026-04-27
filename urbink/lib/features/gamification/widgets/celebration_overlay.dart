@@ -145,8 +145,8 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
       duration: Duration(milliseconds: reduceMotion ? 150 : 250),
       curve: Curves.easeIn,
     );
-    callback?.call();
     widget.onDone();
+    callback?.call();
   }
 
   @override
