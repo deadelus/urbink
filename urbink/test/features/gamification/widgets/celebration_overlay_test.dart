@@ -12,7 +12,9 @@ import 'package:urbink/shared/theme/app_theme.dart';
 // Helpers
 // ---------------------------------------------------------------------------
 
-Widget _app({required Widget child}) => ProviderScope(
+Widget _app({required ProviderContainer container, required Widget child}) =>
+    UncontrolledProviderScope(
+      container: container,
       child: MaterialApp(
         theme: AppTheme.light(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -26,14 +28,25 @@ Widget _app({required Widget child}) => ProviderScope(
       ),
     );
 
-Widget _overlayApp(CelebrationEvent event, {VoidCallback? onDone}) => _app(
+Widget _overlayApp(
+  ProviderContainer container,
+  CelebrationEvent event, {
+  VoidCallback? onDone,
+}) =>
+    _app(
+      container: container,
       child: Scaffold(
-        body: Builder(
-          builder: (ctx) => CelebrationOverlay(
-            event: event,
-            onDone: onDone ?? () {},
-          ),
+        body: CelebrationOverlay(
+          event: event,
+          onDone: onDone ?? () {},
         ),
+      ),
+    );
+
+Widget _queueApp(ProviderContainer container) => _app(
+      container: container,
+      child: const CelebrationQueueListener(
+        child: Scaffold(body: Text('carte')),
       ),
     );
 
@@ -52,7 +65,10 @@ void main() {
     );
 
     testWidgets('affiche le titre et le bouton Continuer', (tester) async {
-      await tester.pumpWidget(_overlayApp(event));
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
+
+      await tester.pumpWidget(_overlayApp(c, event));
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Tour Eiffel'), findsOneWidget);
@@ -62,8 +78,11 @@ void main() {
     });
 
     testWidgets('onDone appelé au tap sur le bouton Continuer', (tester) async {
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
+
       bool done = false;
-      await tester.pumpWidget(_overlayApp(event, onDone: () => done = true));
+      await tester.pumpWidget(_overlayApp(c, event, onDone: () => done = true));
       await tester.pumpAndSettle();
 
       await tester.tap(find.textContaining("l'exploration"));
@@ -73,9 +92,12 @@ void main() {
     });
 
     testWidgets('sans subtitle — pas de carte secret', (tester) async {
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
+
       const noSub = CelebrationEvent(
           id: 'x', mode: CelebrationMode.badge, title: 'Mon Badge');
-      await tester.pumpWidget(_overlayApp(noSub));
+      await tester.pumpWidget(_overlayApp(c, noSub));
       await tester.pumpAndSettle();
 
       expect(find.text('🗝️'), findsNothing);
@@ -91,7 +113,10 @@ void main() {
     );
 
     testWidgets('affiche le secret local et le bouton Continuer', (tester) async {
-      await tester.pumpWidget(_overlayApp(event));
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
+
+      await tester.pumpWidget(_overlayApp(c, event));
       await tester.pumpAndSettle();
 
       expect(find.text('La fontaine cachée rue de Bretagne'), findsOneWidget);
@@ -100,13 +125,19 @@ void main() {
     });
 
     testWidgets('bouton Partager absent si onShare est null', (tester) async {
-      await tester.pumpWidget(_overlayApp(event));
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
+
+      await tester.pumpWidget(_overlayApp(c, event));
       await tester.pumpAndSettle();
 
       expect(find.text('Partager'), findsNothing);
     });
 
     testWidgets('bouton Partager présent si onShare fourni', (tester) async {
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
+
       final eventWithShare = CelebrationEvent(
         id: 'district-marais',
         mode: CelebrationMode.district,
@@ -114,7 +145,7 @@ void main() {
         subtitle: 'Secret',
         onShare: () {},
       );
-      await tester.pumpWidget(_overlayApp(eventWithShare));
+      await tester.pumpWidget(_overlayApp(c, eventWithShare));
       await tester.pumpAndSettle();
 
       expect(find.text('Partager'), findsOneWidget);
@@ -126,32 +157,15 @@ void main() {
   // ---------------------------------------------------------------------------
 
   group('CelebrationQueueListener', () {
-    testWidgets('affiche CelebrationOverlay quand queue non vide', (tester) async {
-      late WidgetRef capturedRef;
+    testWidgets('affiche CelebrationOverlay quand queue non vide',
+        (tester) async {
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
 
-      await tester.pumpWidget(ProviderScope(
-        child: MaterialApp(
-          theme: AppTheme.light(),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('fr'),
-          builder: (ctx, child) => MediaQuery(
-            data: MediaQuery.of(ctx).copyWith(disableAnimations: true),
-            child: child!,
-          ),
-          home: Consumer(
-            builder: (ctx, ref, _) {
-              capturedRef = ref;
-              return CelebrationQueueListener(
-                child: const Scaffold(body: Text('carte')),
-              );
-            },
-          ),
-        ),
-      ));
+      await tester.pumpWidget(_queueApp(c));
       await tester.pumpAndSettle();
 
-      capturedRef.read(celebrationQueueProvider.notifier).push(
+      c.read(celebrationQueueProvider.notifier).push(
             const CelebrationEvent(
                 id: 'badge-test',
                 mode: CelebrationMode.badge,
@@ -159,7 +173,6 @@ void main() {
           );
       // pump #1 : Riverpod notifie le listener → addPostFrameCallback enregistré
       // pump #2 : post-frame callback → showGeneralDialog → route poussée
-      // pump #3+ : dialog rendu
       await tester.pump();
       await tester.pump();
       await tester.pumpAndSettle();
@@ -168,32 +181,14 @@ void main() {
       expect(find.textContaining('Mon Badge'), findsOneWidget);
     });
 
-    testWidgets('pop la queue après dismiss de l\'overlay', (tester) async {
-      late WidgetRef capturedRef;
+    testWidgets("pop la queue après dismiss de l'overlay", (tester) async {
+      final c = ProviderContainer();
+      addTearDown(c.dispose);
 
-      await tester.pumpWidget(ProviderScope(
-        child: MaterialApp(
-          theme: AppTheme.light(),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('fr'),
-          builder: (ctx, child) => MediaQuery(
-            data: MediaQuery.of(ctx).copyWith(disableAnimations: true),
-            child: child!,
-          ),
-          home: Consumer(
-            builder: (ctx, ref, _) {
-              capturedRef = ref;
-              return CelebrationQueueListener(
-                child: const Scaffold(body: Text('carte')),
-              );
-            },
-          ),
-        ),
-      ));
+      await tester.pumpWidget(_queueApp(c));
       await tester.pumpAndSettle();
 
-      capturedRef.read(celebrationQueueProvider.notifier).push(
+      c.read(celebrationQueueProvider.notifier).push(
             const CelebrationEvent(
                 id: 'badge-test',
                 mode: CelebrationMode.badge,
@@ -205,11 +200,10 @@ void main() {
 
       expect(find.byType(CelebrationOverlay), findsOneWidget);
 
-      // Dismiss via bouton Continuer
       await tester.tap(find.textContaining("l'exploration"));
       await tester.pumpAndSettle();
 
-      expect(capturedRef.read(celebrationQueueProvider), isEmpty);
+      expect(c.read(celebrationQueueProvider), isEmpty);
       expect(find.byType(CelebrationOverlay), findsNothing);
     });
   });

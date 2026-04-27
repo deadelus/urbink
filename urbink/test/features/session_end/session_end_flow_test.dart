@@ -40,8 +40,8 @@ Widget _flowApp(void Function(BuildContext ctx, WidgetRef ref) capture) {
       home: Consumer(
         builder: (ctx, ref, _) {
           capture(ctx, ref);
-          return CelebrationQueueListener(
-            child: const Scaffold(body: Center(child: Text('map'))),
+          return const CelebrationQueueListener(
+            child: Scaffold(body: Center(child: Text('map'))),
           );
         },
       ),
