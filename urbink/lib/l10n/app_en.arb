@@ -151,5 +151,27 @@
   "profile_view_feed": "Feed",
   "profile_feed_placeholder": "Feed view coming in Epic 9",
   "histogram_empty_message": "Your first outing this week is waiting for you",
-  "histogram_start_cta": "Start"
+  "histogram_start_cta": "Start",
+
+  "celeb_district_title": "🏆 District {name} completed!",
+  "@celeb_district_title": {
+    "description": "Title of the district completion celebration overlay",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "celeb_secret_local_label": "Local secret",
+  "@celeb_secret_local_label": { "description": "Section label for secret local in the district overlay" },
+
+  "celeb_share": "Share",
+  "@celeb_share": { "description": "Share button in the district overlay" },
+
+  "celeb_district_semantics": "District badge {name} unlocked. Local secret revealed.",
+  "@celeb_district_semantics": {
+    "description": "VoiceOver Semantics label for the district completion overlay",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  }
 }

@@ -758,30 +758,6 @@ abstract class AppLocalizations {
   /// **'{current} / {total}'**
   String celeb_progress(int current, int total);
 
-  /// Titre overlay célébration quartier complété
-  ///
-  /// In fr, this message translates to:
-  /// **'🏆 Quartier {name} complété !'**
-  String celeb_district_title(String name);
-
-  /// Label secret local dans l'overlay quartier
-  ///
-  /// In fr, this message translates to:
-  /// **'Secret local'**
-  String get celeb_secret_local_label;
-
-  /// Bouton partager overlay quartier
-  ///
-  /// In fr, this message translates to:
-  /// **'Partager'**
-  String get celeb_share;
-
-  /// Sémantique badge quartier pour accessibilité
-  ///
-  /// In fr, this message translates to:
-  /// **'Badge quartier {name} débloqué. Secret local révélé.'**
-  String celeb_district_semantics(String name);
-
   /// Titre de l'onglet Vous (historique personnel)
   ///
   /// In fr, this message translates to:
@@ -853,6 +829,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Démarrer'**
   String get histogram_start_cta;
+
+  /// Titre overlay célébration quartier complété
+  ///
+  /// In fr, this message translates to:
+  /// **'🏆 Quartier {name} complété !'**
+  String celeb_district_title(String name);
+
+  /// Label section secret local dans l'overlay quartier
+  ///
+  /// In fr, this message translates to:
+  /// **'Secret local'**
+  String get celeb_secret_local_label;
+
+  /// Bouton partager overlay quartier
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager'**
+  String get celeb_share;
+
+  /// Label Semantics VoiceOver overlay quartier complété
+  ///
+  /// In fr, this message translates to:
+  /// **'Badge quartier {name} débloqué. Secret local révélé.'**
+  String celeb_district_semantics(String name);
 }
 
 class _AppLocalizationsDelegate
