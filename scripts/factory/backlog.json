@@ -544,6 +544,22 @@
     "done_at": null
   },
   {
+    "id": "10.5",
+    "epic": 10,
+    "title": "Tests intégration Cloud Functions Go — Firebase Emulator Suite",
+    "branch": "epic-10/story-10.5-tests-integration-cloud-functions-emulator",
+    "pr_title": "[Epic 10 · Story 10.5] Tests intégration Cloud Functions Go — Firebase Emulator",
+    "pr_body_story": "Epic 10 · Story 10.5 — Tests intégration Cloud Functions Go avec Firebase Emulator Suite",
+    "artifact_name": "10-5-tests-integration-cloud-functions-emulator",
+    "status": "pending",
+    "pr_number": null,
+    "error_count": 0,
+    "last_error": null,
+    "started_at": null,
+    "built_at": null,
+    "done_at": null
+  },
+  {
     "id": "11.1",
     "epic": 11,
     "title": "Pipeline cold start IA (Cloud Function populate_paris.go)",

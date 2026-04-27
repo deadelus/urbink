@@ -1,27 +1,31 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:urbink/core/router/app_router.dart';
+import 'package:urbink/features/gamification/models/celebration_event.dart';
+import 'package:urbink/features/gamification/providers/celebration_queue_provider.dart';
 import 'package:urbink/features/session_end/models/badge_unlock.dart';
-import 'package:urbink/features/session_end/widgets/badge_celebration.dart';
 import 'package:urbink/features/session_end/widgets/session_summary_sheet.dart';
 import 'package:urbink/features/sessions/models/session_data.dart';
 
 /// Orchestre la séquence complète de fin de sortie :
 ///
 /// 1. [SessionSummarySheet] en bottom sheet modale
-/// 2. [BadgeCelebration] plein-écran pour chaque badge (enchaînés)
+/// 2. Push des badges dans [celebrationQueueProvider] (affichage via [CelebrationQueueListener])
 /// 3. Retour à la carte via GoRouter
 abstract final class SessionEndFlow {
-  /// Lance la séquence depuis un [BuildContext] valide.
+  /// Lance la séquence depuis un [BuildContext] + [WidgetRef] valides.
   ///
   /// [session] — données de la sortie terminée
   /// [badges]  — liste des badges débloqués (peut être vide)
   static Future<void> show({
     required BuildContext context,
+    required WidgetRef ref,
     required SessionData session,
     required List<BadgeUnlock> badges,
+    VoidCallback? onNavigate,
   }) async {
     // ── 1. Summary sheet ────────────────────────────────────────────────────
     bool celebrate = false;
@@ -37,7 +41,6 @@ abstract final class SessionEndFlow {
           session: session,
           newBadges: badges,
           onClose: () {
-            // "Super !" → célébrer si des badges existent
             celebrate = badges.isNotEmpty;
             Navigator.of(ctx).pop();
           },
@@ -51,40 +54,29 @@ abstract final class SessionEndFlow {
 
     if (!context.mounted) return;
 
-    // ── 2. Célébrations enchaînées ───────────────────────────────────────
+    // ── 2. Push badges dans la queue ────────────────────────────────────────
     if (celebrate && badges.isNotEmpty) {
-      for (int i = 0; i < badges.length; i++) {
-        if (!context.mounted) break;
-
-        bool skipAll = false;
-        await showGeneralDialog<void>(
-          context: context,
-          barrierDismissible: false,
-          barrierColor: Colors.transparent,
-          pageBuilder: (ctx, _, _) => BadgeCelebration(
-            badge: badges[i],
-            currentIndex: i + 1,
-            total: badges.length,
-            onDone: () => Navigator.of(ctx).pop(),
-            onSkipAll: () {
-              skipAll = true;
-              Navigator.of(ctx).pop();
-            },
+      for (final badge in badges) {
+        ref.read(celebrationQueueProvider.notifier).push(
+          CelebrationEvent(
+            id: 'badge-${badge.id}',
+            mode: CelebrationMode.badge,
+            title: badge.name,
+            subtitle: badge.description,
+            iconEmoji: badge.icon,
           ),
-          transitionDuration: Duration.zero,
         );
-
-        if (skipAll) break;
-
-        // 200ms entre deux célébrations
-        if (i < badges.length - 1) {
-          await Future.delayed(const Duration(milliseconds: 200));
-        }
       }
     }
 
     // ── 3. Retour carte ────────────────────────────────────────────────────
-    if (context.mounted) context.go(AppRoutes.map);
+    if (context.mounted) {
+      if (onNavigate != null) {
+        onNavigate();
+      } else {
+        context.go(AppRoutes.map);
+      }
+    }
   }
 }
 
@@ -100,7 +92,6 @@ class _BlurredScrim extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Barrière cliquable (ferme le sheet)
         GestureDetector(
           onTap: () => Navigator.of(context).pop(),
           child: BackdropFilter(
@@ -108,7 +99,6 @@ class _BlurredScrim extends StatelessWidget {
             child: Container(color: Colors.black.withValues(alpha: 0.60)),
           ),
         ),
-        // Sheet positionné en bas
         Align(alignment: Alignment.bottomCenter, child: child),
       ],
     );

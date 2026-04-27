@@ -1,48 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:urbink/features/gamification/providers/celebration_queue_provider.dart';
+import 'package:urbink/features/gamification/widgets/celebration_queue_listener.dart';
 import 'package:urbink/features/session_end/controllers/session_end_flow.dart';
 import 'package:urbink/features/session_end/models/badge_unlock.dart';
-import 'package:urbink/features/session_end/widgets/badge_celebration.dart';
 import 'package:urbink/features/session_end/widgets/session_summary_sheet.dart';
 import 'package:urbink/features/sessions/models/session_data.dart';
 import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/theme/app_theme.dart';
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Fixtures
 // ---------------------------------------------------------------------------
 
 const _session = SessionData(active: false, km: 1.5, streets: 20, secs: 600);
 
-const _badge1 = BadgeUnlock(
-    id: 'b1', name: 'Badge A', description: 'D1', icon: '🏆');
-const _badge2 = BadgeUnlock(
-    id: 'b2', name: 'Badge B', description: 'D2', icon: '⭐');
+const _badge1 = BadgeUnlock(id: 'b1', name: 'Badge A', description: 'D1', icon: '🏆');
+const _badge2 = BadgeUnlock(id: 'b2', name: 'Badge B', description: 'D2', icon: '⭐');
 
 void _setTallViewport(WidgetTester tester) {
   tester.view.physicalSize = const Size(400, 1100);
   tester.view.devicePixelRatio = 1.0;
 }
 
-/// Crée une app avec un bouton qui lance le flow.
-/// GoRouter n'est pas monté — le test s'arrête avant l'appel context.go().
-Widget _flowApp(BuildContext Function(BuildContext) ctxCapture) {
-  return MaterialApp(
-    theme: AppTheme.light(),
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    locale: const Locale('fr'),
-    builder: (ctx, child) => MediaQuery(
-      data: MediaQuery.of(ctx).copyWith(disableAnimations: true),
-      child: child!,
-    ),
-    home: Builder(
-      builder: (ctx) {
-        ctxCapture(ctx);
-        return const Scaffold(
-          body: Center(child: Text('map')),
-        );
-      },
+/// App test avec ProviderScope + CelebrationQueueListener.
+/// GoRouter non monté — context.go() lèvera une exception consommée par takeException().
+Widget _flowApp(void Function(BuildContext ctx, WidgetRef ref) capture) {
+  return ProviderScope(
+    child: MaterialApp(
+      theme: AppTheme.light(),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('fr'),
+      builder: (ctx, child) => MediaQuery(
+        data: MediaQuery.of(ctx).copyWith(disableAnimations: true),
+        child: child!,
+      ),
+      home: Consumer(
+        builder: (ctx, ref, _) {
+          capture(ctx, ref);
+          return CelebrationQueueListener(
+            child: const Scaffold(body: Center(child: Text('map'))),
+          );
+        },
+      ),
     ),
   );
 }
@@ -53,64 +55,54 @@ Widget _flowApp(BuildContext Function(BuildContext) ctxCapture) {
 
 void main() {
   group('SessionEndFlow', () {
-    testWidgets('sans badges — affiche le SessionSummarySheet', (tester) async {
-      _setTallViewport(tester);
-      addTearDown(tester.view.resetPhysicalSize);
-
-      late BuildContext ctx;
-      await tester.pumpWidget(_flowApp((c) => ctx = c));
-      await tester.pumpAndSettle();
-
-      // Lance le flow sans await pour que le test puisse inspecter l'UI
-      SessionEndFlow.show(context: ctx, session: _session, badges: const []);
-      await tester.pumpAndSettle();
-
-      expect(find.byType(SessionSummarySheet), findsOneWidget);
-      expect(find.byType(BadgeCelebration), findsNothing);
-    });
-
-    testWidgets('avec 2 badges — sheet visible, puis 2 célébrations enchaînées',
+    testWidgets('sans badges — affiche le SessionSummarySheet, queue reste vide',
         (tester) async {
       _setTallViewport(tester);
       addTearDown(tester.view.resetPhysicalSize);
 
       late BuildContext ctx;
-      await tester.pumpWidget(_flowApp((c) => ctx = c));
+      late WidgetRef ref;
+      await tester.pumpWidget(_flowApp((c, r) { ctx = c; ref = r; }));
       await tester.pumpAndSettle();
 
       SessionEndFlow.show(
-          context: ctx, session: _session, badges: const [_badge1, _badge2]);
+          context: ctx, ref: ref, session: _session, badges: const []);
       await tester.pumpAndSettle();
 
-      // Sheet visible
+      expect(find.byType(SessionSummarySheet), findsOneWidget);
+      expect(ref.read(celebrationQueueProvider), isEmpty);
+    });
+
+    testWidgets('avec 2 badges — queue contient 2 events après Super!',
+        (tester) async {
+      _setTallViewport(tester);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      late BuildContext ctx;
+      late WidgetRef ref;
+      await tester.pumpWidget(_flowApp((c, r) { ctx = c; ref = r; }));
+      await tester.pumpAndSettle();
+
+      SessionEndFlow.show(
+          context: ctx,
+          ref: ref,
+          session: _session,
+          badges: const [_badge1, _badge2],
+          onNavigate: () {});
+      await tester.pumpAndSettle();
+
       expect(find.byType(SessionSummarySheet), findsOneWidget);
 
-      // Scroll pour afficher "Super !" si nécessaire
       await tester.ensureVisible(find.text('Super !'));
       await tester.tap(find.text('Super !'));
-      // Plusieurs pump nécessaires : dismiss modal → microtask → show() continue → showGeneralDialog
-      for (var i = 0; i < 6; i++) {
-        await tester.pump(const Duration(milliseconds: 16));
-      }
       await tester.pumpAndSettle();
 
-      // Première célébration
-      expect(find.byType(BadgeCelebration), findsOneWidget);
-      expect(find.text('Badge A'), findsOneWidget);
-      expect(find.text('1 / 2'), findsOneWidget);
-
-      // Continue vers badge 2 — 6×100ms pour couvrir exit anim (250ms) + délai inter-badges (200ms)
-      // badge 2 apparaît à ~600ms, pumpAndSettle() seul reviendrait à ~400ms (no frames)
-      await tester.tap(find.text("Continuer l'exploration"));
-      for (var i = 0; i < 6; i++) {
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-      await tester.pumpAndSettle();
-
-      // Deuxième célébration
-      expect(find.byType(BadgeCelebration), findsOneWidget);
-      expect(find.text('Badge B'), findsOneWidget);
-      expect(find.text('2 / 2'), findsOneWidget);
+      final queue = ref.read(celebrationQueueProvider);
+      expect(queue.length, 2);
+      expect(queue[0].id, 'badge-b1');
+      expect(queue[0].title, 'Badge A');
+      expect(queue[1].id, 'badge-b2');
+      expect(queue[1].title, 'Badge B');
     });
   });
 }
