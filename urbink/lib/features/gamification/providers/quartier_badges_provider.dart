@@ -4,7 +4,7 @@ import 'package:urbink/features/gamification/models/quartier_badge.dart';
 import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
 
 /// Firestore instance injectable en tests.
-final _firestoreProvider =
+final firestoreProvider =
     Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
 
 /// Stream de badges quartier débloqués par l'utilisateur courant.
@@ -16,7 +16,7 @@ final quartierBadgesStreamProvider =
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return Stream.value(const []);
 
-  final firestore = ref.watch(_firestoreProvider);
+  final firestore = ref.watch(firestoreProvider);
   return firestore
       .collection('users')
       .doc(uid)

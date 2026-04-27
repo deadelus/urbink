@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert' show jsonDecode;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -143,7 +142,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       );
 
       await writeQuartierBadge(
-        firestore: FirebaseFirestore.instance,
+        firestore: ref.read(firestoreProvider),
         uid: uid,
         badge: badge,
       );

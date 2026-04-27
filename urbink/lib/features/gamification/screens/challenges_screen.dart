@@ -4,6 +4,7 @@ import 'package:urbink/features/gamification/models/quartier_badge.dart';
 import 'package:urbink/features/gamification/models/quartier_progression.dart';
 import 'package:urbink/features/gamification/providers/quartier_badges_provider.dart';
 import 'package:urbink/features/gamification/providers/quartiers_progression_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 
@@ -48,7 +49,7 @@ class ChallengesScreen extends ConsumerWidget {
                         UrbinkSpacing.sm,
                       ),
                       child: Text(
-                        'Badges Quartiers',
+                        AppLocalizations.of(context).challenges_badges_section_title,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               color: UrbinkColors.onSurface,
                               fontWeight: FontWeight.w700,

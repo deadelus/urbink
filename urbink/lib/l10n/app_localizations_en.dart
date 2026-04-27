@@ -420,6 +420,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get histogram_start_cta => 'Start';
 
   @override
+  String get challenges_badges_section_title => 'District Badges';
+
+  @override
   String celeb_district_title(String name) {
     return '🏆 District $name completed!';
   }

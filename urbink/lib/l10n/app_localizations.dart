@@ -830,6 +830,12 @@ abstract class AppLocalizations {
   /// **'Démarrer'**
   String get histogram_start_cta;
 
+  /// Titre section badges quartiers débloqués dans l'écran Challenges
+  ///
+  /// In fr, this message translates to:
+  /// **'Badges Quartiers'**
+  String get challenges_badges_section_title;
+
   /// Titre overlay célébration quartier complété
   ///
   /// In fr, this message translates to:

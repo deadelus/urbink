@@ -422,6 +422,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get histogram_start_cta => 'Démarrer';
 
   @override
+  String get challenges_badges_section_title => 'Badges Quartiers';
+
+  @override
   String celeb_district_title(String name) {
     return '🏆 Quartier $name complété !';
   }

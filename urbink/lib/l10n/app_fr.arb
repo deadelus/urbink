@@ -425,6 +425,9 @@
   "histogram_start_cta": "Démarrer",
   "@histogram_start_cta": { "description": "CTA empty state histogramme — démarrer une sortie" },
 
+  "challenges_badges_section_title": "Badges Quartiers",
+  "@challenges_badges_section_title": { "description": "Titre section badges quartiers débloqués dans l'écran Challenges" },
+
   "celeb_district_title": "🏆 Quartier {name} complété !",
   "@celeb_district_title": {
     "description": "Titre overlay célébration quartier complété",

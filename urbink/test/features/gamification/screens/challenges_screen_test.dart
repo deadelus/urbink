@@ -6,6 +6,7 @@ import 'package:urbink/features/gamification/models/quartier_progression.dart';
 import 'package:urbink/features/gamification/providers/quartier_badges_provider.dart';
 import 'package:urbink/features/gamification/providers/quartiers_progression_provider.dart';
 import 'package:urbink/features/gamification/screens/challenges_screen.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -57,7 +58,12 @@ Widget _wrap(
             .overrideWith((ref) => const Stream.empty()),
         ...overrides,
       ],
-      child: MaterialApp(home: child),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('fr'),
+        home: child,
+      ),
     );
 
 // ---------------------------------------------------------------------------

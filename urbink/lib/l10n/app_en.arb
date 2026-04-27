@@ -153,6 +153,9 @@
   "histogram_empty_message": "Your first outing this week is waiting for you",
   "histogram_start_cta": "Start",
 
+  "challenges_badges_section_title": "District Badges",
+  "@challenges_badges_section_title": { "description": "Section title for unlocked district badges in the Challenges screen" },
+
   "celeb_district_title": "🏆 District {name} completed!",
   "@celeb_district_title": {
     "description": "Title of the district completion celebration overlay",

@@ -145,6 +145,7 @@ class _QuartierCelebrationOverlayState
     return Material(
       type: MaterialType.transparency,
       child: PopScope(
+        canPop: false,
         onPopInvokedWithResult: (_, _) =>
             _dismiss(widget.onContinue),
         child: Semantics(

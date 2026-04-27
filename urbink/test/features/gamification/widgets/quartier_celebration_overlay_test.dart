@@ -90,6 +90,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(called, isTrue);
+      await _disposeWidget(tester);
     });
 
     testWidgets('affiche le bouton Partager si onShare est fourni',
