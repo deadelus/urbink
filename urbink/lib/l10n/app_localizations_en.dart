@@ -381,6 +381,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String celeb_district_title(String name) => '🏆 District $name completed!';
+
+  @override
+  String get celeb_secret_local_label => 'Local secret';
+
+  @override
+  String get celeb_share => 'Share';
+
+  @override
+  String celeb_district_semantics(String name) =>
+      'District badge $name unlocked. Local secret revealed.';
+
+  @override
   String get profile_title => 'You';
 
   @override

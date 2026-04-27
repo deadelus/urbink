@@ -2,5 +2,13 @@
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
-  }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "urbink",
+      "runtime": "go121",
+      "ignore": ["node_modules", ".git", "**/*.spec.*", "**/*.test.*"]
+    }
+  ]
 }

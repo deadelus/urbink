@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert' show jsonDecode;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -12,6 +13,11 @@ import 'package:http/http.dart' as http;
 import 'package:urbink/core/providers/active_map_style_provider.dart';
 import 'package:urbink/core/providers/city_config_provider.dart';
 import 'package:urbink/core/router/app_router.dart';
+import 'package:urbink/features/gamification/models/quartier_badge.dart';
+import 'package:urbink/features/gamification/providers/quartier_badges_provider.dart';
+import 'package:urbink/features/gamification/providers/quartiers_progression_provider.dart';
+import 'package:urbink/features/gamification/providers/secrets_locaux_provider.dart';
+import 'package:urbink/features/gamification/widgets/quartier_celebration_overlay.dart';
 import 'package:urbink/features/map/providers/map_state_provider.dart';
 import 'package:urbink/features/map/providers/zones_layer_provider.dart';
 import 'package:urbink/features/map/providers/zones_zoom_provider.dart';
@@ -59,6 +65,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   bool _styleLoading = true;
   bool _styleLoadFailed = false;
 
+  // Quartiers déjà traités dans cette session (évite les doublons).
+  final _triggeredQuartiers = <String>{};
+  bool _isCelebrating = false;
 
   @override
   void initState() {
@@ -70,6 +79,23 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     ref.listenManual(activeMapStyleProvider, (prev, next) {
       if (prev?.tileId != next.tileId) {
         _loadStyle(MapConstants.styleUrl(next.tileId));
+      }
+    });
+
+    // Détecte les quartiers nouvellement complétés à 100%.
+    ref.listenManual(quartiersProgressionProvider, (prev, next) {
+      final progressions = next.valueOrNull;
+      if (progressions == null) return;
+      for (final q in progressions) {
+        if (q.completionPercent < 100.0) continue;
+        if (_triggeredQuartiers.contains(q.id)) continue;
+        final alreadyBadged = ref.read(quartierBadgeIdsProvider).contains(q.id);
+        if (alreadyBadged) {
+          _triggeredQuartiers.add(q.id);
+          continue;
+        }
+        _triggeredQuartiers.add(q.id);
+        _handleQuartierCompleted(q.id, q.name);
       }
     });
 
@@ -94,6 +120,43 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         await _showCrashRecoveryDialog(interrupted);
       }
     });
+  }
+
+  Future<void> _handleQuartierCompleted(
+      String quartierId, String quartierName) async {
+    if (_isCelebrating) return; // file d'attente MVP : on ignore les simultanés
+    _isCelebrating = true;
+
+    try {
+      final uid = ref.read(currentUidProvider);
+      if (uid == null) return;
+
+      final secretsMap = await ref.read(secretsLocauxProvider.future);
+      final secret = secretsMap[quartierId] ?? '';
+
+      final badge = QuartierBadge(
+        id: QuartierBadge.idFor(quartierId),
+        quartierId: quartierId,
+        name: quartierName,
+        secretLocal: secret,
+        unlockedAt: DateTime.now(),
+      );
+
+      await writeQuartierBadge(
+        firestore: FirebaseFirestore.instance,
+        uid: uid,
+        badge: badge,
+      );
+
+      if (!mounted) return;
+      await showQuartierCelebration(
+        context: context,
+        quartierName: quartierName,
+        secretLocal: secret,
+      );
+    } finally {
+      _isCelebrating = false;
+    }
   }
 
   Future<void> _showCrashRecoveryDialog(Session session) async {

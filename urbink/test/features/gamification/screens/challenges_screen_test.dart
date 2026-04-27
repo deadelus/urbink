@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:urbink/features/gamification/models/quartier_badge.dart';
 import 'package:urbink/features/gamification/models/quartier_progression.dart';
+import 'package:urbink/features/gamification/providers/quartier_badges_provider.dart';
 import 'package:urbink/features/gamification/providers/quartiers_progression_provider.dart';
 import 'package:urbink/features/gamification/screens/challenges_screen.dart';
 
@@ -24,13 +26,37 @@ final _twoQuartiers = [
   ),
 ];
 
+final _completedQuartier = [
+  const QuartierProgression(
+    id: 'arrond_1',
+    name: '1er',
+    totalStreets: 100,
+    exploredStreets: 100,
+  ),
+];
+
+final _badge = QuartierBadge(
+  id: 'quartier_arrond_1',
+  quartierId: 'arrond_1',
+  name: '1er',
+  secretLocal: 'Secret du 1er arrondissement.',
+  unlockedAt: DateTime(2026, 4, 27),
+);
+
 // ---------------------------------------------------------------------------
 // Helper
 // ---------------------------------------------------------------------------
 
-Widget _wrap(Widget child, {List<Override> overrides = const []}) =>
+Widget _wrap(
+  Widget child, {
+  List<Override> overrides = const [],
+}) =>
     ProviderScope(
-      overrides: overrides,
+      overrides: [
+        quartierBadgesStreamProvider
+            .overrideWith((ref) => const Stream.empty()),
+        ...overrides,
+      ],
       child: MaterialApp(home: child),
     );
 
@@ -103,7 +129,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('1er'), findsOneWidget);
+      expect(find.text('1er'), findsAtLeastNWidgets(1));
       expect(find.text('50.0%'), findsOneWidget);
       expect(find.text('2e'), findsOneWidget);
       expect(find.text('10.0%'), findsOneWidget);
@@ -140,6 +166,64 @@ void main() {
       await tester.pump();
 
       expect(find.text('Erreur de chargement'), findsOneWidget);
+    });
+
+    testWidgets('affiche tinte dorée pour un quartier complété à 100%',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const ChallengesScreen(),
+          overrides: [
+            quartiersProgressionProvider.overrideWith(
+              (ref) => Stream.value(_completedQuartier),
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('100%'), findsOneWidget);
+      expect(find.text('🏆'), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('affiche la section Badges Quartiers quand un badge existe',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const ChallengesScreen(),
+          overrides: [
+            quartiersProgressionProvider.overrideWith(
+              (ref) => Stream.value(_completedQuartier),
+            ),
+            quartierBadgesStreamProvider.overrideWith(
+              (ref) => Stream.value([_badge]),
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Badges Quartiers'), findsOneWidget);
+    });
+
+    testWidgets('masque la section Badges Quartiers si liste vide',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const ChallengesScreen(),
+          overrides: [
+            quartiersProgressionProvider.overrideWith(
+              (ref) => Stream.value(_twoQuartiers),
+            ),
+            quartierBadgesStreamProvider.overrideWith(
+              (ref) => Stream.value(const []),
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Badges Quartiers'), findsNothing);
     });
   });
 }

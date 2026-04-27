@@ -6,5 +6,12 @@ service cloud.firestore {
     match /users/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // Données quartiers — lecture publique (secretLocal révélé côté client après badge)
+    // Écriture réservée aux Cloud Functions via Admin SDK (pas de règle client)
+    match /quartiers/{quartierId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
   }
 }

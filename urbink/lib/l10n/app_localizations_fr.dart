@@ -383,6 +383,19 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String celeb_district_title(String name) => '🏆 Quartier $name complété !';
+
+  @override
+  String get celeb_secret_local_label => 'Secret local';
+
+  @override
+  String get celeb_share => 'Partager';
+
+  @override
+  String celeb_district_semantics(String name) =>
+      'Badge quartier $name débloqué. Secret local révélé.';
+
+  @override
   String get profile_title => 'Vous';
 
   @override
