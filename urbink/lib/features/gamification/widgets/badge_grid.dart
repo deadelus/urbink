@@ -11,6 +11,11 @@ import 'package:urbink/features/map/providers/monument_proximity_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 
+const _kGold = Color(0xFFF59E0B);
+const _kGoldLight = Color(0xFFFEF3C7);
+const _kGoldBorder = Color(0xFFFDE68A);
+const _kGoldText = Color(0xFF92400E);
+
 // ---------------------------------------------------------------------------
 // BadgeGrid — grille 4 colonnes monuments (locked / unlocked)
 // ---------------------------------------------------------------------------
@@ -165,9 +170,9 @@ class _UnlockedBadgeCellState extends State<_UnlockedBadgeCell>
         children: [
           Container(
             decoration: BoxDecoration(
-              color: UrbinkColors.surface,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: UrbinkColors.primary.withValues(alpha: 0.3)),
+              color: _kGoldLight,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _kGoldBorder, width: 1.5),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -181,13 +186,17 @@ class _UnlockedBadgeCellState extends State<_UnlockedBadgeCell>
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                      color: _kGoldText,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   dateLabel,
-                  style: const TextStyle(fontSize: 8, color: UrbinkColors.navInactive),
+                  style: const TextStyle(fontSize: 8, color: _kGold),
                 ),
               ],
             ),
@@ -240,7 +249,7 @@ class _LockedBadgeCell extends ConsumerWidget {
         child: Container(
           decoration: BoxDecoration(
             color: UrbinkColors.ghost,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
