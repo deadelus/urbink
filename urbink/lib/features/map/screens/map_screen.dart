@@ -21,6 +21,7 @@ import 'package:urbink/features/gamification/providers/quartier_badges_provider.
 import 'package:urbink/features/gamification/providers/quartiers_progression_provider.dart';
 import 'package:urbink/features/gamification/providers/secrets_locaux_provider.dart';
 import 'package:urbink/features/map/models/monument.dart';
+import 'package:urbink/features/map/providers/map_focus_provider.dart';
 import 'package:urbink/features/map/providers/map_state_provider.dart';
 import 'package:urbink/features/map/providers/monument_proximity_provider.dart';
 import 'package:urbink/features/map/providers/zones_layer_provider.dart';
@@ -68,6 +69,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   VoidCallback? _closeQuartierSub;
   VoidCallback? _closeMonumentProximitySub;
   VoidCallback? _closeMonumentBadgeSub;
+  VoidCallback? _closeMapFocusSub;
 
   Style? _mapStyle;
   bool _styleLoading = true;
@@ -149,6 +151,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               ),
             );
       }
+    }).close;
+
+    // Centre la carte quand un autre écran demande un focus (ex: "Voir sur carte").
+    _closeMapFocusSub = ref.listenManual(mapFocusProvider, (_, next) {
+      if (next == null) return;
+      _mapController.move(next, 17.0);
+      ref.read(mapFocusProvider.notifier).state = null;
     }).close;
 
     _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
@@ -313,6 +322,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     _closeQuartierSub?.call();
     _closeMonumentProximitySub?.call();
     _closeMonumentBadgeSub?.call();
+    _closeMapFocusSub?.call();
     _connectivitySub?.cancel();
     super.dispose();
   }

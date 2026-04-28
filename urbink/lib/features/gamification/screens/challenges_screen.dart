@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:urbink/features/gamification/models/quartier_badge.dart';
 import 'package:urbink/features/gamification/models/quartier_progression.dart';
+import 'package:urbink/features/gamification/providers/badgeable_monuments_provider.dart';
+import 'package:urbink/features/gamification/providers/monument_badges_provider.dart';
 import 'package:urbink/features/gamification/providers/quartier_badges_provider.dart';
 import 'package:urbink/features/gamification/providers/quartiers_progression_provider.dart';
+import 'package:urbink/features/gamification/widgets/badge_grid.dart';
 import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
@@ -19,6 +22,8 @@ class ChallengesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progressionAsync = ref.watch(quartiersProgressionProvider);
     final badgesAsync = ref.watch(quartierBadgesStreamProvider);
+    final monumentsAsync = ref.watch(badgeableMonumentsProvider);
+    final monumentBadgesAsync = ref.watch(monumentBadgesStreamProvider);
 
     return Scaffold(
       backgroundColor: UrbinkColors.background,
@@ -77,6 +82,40 @@ class ChallengesScreen extends ConsumerWidget {
             },
             loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
             error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+          ),
+
+          // ── Badges Monuments ──────────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                UrbinkSpacing.md,
+                UrbinkSpacing.lg,
+                UrbinkSpacing.md,
+                UrbinkSpacing.sm,
+              ),
+              child: Text(
+                'Monuments',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: UrbinkColors.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+          ),
+          monumentsAsync.when(
+            data: (monuments) => monumentBadgesAsync.when(
+              data: (badges) => SliverToBoxAdapter(
+                child: BadgeGrid(monuments: monuments, badges: badges),
+              ),
+              loading: () =>
+                  const SliverToBoxAdapter(child: SizedBox.shrink()),
+              error: (_, _) =>
+                  const SliverToBoxAdapter(child: SizedBox.shrink()),
+            ),
+            loading: () =>
+                const SliverToBoxAdapter(child: SizedBox.shrink()),
+            error: (_, _) =>
+                const SliverToBoxAdapter(child: SizedBox.shrink()),
           ),
 
           // ── Quartiers Progression ──────────────────────────────────────
