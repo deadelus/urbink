@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:urbink/features/gamification/screens/challenges_screen.dart';
+import 'package:urbink/features/badges/screens/badges_screen.dart';
 import 'package:urbink/features/gamification/widgets/celebration_queue_listener.dart';
 import 'package:urbink/features/map/providers/streets_visible_provider.dart';
 import 'package:urbink/features/map/screens/filters_screen.dart';
@@ -112,7 +112,7 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: AppRoutes.badges,
               pageBuilder: (context, state) => const NoTransitionPage(
-                child: ChallengesScreen(),
+                child: BadgesScreen(),
               ),
             ),
           ],

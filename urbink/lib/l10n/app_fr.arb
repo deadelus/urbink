@@ -448,5 +448,43 @@
     "placeholders": {
       "name": { "type": "String" }
     }
+  },
+
+  "badges_collections_intro": "Explorez Paris par thématique",
+  "@badges_collections_intro": { "description": "Sous-titre intro collections sur BadgesScreen" },
+
+  "badges_collection_complete": "Collection complète !",
+  "@badges_collection_complete": { "description": "Label collection 100% débloquée" },
+
+  "badges_collection_complete_sub": "Vous avez débloqué tous les monuments",
+  "@badges_collection_complete_sub": { "description": "Sous-titre collection complète" },
+
+  "badges_stat_collections": "Collections",
+  "@badges_stat_collections": { "description": "Label stat collections dans le stats banner de BadgesScreen" },
+
+  "btn_share": "Partager",
+  "@btn_share": { "description": "Bouton partager — monument detail sheet" },
+
+  "btn_show_on_map": "Voir sur la carte",
+  "@btn_show_on_map": { "description": "Bouton voir sur la carte — monument detail sheet" },
+
+  "mon_visited": "Badge débloqué",
+  "@mon_visited": { "description": "Titre status card monument visité" },
+
+  "mon_visited_sub": "Monument visité lors d'une sortie Urbink",
+  "@mon_visited_sub": { "description": "Sous-titre status card monument visité" },
+
+  "mon_locked": "Pas encore visité",
+  "@mon_locked": { "description": "Titre status card monument verrouillé" },
+
+  "mon_locked_sub": "Approchez-vous à moins de 100 m pour débloquer",
+  "@mon_locked_sub": { "description": "Sous-titre status card monument verrouillé" },
+
+  "mon_arr": "{n} arr.",
+  "@mon_arr": {
+    "description": "Label arrondissement — monument detail sheet",
+    "placeholders": {
+      "n": { "type": "String" }
+    }
   }
 }

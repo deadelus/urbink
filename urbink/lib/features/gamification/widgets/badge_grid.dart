@@ -11,20 +11,15 @@ import 'package:urbink/features/map/providers/monument_proximity_provider.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 
-const _kGold = Color(0xFFF59E0B);
-const _kGoldLight = Color(0xFFFEF3C7);
-const _kGoldBorder = Color(0xFFFDE68A);
-const _kGoldText = Color(0xFF92400E);
-
 // ---------------------------------------------------------------------------
-// BadgeGrid — grille 4 colonnes monuments (locked / unlocked)
+// BadgeGrid — grille 3 colonnes monuments (locked / unlocked)
 // ---------------------------------------------------------------------------
 
-/// Grille 4 colonnes affichant les badges monuments débloqués et verrouillés.
+/// Grille 3 colonnes affichant les badges monuments débloqués et verrouillés.
 ///
-/// - Débloqués : emoji en couleur + date d'obtention
-/// - Verrouillés : opacité 40% + indice court
-/// - Nouveau badge : animation scale-in + chip "Nouveau !" pendant 3 secondes
+/// - Débloqués : emoji pleine couleur + checkmark vert top-right
+/// - Verrouillés : opacité 0.5 + grayscale sur l'emoji + icône cadenas
+/// - Nouveau badge : animation scale-in + chip "Nouveau !" 3s (remplace le ✓)
 class BadgeGrid extends ConsumerStatefulWidget {
   const BadgeGrid({super.key, required this.monuments, required this.badges});
 
@@ -48,7 +43,6 @@ class _BadgeGridState extends ConsumerState<BadgeGrid> {
   @override
   void initState() {
     super.initState();
-    // Initialise sans animation au premier chargement.
     for (final b in widget.badges) {
       _knownBadgeIds.add(b.monumentId);
     }
@@ -82,10 +76,10 @@ class _BadgeGridState extends ConsumerState<BadgeGrid> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        mainAxisSpacing: UrbinkSpacing.sm,
-        crossAxisSpacing: UrbinkSpacing.sm,
-        childAspectRatio: 0.75,
+        crossAxisCount: 3,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+        childAspectRatio: 1.0,
       ),
       itemCount: widget.monuments.length,
       itemBuilder: (context, index) {
@@ -161,73 +155,83 @@ class _UnlockedBadgeCellState extends State<_UnlockedBadgeCell>
 
   @override
   Widget build(BuildContext context) {
-    final dateLabel = _formatDate(widget.badge.unlockedAt);
-
     return ScaleTransition(
       scale: _scale,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
             decoration: BoxDecoration(
-              color: _kGoldLight,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _kGoldBorder, width: 1.5),
+              color: UrbinkColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: UrbinkColors.border),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0A000000),
+                  blurRadius: 4,
+                  offset: Offset(0, 1),
+                ),
+              ],
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(widget.badge.emoji, style: const TextStyle(fontSize: 28)),
-                const SizedBox(height: 4),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(
-                    widget.monument.name,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w600,
-                      color: _kGoldText,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 2),
+                Text(widget.badge.emoji,
+                    style: const TextStyle(fontSize: 28)),
+                const SizedBox(height: 6),
                 Text(
-                  dateLabel,
-                  style: const TextStyle(fontSize: 8, color: _kGold),
+                  widget.monument.name,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: UrbinkColors.onSurface,
+                    height: 1.2,
+                  ),
                 ),
               ],
             ),
           ),
-          if (widget.isNew)
-            Positioned(
-              top: -6,
-              right: -6,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                decoration: BoxDecoration(
-                  color: UrbinkColors.primary,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  'Nouveau !',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 7,
-                    fontWeight: FontWeight.w700,
+          Positioned(
+            top: -4,
+            right: -4,
+            child: widget.isNew
+                ? Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: UrbinkColors.primary,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'Nouveau !',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 7,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  )
+                : Container(
+                    width: 16,
+                    height: 16,
+                    decoration: const BoxDecoration(
+                      color: UrbinkColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 10,
+                    ),
                   ),
-                ),
-              ),
-            ),
+          ),
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime dt) {
-    return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
   }
 }
 
@@ -245,29 +249,53 @@ class _LockedBadgeCell extends ConsumerWidget {
     return GestureDetector(
       onTap: () => _showLockedSheet(context, ref),
       child: Opacity(
-        opacity: 0.4,
+        opacity: 0.5,
         child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
           decoration: BoxDecoration(
-            color: UrbinkColors.ghost,
-            borderRadius: BorderRadius.circular(12),
+            color: UrbinkColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: UrbinkColors.border),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 4,
+                offset: Offset(0, 1),
+              ),
+            ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(monument.categoryIcon, style: const TextStyle(fontSize: 28)),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  monument.name,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600),
+              ColorFiltered(
+                colorFilter: const ColorFilter.matrix([
+                  0.2126, 0.7152, 0.0722, 0, 0,
+                  0.2126, 0.7152, 0.0722, 0, 0,
+                  0.2126, 0.7152, 0.0722, 0, 0,
+                  0, 0, 0, 1, 0,
+                ]),
+                child: Text(monument.categoryIcon,
+                    style: const TextStyle(fontSize: 28)),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                monument.name,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: UrbinkColors.navInactive,
+                  height: 1.2,
                 ),
               ),
-              const SizedBox(height: 2),
-              const Text('🔒', style: TextStyle(fontSize: 10)),
+              const SizedBox(height: 4),
+              const Icon(
+                Icons.lock,
+                color: UrbinkColors.navInactive,
+                size: 12,
+              ),
             ],
           ),
         ),

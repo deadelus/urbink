@@ -176,5 +176,43 @@
     "placeholders": {
       "name": { "type": "String" }
     }
+  },
+
+  "badges_collections_intro": "Explore Paris by theme",
+  "@badges_collections_intro": { "description": "Intro subtitle for collections on BadgesScreen" },
+
+  "badges_collection_complete": "Collection complete!",
+  "@badges_collection_complete": { "description": "Label for a 100% unlocked collection" },
+
+  "badges_collection_complete_sub": "All monuments unlocked",
+  "@badges_collection_complete_sub": { "description": "Subtitle for a complete collection" },
+
+  "badges_stat_collections": "Collections",
+  "@badges_stat_collections": { "description": "Stat label for collections in the BadgesScreen stats banner" },
+
+  "btn_share": "Share",
+  "@btn_share": { "description": "Share button — monument detail sheet" },
+
+  "btn_show_on_map": "Show on map",
+  "@btn_show_on_map": { "description": "Show on map button — monument detail sheet" },
+
+  "mon_visited": "Badge unlocked",
+  "@mon_visited": { "description": "Status card title — visited monument" },
+
+  "mon_visited_sub": "Visited during an Urbink outing",
+  "@mon_visited_sub": { "description": "Status card subtitle — visited monument" },
+
+  "mon_locked": "Not visited yet",
+  "@mon_locked": { "description": "Status card title — locked monument" },
+
+  "mon_locked_sub": "Get within 100 m to unlock",
+  "@mon_locked_sub": { "description": "Status card subtitle — locked monument" },
+
+  "mon_arr": "{n} arr.",
+  "@mon_arr": {
+    "description": "Arrondissement label — monument detail sheet",
+    "placeholders": {
+      "n": { "type": "String" }
+    }
   }
 }

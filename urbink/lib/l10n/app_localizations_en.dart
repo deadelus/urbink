@@ -437,4 +437,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String celeb_district_semantics(String name) {
     return 'District badge $name unlocked. Local secret revealed.';
   }
+
+  @override
+  String get badges_collections_intro => 'Explore Paris by theme';
+
+  @override
+  String get badges_collection_complete => 'Collection complete!';
+
+  @override
+  String get badges_collection_complete_sub => 'All monuments unlocked';
+
+  @override
+  String get badges_stat_collections => 'Collections';
+
+  @override
+  String get btn_share => 'Share';
+
+  @override
+  String get btn_show_on_map => 'Show on map';
+
+  @override
+  String get mon_visited => 'Badge unlocked';
+
+  @override
+  String get mon_visited_sub => 'Visited during an Urbink outing';
+
+  @override
+  String get mon_locked => 'Not visited yet';
+
+  @override
+  String get mon_locked_sub => 'Get within 100 m to unlock';
+
+  @override
+  String mon_arr(String n) {
+    return '$n arr.';
+  }
 }

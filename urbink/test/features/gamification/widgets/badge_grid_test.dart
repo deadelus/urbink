@@ -79,10 +79,10 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('🔒'), findsOneWidget);
+      expect(find.byIcon(Icons.lock), findsOneWidget);
     });
 
-    testWidgets('badge débloqué : affiche emoji et date, pas de verrou',
+    testWidgets('badge débloqué : affiche emoji + checkmark, pas de verrou',
         (tester) async {
       await tester.pumpWidget(
         _wrap(
@@ -95,8 +95,8 @@ void main() {
       await tester.pump();
 
       expect(find.text('🗼'), findsOneWidget);
-      expect(find.text('27/04/2026'), findsOneWidget);
-      expect(find.text('🔒'), findsNothing);
+      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byIcon(Icons.lock), findsNothing);
     });
 
     testWidgets('grille vide si monuments est vide', (tester) async {
@@ -110,7 +110,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('🔒'), findsNothing);
+      expect(find.byIcon(Icons.lock), findsNothing);
     });
   });
 }

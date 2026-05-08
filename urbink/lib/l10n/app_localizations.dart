@@ -859,6 +859,72 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Badge quartier {name} débloqué. Secret local révélé.'**
   String celeb_district_semantics(String name);
+
+  /// Sous-titre intro collections sur BadgesScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Explorez Paris par thématique'**
+  String get badges_collections_intro;
+
+  /// Label collection 100% débloquée
+  ///
+  /// In fr, this message translates to:
+  /// **'Collection complète !'**
+  String get badges_collection_complete;
+
+  /// Sous-titre collection complète
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous avez débloqué tous les monuments'**
+  String get badges_collection_complete_sub;
+
+  /// Label stat collections dans le stats banner de BadgesScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Collections'**
+  String get badges_stat_collections;
+
+  /// Bouton partager — monument detail sheet
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager'**
+  String get btn_share;
+
+  /// Bouton voir sur la carte — monument detail sheet
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir sur la carte'**
+  String get btn_show_on_map;
+
+  /// Titre status card monument visité
+  ///
+  /// In fr, this message translates to:
+  /// **'Badge débloqué'**
+  String get mon_visited;
+
+  /// Sous-titre status card monument visité
+  ///
+  /// In fr, this message translates to:
+  /// **'Monument visité lors d\'une sortie Urbink'**
+  String get mon_visited_sub;
+
+  /// Titre status card monument verrouillé
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas encore visité'**
+  String get mon_locked;
+
+  /// Sous-titre status card monument verrouillé
+  ///
+  /// In fr, this message translates to:
+  /// **'Approchez-vous à moins de 100 m pour débloquer'**
+  String get mon_locked_sub;
+
+  /// Label arrondissement — monument detail sheet
+  ///
+  /// In fr, this message translates to:
+  /// **'{n} arr.'**
+  String mon_arr(String n);
 }
 
 class _AppLocalizationsDelegate
