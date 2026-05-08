@@ -106,7 +106,7 @@ final GoRouter appRouter = GoRouter(
             ),
           ],
         ),
-        // 3 — Challenges (onglet Badges)
+        // 3 — Badges (collections monuments + quartiers)
         StatefulShellBranch(
           routes: [
             GoRoute(

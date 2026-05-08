@@ -486,5 +486,19 @@
     "placeholders": {
       "n": { "type": "String" }
     }
+  },
+
+  "challenges_monuments_section_title": "Monuments",
+  "@challenges_monuments_section_title": { "description": "Titre section badges monuments dans l'écran Challenges" },
+
+  "badge_new": "Nouveau !",
+  "@badge_new": { "description": "Chip badge récemment débloqué dans la grille" },
+
+  "badge_locked_hint": "Passe à {radius} m pour débloquer ce badge.",
+  "@badge_locked_hint": {
+    "description": "Hint dans la sheet badge verrouillé",
+    "placeholders": {
+      "radius": { "type": "String" }
+    }
   }
 }

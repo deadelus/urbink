@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:urbink/features/badges/data/collection_model.dart';
 import 'package:urbink/features/badges/widgets/mini_map.dart';
 import 'package:urbink/features/map/providers/map_focus_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 
 // ---------------------------------------------------------------------------
@@ -355,7 +356,7 @@ class _StatusCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isLocked ? 'Pas encore visité' : 'Badge débloqué',
+                    isLocked ? AppLocalizations.of(context).mon_locked : AppLocalizations.of(context).mon_visited,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -367,8 +368,8 @@ class _StatusCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     isLocked
-                        ? 'Approchez-vous à moins de 100 m pour débloquer'
-                        : 'Monument visité lors d\'une sortie Urbink',
+                        ? AppLocalizations.of(context).mon_locked_sub
+                        : AppLocalizations.of(context).mon_visited_sub,
                     style: const TextStyle(
                       fontSize: 11,
                       color: UrbinkColors.navInactive,
@@ -425,9 +426,9 @@ class _ActionsRow extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: _share,
                 icon: const Icon(Icons.share_outlined, size: 16),
-                label: const Text(
-                  'Partager',
-                  style: TextStyle(
+                label: Text(
+                  AppLocalizations.of(context).btn_share,
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -457,9 +458,9 @@ class _ActionsRow extends StatelessWidget {
                 },
                 icon: const Text('🧭',
                     style: TextStyle(fontSize: 14)),
-                label: const Text(
-                  'Voir sur la carte',
-                  style: TextStyle(
+                label: Text(
+                  AppLocalizations.of(context).btn_show_on_map,
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),

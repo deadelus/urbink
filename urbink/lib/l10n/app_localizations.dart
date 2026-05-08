@@ -925,6 +925,24 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'{n} arr.'**
   String mon_arr(String n);
+
+  /// Titre section badges monuments dans l'écran Challenges
+  ///
+  /// In fr, this message translates to:
+  /// **'Monuments'**
+  String get challenges_monuments_section_title;
+
+  /// Chip badge récemment débloqué dans la grille
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau !'**
+  String get badge_new;
+
+  /// Hint dans la sheet badge verrouillé
+  ///
+  /// In fr, this message translates to:
+  /// **'Passe à {radius} m pour débloquer ce badge.'**
+  String badge_locked_hint(String radius);
 }
 
 class _AppLocalizationsDelegate

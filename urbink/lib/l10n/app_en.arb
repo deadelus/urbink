@@ -214,5 +214,19 @@
     "placeholders": {
       "n": { "type": "String" }
     }
+  },
+
+  "challenges_monuments_section_title": "Monuments",
+  "@challenges_monuments_section_title": { "description": "Section title for monument badges in Challenges screen" },
+
+  "badge_new": "New!",
+  "@badge_new": { "description": "Chip for recently unlocked badge in the grid" },
+
+  "badge_locked_hint": "Get within {radius} m to unlock this badge.",
+  "@badge_locked_hint": {
+    "description": "Hint in the locked badge bottom sheet",
+    "placeholders": {
+      "radius": { "type": "String" }
+    }
   }
 }

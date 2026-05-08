@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:urbink/features/badges/data/collection_model.dart';
 import 'package:urbink/features/badges/screens/monument_detail_sheet.dart';
 import 'package:urbink/features/badges/widgets/mini_map.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -48,6 +49,9 @@ const _unlocked = CollectionMonument(
 Widget _wrap({required CollectionMonument monument}) {
   return ProviderScope(
     child: MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('fr'),
       home: Builder(
         builder: (context) => TextButton(
           onPressed: () => MonumentDetailSheet.show(

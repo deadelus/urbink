@@ -472,4 +472,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String mon_arr(String n) {
     return '$n arr.';
   }
+
+  @override
+  String get challenges_monuments_section_title => 'Monuments';
+
+  @override
+  String get badge_new => 'New!';
+
+  @override
+  String badge_locked_hint(String radius) {
+    return 'Get within $radius m to unlock this badge.';
+  }
 }

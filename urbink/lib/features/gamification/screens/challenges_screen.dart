@@ -94,7 +94,7 @@ class ChallengesScreen extends ConsumerWidget {
                 UrbinkSpacing.sm,
               ),
               child: Text(
-                'Monuments',
+                AppLocalizations.of(context).challenges_monuments_section_title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: UrbinkColors.onSurface,
                       fontWeight: FontWeight.w700,

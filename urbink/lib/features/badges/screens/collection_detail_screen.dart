@@ -4,6 +4,7 @@ import 'package:urbink/core/router/app_router.dart';
 import 'package:urbink/features/badges/data/collection_model.dart';
 import 'package:urbink/features/badges/screens/monument_detail_sheet.dart';
 import 'package:urbink/features/badges/widgets/monument_tile.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 
 // ---------------------------------------------------------------------------
@@ -84,7 +85,7 @@ class CollectionDetailScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Text(
-                        '🏆 Collection complète !',
+                        '🏆 ${AppLocalizations.of(context).badges_collection_complete}',
                         style: TextStyle(
                           fontFamily: 'CrimsonPro',
                           fontSize: 16,

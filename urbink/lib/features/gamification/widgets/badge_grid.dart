@@ -8,17 +8,18 @@ import 'package:urbink/features/gamification/models/monument_badge.dart';
 import 'package:urbink/features/map/models/monument.dart';
 import 'package:urbink/features/map/providers/map_focus_provider.dart';
 import 'package:urbink/features/map/providers/monument_proximity_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 
 // ---------------------------------------------------------------------------
-// BadgeGrid — grille 3 colonnes monuments (locked / unlocked)
+// BadgeGrid — grille 4 colonnes monuments (locked / unlocked)
 // ---------------------------------------------------------------------------
 
-/// Grille 3 colonnes affichant les badges monuments débloqués et verrouillés.
+/// Grille 4 colonnes affichant les badges monuments débloqués et verrouillés.
 ///
 /// - Débloqués : emoji pleine couleur + checkmark vert top-right
-/// - Verrouillés : opacité 0.5 + grayscale sur l'emoji + icône cadenas
+/// - Verrouillés : couleurs atténuées + grayscale sur l'emoji + icône cadenas
 /// - Nouveau badge : animation scale-in + chip "Nouveau !" 3s (remplace le ✓)
 class BadgeGrid extends ConsumerStatefulWidget {
   const BadgeGrid({super.key, required this.monuments, required this.badges});
@@ -76,7 +77,7 @@ class _BadgeGridState extends ConsumerState<BadgeGrid> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        crossAxisCount: 4,
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
         childAspectRatio: 1.0,
@@ -206,9 +207,9 @@ class _UnlockedBadgeCellState extends State<_UnlockedBadgeCell>
                       color: UrbinkColors.primary,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
-                      'Nouveau !',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context).badge_new,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 7,
                         fontWeight: FontWeight.w700,
@@ -248,56 +249,53 @@ class _LockedBadgeCell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () => _showLockedSheet(context, ref),
-      child: Opacity(
-        opacity: 0.5,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
-          decoration: BoxDecoration(
-            color: UrbinkColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: UrbinkColors.border),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x0A000000),
-                blurRadius: 4,
-                offset: Offset(0, 1),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+        decoration: BoxDecoration(
+          color: UrbinkColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: UrbinkColors.border.withValues(alpha: 0.4)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 4,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ColorFiltered(
+              colorFilter: const ColorFilter.matrix([
+                0.2126, 0.7152, 0.0722, 0, 0,
+                0.2126, 0.7152, 0.0722, 0, 0,
+                0.2126, 0.7152, 0.0722, 0, 0,
+                0, 0, 0, 1, 0,
+              ]),
+              child: Text(monument.categoryIcon,
+                  style: const TextStyle(fontSize: 28)),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              monument.name,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: UrbinkColors.navInactive.withValues(alpha: 0.7),
+                height: 1.2,
               ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ColorFiltered(
-                colorFilter: const ColorFilter.matrix([
-                  0.2126, 0.7152, 0.0722, 0, 0,
-                  0.2126, 0.7152, 0.0722, 0, 0,
-                  0.2126, 0.7152, 0.0722, 0, 0,
-                  0, 0, 0, 1, 0,
-                ]),
-                child: Text(monument.categoryIcon,
-                    style: const TextStyle(fontSize: 28)),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                monument.name,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: UrbinkColors.navInactive,
-                  height: 1.2,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Icon(
-                Icons.lock,
-                color: UrbinkColors.navInactive,
-                size: 12,
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 4),
+            Icon(
+              Icons.lock,
+              color: UrbinkColors.navInactive.withValues(alpha: 0.7),
+              size: 12,
+            ),
+          ],
         ),
       ),
     );
@@ -338,7 +336,7 @@ class _LockedBadgeCell extends ConsumerWidget {
             ),
             const SizedBox(height: UrbinkSpacing.sm),
             Text(
-              'Passe à $radius mètres pour débloquer ce badge.',
+              AppLocalizations.of(ctx).badge_locked_hint(radius.toString()),
               style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
                     color: UrbinkColors.navInactive,
                   ),
@@ -354,7 +352,7 @@ class _LockedBadgeCell extends ConsumerWidget {
                   context.go(AppRoutes.map);
                 },
                 icon: const Icon(Icons.map_outlined),
-                label: const Text('Voir sur carte'),
+                label: Text(AppLocalizations.of(ctx).btn_show_on_map),
               ),
             ),
           ],
