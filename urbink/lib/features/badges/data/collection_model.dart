@@ -49,6 +49,7 @@ class MonumentCollection {
   final String icon;
   final Color color;
   final List<CollectionMonument> monuments;
+  final List<String> transportModes;
 
   const MonumentCollection({
     required this.id,
@@ -57,6 +58,7 @@ class MonumentCollection {
     required this.icon,
     required this.color,
     required this.monuments,
+    this.transportModes = const ['foot'],
   });
 
   CollectionStats get stats {
@@ -79,6 +81,7 @@ class MonumentCollection {
         monuments: monuments
             .map((m) => m.withLocked(!unlockedIds.contains(m.id)))
             .toList(),
+        transportModes: transportModes,
       );
 }
 

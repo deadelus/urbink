@@ -943,6 +943,42 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Passe à {radius} m pour débloquer ce badge.'**
   String badge_locked_hint(String radius);
+
+  /// Label onglet Objectifs thématiques dans BadgesScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Objectifs'**
+  String get tab_objectifs;
+
+  /// Bouton activation d'un objectif thématique
+  ///
+  /// In fr, this message translates to:
+  /// **'Activer'**
+  String get objectif_activate;
+
+  /// Bouton désactivation d'un objectif thématique (état actif)
+  ///
+  /// In fr, this message translates to:
+  /// **'Actif'**
+  String get objectif_deactivate;
+
+  /// Label objectif thématique complété à 100%
+  ///
+  /// In fr, this message translates to:
+  /// **'Complété'**
+  String get objectif_complete;
+
+  /// Mode de déplacement à pied
+  ///
+  /// In fr, this message translates to:
+  /// **'À pied'**
+  String get transport_foot;
+
+  /// Mode de déplacement à vélo
+  ///
+  /// In fr, this message translates to:
+  /// **'Vélo'**
+  String get transport_bike;
 }
 
 class _AppLocalizationsDelegate

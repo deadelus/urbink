@@ -228,5 +228,23 @@
     "placeholders": {
       "radius": { "type": "String" }
     }
-  }
+  },
+
+  "tab_objectifs": "Goals",
+  "@tab_objectifs": { "description": "Thematic goals tab label in BadgesScreen" },
+
+  "objectif_activate": "Activate",
+  "@objectif_activate": { "description": "Button to activate a thematic goal" },
+
+  "objectif_deactivate": "Active",
+  "@objectif_deactivate": { "description": "Button shown when goal is active (tap to deactivate)" },
+
+  "objectif_complete": "Complete",
+  "@objectif_complete": { "description": "Label for a 100% complete thematic goal" },
+
+  "transport_foot": "Walking",
+  "@transport_foot": { "description": "Walking transport mode" },
+
+  "transport_bike": "Cycling",
+  "@transport_bike": { "description": "Cycling transport mode" }
 }

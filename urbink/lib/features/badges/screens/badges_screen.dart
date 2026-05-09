@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:urbink/features/badges/data/collection_model.dart';
+import 'package:urbink/features/badges/providers/objectif_activation_provider.dart';
 import 'package:urbink/features/badges/screens/collection_detail_screen.dart';
 import 'package:urbink/features/badges/state/badges_provider.dart';
 import 'package:urbink/features/badges/widgets/collection_card.dart';
+import 'package:urbink/features/badges/widgets/objectif_card.dart';
+import 'package:urbink/features/gamification/models/celebration_event.dart';
 import 'package:urbink/features/gamification/models/quartier_badge.dart';
 import 'package:urbink/features/gamification/models/quartier_progression.dart';
+import 'package:urbink/features/gamification/providers/celebration_queue_provider.dart';
 import 'package:urbink/features/gamification/providers/quartier_badges_provider.dart';
 import 'package:urbink/features/gamification/providers/quartiers_progression_provider.dart';
+import 'package:urbink/features/sessions/providers/session_lifecycle_provider.dart';
+import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 
@@ -24,12 +31,43 @@ class BadgesScreen extends ConsumerStatefulWidget {
 class _BadgesScreenState extends ConsumerState<BadgesScreen> {
   _Tab _tab = _Tab.monuments;
 
+  /// IDs des collections déjà détectées comme complètes — évite les
+  /// re-déclenchements de célébration au rechargement de l'écran.
+  final Set<String> _celebratedCollections = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Détecte les collections qui atteignent 100% en temps réel.
+    // Guard : ignore le premier appel (prev == null) pour éviter une rafale
+    // de célébrations pour les collections déjà complètes au démarrage.
+    ref.listenManual(collectionsProvider, (prev, next) {
+      if (prev == null) return;
+      for (final col in next) {
+        if (col.stats.pct == 100 && !_celebratedCollections.contains(col.id)) {
+          _celebratedCollections.add(col.id);
+          ref.read(celebrationQueueProvider.notifier).push(
+                CelebrationEvent(
+                  id: 'collection-${col.id}',
+                  mode: CelebrationMode.badge,
+                  title: col.name,
+                  iconEmoji: col.icon,
+                ),
+              );
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final stats = ref.watch(badgesStatsProvider);
     final collections = ref.watch(collectionsProvider);
     final progressionAsync = ref.watch(quartiersProgressionProvider);
     final quartierBadgesAsync = ref.watch(quartierBadgesStreamProvider);
+    final activeObjectifIds =
+        ref.watch(activeObjectifIdsStreamProvider).valueOrNull ?? const {};
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
@@ -109,7 +147,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
             ),
           ),
 
-          // ── Tab toggle ─────────────────────────────────────────────────
+          // ── Tab toggle (3 onglets) ─────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -130,6 +168,11 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                       label: '🏘️ Quartiers',
                       selected: _tab == _Tab.quartiers,
                       onTap: () => setState(() => _tab = _Tab.quartiers),
+                    ),
+                    _TabSegment(
+                      label: '🎯 ${l10n.tab_objectifs}',
+                      selected: _tab == _Tab.objectifs,
+                      onTap: () => setState(() => _tab = _Tab.objectifs),
                     ),
                   ],
                 ),
@@ -158,7 +201,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                 ),
               ),
             ),
-          ] else ...[
+          ] else if (_tab == _Tab.quartiers) ...[
             // Badges Quartiers (horizontal scroll)
             quartierBadgesAsync.when(
               data: (badges) {
@@ -241,6 +284,12 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                 child: Center(child: Text('Erreur de chargement')),
               ),
             ),
+          ] else ...[
+            // ── Onglet Objectifs thématiques ──────────────────────────────
+            _ObjectifsTab(
+              collections: collections,
+              activeObjectifIds: activeObjectifIds,
+            ),
           ],
         ],
       ),
@@ -248,7 +297,74 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
   }
 }
 
-enum _Tab { monuments, quartiers }
+// ---------------------------------------------------------------------------
+// _ObjectifsTab — contenu de l'onglet Objectifs
+// ---------------------------------------------------------------------------
+
+class _ObjectifsTab extends ConsumerWidget {
+  const _ObjectifsTab({
+    required this.collections,
+    required this.activeObjectifIds,
+  });
+
+  final List<MonumentCollection> collections;
+  final Set<String> activeObjectifIds;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Tri : actifs en premier, puis par % complétion décroissant
+    final sorted = [...collections]..sort((a, b) {
+        final aActive = activeObjectifIds.contains(a.id) ? 0 : 1;
+        final bActive = activeObjectifIds.contains(b.id) ? 0 : 1;
+        if (aActive != bActive) return aActive.compareTo(bActive);
+        return b.stats.pct.compareTo(a.stats.pct);
+      });
+
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final col = sorted[index];
+            final isActive = activeObjectifIds.contains(col.id);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: ObjectifCard(
+                collection: col,
+                isActive: isActive,
+                onTap: () => CollectionDetailScreen.show(context, col),
+                onToggleActivation: () => _toggleActivation(ref, col, isActive),
+              ),
+            );
+          },
+          childCount: sorted.length,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleActivation(
+    WidgetRef ref,
+    MonumentCollection col,
+    bool isActive,
+  ) async {
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return;
+    final firestore = ref.read(firestoreProvider);
+
+    if (isActive) {
+      await deleteObjectifActivation(
+          firestore: firestore, uid: uid, collectionId: col.id);
+    } else {
+      await writeObjectifActivation(
+          firestore: firestore, uid: uid, collectionId: col.id);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+
+enum _Tab { monuments, quartiers, objectifs }
 
 // ---------------------------------------------------------------------------
 // _StatCell
@@ -397,69 +513,63 @@ class _QuartierProgressionCard extends StatelessWidget {
         border: Border.all(color: UrbinkColors.border),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 4,
-            offset: Offset(0, 1),
+            color: Color(0x08000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      quartier.name,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: UrbinkColors.onSurface,
-                      ),
-                    ),
-                    Text(
-                      '${isComplete ? '100' : pct.toStringAsFixed(1)}% exploré',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: UrbinkColors.navInactive,
-                      ),
-                    ),
+              Row(
+                children: [
+                  if (isComplete) ...[
+                    const Text('🏆', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 4),
                   ],
+                  Text(
+                    quartier.name,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isComplete ? _kGold : UrbinkColors.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                isComplete ? '100%' : '${pct.toStringAsFixed(1)}%',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isComplete ? _kGold : UrbinkColors.navInactive,
                 ),
               ),
-              if (isComplete)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _kGold.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'Complet 🏆',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: _kGold,
-                    ),
-                  ),
-                ),
             ],
           ),
           const SizedBox(height: 8),
           ClipRRect(
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: (pct / 100).clamp(0.0, 1.0),
+              backgroundColor:
+                  isComplete ? const Color(0xFFFDE68A) : UrbinkColors.ghost,
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(isComplete ? _kGold : UrbinkColors.primary),
               minHeight: 6,
-              backgroundColor: UrbinkColors.surfaceVariant,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                isComplete ? UrbinkColors.accent : UrbinkColors.primary,
-              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '${quartier.exploredStreets} / ${quartier.totalStreets} rues',
+            style: TextStyle(
+              fontSize: 11,
+              color: isComplete ? _kGold : UrbinkColors.navInactive,
             ),
           ),
         ],
