@@ -439,4 +439,51 @@ class AppLocalizationsFr extends AppLocalizations {
   String celeb_district_semantics(String name) {
     return 'Badge quartier $name débloqué. Secret local révélé.';
   }
+
+  @override
+  String get badges_collections_intro => 'Explorez Paris par thématique';
+
+  @override
+  String get badges_collection_complete => 'Collection complète !';
+
+  @override
+  String get badges_collection_complete_sub =>
+      'Vous avez débloqué tous les monuments';
+
+  @override
+  String get badges_stat_collections => 'Collections';
+
+  @override
+  String get btn_share => 'Partager';
+
+  @override
+  String get btn_show_on_map => 'Voir sur la carte';
+
+  @override
+  String get mon_visited => 'Badge débloqué';
+
+  @override
+  String get mon_visited_sub => 'Monument visité lors d\'une sortie Urbink';
+
+  @override
+  String get mon_locked => 'Pas encore visité';
+
+  @override
+  String get mon_locked_sub => 'Approchez-vous à moins de 100 m pour débloquer';
+
+  @override
+  String mon_arr(String n) {
+    return '$n arr.';
+  }
+
+  @override
+  String get challenges_monuments_section_title => 'Monuments';
+
+  @override
+  String get badge_new => 'Nouveau !';
+
+  @override
+  String badge_locked_hint(String radius) {
+    return 'Passe à $radius m pour débloquer ce badge.';
+  }
 }

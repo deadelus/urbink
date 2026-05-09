@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:urbink/features/gamification/models/quartier_badge.dart';
 import 'package:urbink/features/gamification/models/quartier_progression.dart';
+import 'package:urbink/features/gamification/providers/badgeable_monuments_provider.dart';
+import 'package:urbink/features/gamification/providers/monument_badges_provider.dart';
 import 'package:urbink/features/gamification/providers/quartier_badges_provider.dart';
 import 'package:urbink/features/gamification/providers/quartiers_progression_provider.dart';
 import 'package:urbink/features/gamification/screens/challenges_screen.dart';
+import 'package:urbink/features/map/models/monument.dart';
 import 'package:urbink/l10n/app_localizations.dart';
 
 // ---------------------------------------------------------------------------
@@ -55,6 +58,10 @@ Widget _wrap(
     ProviderScope(
       overrides: [
         quartierBadgesStreamProvider
+            .overrideWith((ref) => const Stream.empty()),
+        badgeableMonumentsProvider
+            .overrideWith((ref) async => const <Monument>[]),
+        monumentBadgesStreamProvider
             .overrideWith((ref) => const Stream.empty()),
         ...overrides,
       ],
@@ -210,6 +217,22 @@ void main() {
       await tester.pump();
 
       expect(find.text('Badges Quartiers'), findsOneWidget);
+    });
+
+    testWidgets('affiche la section Monuments', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const ChallengesScreen(),
+          overrides: [
+            quartiersProgressionProvider.overrideWith(
+              (ref) => Stream.value(_twoQuartiers),
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Monuments'), findsOneWidget);
     });
 
     testWidgets('masque la section Badges Quartiers si liste vide',
