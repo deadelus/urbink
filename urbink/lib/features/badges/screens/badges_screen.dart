@@ -4,7 +4,6 @@ import 'package:urbink/features/badges/data/collection_model.dart';
 import 'package:urbink/features/badges/providers/objectif_activation_provider.dart';
 import 'package:urbink/features/badges/screens/collection_detail_screen.dart';
 import 'package:urbink/features/badges/state/badges_provider.dart';
-import 'package:urbink/features/badges/widgets/collection_card.dart';
 import 'package:urbink/features/badges/widgets/objectif_card.dart';
 import 'package:urbink/features/gamification/models/celebration_event.dart';
 import 'package:urbink/features/gamification/models/quartier_badge.dart';
@@ -29,7 +28,7 @@ class BadgesScreen extends ConsumerStatefulWidget {
 }
 
 class _BadgesScreenState extends ConsumerState<BadgesScreen> {
-  _Tab _tab = _Tab.monuments;
+  _Tab _tab = _Tab.objectifs;
 
   /// IDs des collections déjà détectées comme complètes — évite les
   /// re-déclenchements de célébration au rechargement de l'écran.
@@ -160,19 +159,14 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
                 child: Row(
                   children: [
                     _TabSegment(
-                      label: '🏛️ Monuments',
-                      selected: _tab == _Tab.monuments,
-                      onTap: () => setState(() => _tab = _Tab.monuments),
+                      label: '🎯 ${l10n.tab_objectifs}',
+                      selected: _tab == _Tab.objectifs,
+                      onTap: () => setState(() => _tab = _Tab.objectifs),
                     ),
                     _TabSegment(
                       label: '🏘️ Quartiers',
                       selected: _tab == _Tab.quartiers,
                       onTap: () => setState(() => _tab = _Tab.quartiers),
-                    ),
-                    _TabSegment(
-                      label: '🎯 ${l10n.tab_objectifs}',
-                      selected: _tab == _Tab.objectifs,
-                      onTap: () => setState(() => _tab = _Tab.objectifs),
                     ),
                   ],
                 ),
@@ -181,27 +175,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
           ),
 
           // ── Contenu selon onglet ───────────────────────────────────────
-          if (_tab == _Tab.monuments) ...[
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final col = collections[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: CollectionCard(
-                        collection: col,
-                        onTap: () =>
-                            CollectionDetailScreen.show(context, col),
-                      ),
-                    );
-                  },
-                  childCount: collections.length,
-                ),
-              ),
-            ),
-          ] else if (_tab == _Tab.quartiers) ...[
+          if (_tab == _Tab.quartiers) ...[
             // Badges Quartiers (horizontal scroll)
             quartierBadgesAsync.when(
               data: (badges) {
@@ -364,7 +338,7 @@ class _ObjectifsTab extends ConsumerWidget {
 
 // ---------------------------------------------------------------------------
 
-enum _Tab { monuments, quartiers, objectifs }
+enum _Tab { objectifs, quartiers }
 
 // ---------------------------------------------------------------------------
 // _StatCell
