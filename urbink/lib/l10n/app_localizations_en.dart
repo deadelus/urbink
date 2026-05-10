@@ -509,4 +509,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String objectif_progress(int unlocked, int total) {
     return '$unlocked / $total monuments';
   }
+
+  @override
+  String get rank_explorer_label => 'EXPLORER RANK';
+
+  @override
+  String rank_toward_next(String name) {
+    return 'Toward $name';
+  }
+
+  @override
+  String rank_monuments_count(int count) {
+    return '$count monuments discovered';
+  }
+
+  @override
+  String get rank_max_reached => 'maximum rank reached';
+
+  @override
+  String get rank_all_label => 'All 11 ranks';
+
+  @override
+  String rank_position(int current, int total) {
+    return '$current of $total';
+  }
 }

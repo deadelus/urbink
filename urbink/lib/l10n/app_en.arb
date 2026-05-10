@@ -258,5 +258,39 @@
       "unlocked": { "type": "int" },
       "total": { "type": "int" }
     }
+  },
+
+  "rank_explorer_label": "EXPLORER RANK",
+  "@rank_explorer_label": { "description": "Upper label of the RankCard (uppercase)" },
+
+  "rank_toward_next": "Toward {name}",
+  "@rank_toward_next": {
+    "description": "Progress label toward the next rank",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "rank_monuments_count": "{count} monuments discovered",
+  "@rank_monuments_count": {
+    "description": "Number of discovered monuments (XP) in RankCard",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "rank_max_reached": "maximum rank reached",
+  "@rank_max_reached": { "description": "Label shown when Légendaire rank is reached" },
+
+  "rank_all_label": "All 11 ranks",
+  "@rank_all_label": { "description": "Title of the RankPreviewStrip" },
+
+  "rank_position": "{current} of {total}",
+  "@rank_position": {
+    "description": "Current rank position among all ranks",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
   }
 }

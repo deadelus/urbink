@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:urbink/features/gamification/models/celebration_event.dart';
+import 'package:urbink/features/gamification/providers/celebration_queue_provider.dart';
+import 'package:urbink/features/profile/data/explorer_rank.dart';
+import 'package:urbink/features/profile/providers/explorer_rank_provider.dart';
 import 'package:urbink/features/profile/providers/sessions_list_provider.dart';
 import 'package:urbink/features/profile/providers/week_sessions_provider.dart';
+import 'package:urbink/features/profile/widgets/rank_card.dart';
+import 'package:urbink/features/profile/widgets/rank_preview_strip.dart';
 import 'package:urbink/features/sessions/models/session.dart';
 import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
@@ -9,24 +15,55 @@ import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/widgets/urbink_empty_state.dart';
 import 'package:urbink/shared/widgets/week_histogram.dart';
 
-/// Onglet Vous — Historique personnel.
+/// Onglet Vous — Rang d'explorateur + historique personnel.
 ///
 /// Structure :
-///   1. WeekHistogram (7 jours, filtrable par tap)
-///   2. Toggle Vue simple / Vue feed
-///   3. Liste des sorties (filtrée par le jour sélectionné dans l'histogramme)
-class ProfileScreen extends ConsumerWidget {
+///   1. En-tête fixe : titre + WeekHistogram + RankCard + RankPreviewStrip
+///   2. Liste scrollable des sorties (filtrable par jour)
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  ProviderSubscription<ExplorerRank>? _rankSub;
+
+  @override
+  void initState() {
+    super.initState();
+    // Détecte les montées de rang en temps réel → célébration.
+    // Guard : ignore le premier appel (prev == null) pour éviter de déclencher
+    // une célébration pour un rang déjà atteint au démarrage.
+    _rankSub = ref.listenManual(explorerRankProvider, (prev, next) {
+      if (prev == null || prev.index >= next.index) return;
+      ref.read(celebrationQueueProvider.notifier).push(
+            CelebrationEvent(
+              id: 'rank-${next.id}',
+              mode: CelebrationMode.badge,
+              title: next.name,
+              iconEmoji: '💎',
+            ),
+          );
+    });
+  }
+
+  @override
+  void dispose() {
+    _rankSub?.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       backgroundColor: UrbinkColors.background,
       body: Column(
         children: [
-          // En-tête fixe — titre + histogramme
+          // En-tête fixe — titre + histogramme + rang
           _ProfileHeader(topPadding: topPadding),
           // Liste scrollable
           const Expanded(child: _SessionsList()),
@@ -48,35 +85,49 @@ class _ProfileHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedDay = ref.watch(selectedHistogramDayProvider);
+    final rank = ref.watch(explorerRankProvider);
+    final xp = ref.watch(explorerXpProvider);
 
     return Container(
       color: UrbinkColors.surface,
-      padding: EdgeInsets.fromLTRB(
-        UrbinkSpacing.md,
-        topPadding + UrbinkSpacing.sm,
-        UrbinkSpacing.md,
-        UrbinkSpacing.md,
+      padding: EdgeInsets.only(
+        top: topPadding + UrbinkSpacing.sm,
+        bottom: UrbinkSpacing.md,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                AppLocalizations.of(context).profile_title,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: UrbinkColors.onSurface,
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-              if (selectedDay != null) ...[
-                const SizedBox(width: UrbinkSpacing.sm),
-                _DayFilterChip(day: selectedDay, ref: ref),
+          // Titre + filtre jour
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
+            child: Row(
+              children: [
+                Text(
+                  AppLocalizations.of(context).profile_title,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: UrbinkColors.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                if (selectedDay != null) ...[
+                  const SizedBox(width: UrbinkSpacing.sm),
+                  _DayFilterChip(day: selectedDay, ref: ref),
+                ],
               ],
-            ],
+            ),
           ),
           const SizedBox(height: UrbinkSpacing.md),
           const WeekHistogram(),
+          const SizedBox(height: UrbinkSpacing.md),
+          // RankCard
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
+            child: RankCard(rank: rank, currentXp: xp),
+          ),
+          const SizedBox(height: UrbinkSpacing.md),
+          // RankPreviewStrip
+          RankPreviewStrip(currentRank: rank),
+          const SizedBox(height: UrbinkSpacing.sm),
         ],
       ),
     );

@@ -991,6 +991,42 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'{unlocked} / {total} monuments'**
   String objectif_progress(int unlocked, int total);
+
+  /// Label supérieur de la RankCard (tout en majuscules)
+  ///
+  /// In fr, this message translates to:
+  /// **'RANG D\'EXPLORATEUR'**
+  String get rank_explorer_label;
+
+  /// Label progression vers le prochain rang
+  ///
+  /// In fr, this message translates to:
+  /// **'Vers {name}'**
+  String rank_toward_next(String name);
+
+  /// Nombre de monuments découverts (XP) dans la RankCard
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} monuments découverts'**
+  String rank_monuments_count(int count);
+
+  /// Label affiché quand le rang Légendaire est atteint
+  ///
+  /// In fr, this message translates to:
+  /// **'Rang maximum atteint'**
+  String get rank_max_reached;
+
+  /// Titre de la RankPreviewStrip
+  ///
+  /// In fr, this message translates to:
+  /// **'Les 11 rangs'**
+  String get rank_all_label;
+
+  /// Position du rang actuel parmi tous les rangs
+  ///
+  /// In fr, this message translates to:
+  /// **'{current} sur {total}'**
+  String rank_position(int current, int total);
 }
 
 class _AppLocalizationsDelegate
