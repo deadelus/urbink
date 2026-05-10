@@ -596,5 +596,29 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+
+  "profile_anonymous_name": "Explorateur Anonyme",
+  "@profile_anonymous_name": { "description": "Nom affiché pour un compte anonyme dans le profil" },
+
+  "profile_anonymous_initials": "EA",
+  "@profile_anonymous_initials": { "description": "Initiales affichées dans l'avatar anonyme" },
+
+  "profile_stat_monuments": "monuments",
+  "@profile_stat_monuments": { "description": "Label stat monuments dans le ProfilScreen" },
+
+  "profile_stat_sorties": "sorties",
+  "@profile_stat_sorties": { "description": "Label stat sorties dans le ProfilScreen" },
+
+  "profile_stat_ville": "ville",
+  "@profile_stat_ville": { "description": "Label stat villes dans le ProfilScreen" },
+
+  "profile_last_sessions": "Dernières sorties",
+  "@profile_last_sessions": { "description": "Titre de la section historique dans le ProfilScreen" },
+
+  "badge_new_label": "NOUVEAU",
+  "@badge_new_label": { "description": "Chip affiché sur les sorties du jour dans la liste profil" },
+
+  "rank_mythic": "Mythique",
+  "@rank_mythic": { "description": "Badge rang Légendaire dans la timeline RanksScreen" }
 }

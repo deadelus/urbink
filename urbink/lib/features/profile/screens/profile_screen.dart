@@ -17,8 +17,8 @@ import 'package:urbink/shared/widgets/urbink_empty_state.dart';
 /// Onglet Vous — Rang d'explorateur + historique personnel.
 ///
 /// Structure :
-///   1. En-tête fixe : titre + WeekHistogram + RankCard + RankPreviewStrip
-///   2. Liste scrollable des sorties (filtrable par jour)
+///   1. En-tête fixe : avatar + RankCard + stats row (monuments / sorties / ville)
+///   2. Liste scrollable des sorties (cartes design direction)
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -121,10 +121,10 @@ class _ProfileHeader extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
-                      'EA',
-                      style: TextStyle(
+                      AppLocalizations.of(context).profile_anonymous_initials,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFFF8FAFC),
@@ -134,9 +134,9 @@ class _ProfileHeader extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Explorateur Anonyme',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context).profile_anonymous_name,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: UrbinkColors.onSurface,
@@ -167,7 +167,7 @@ class _ProfileHeader extends ConsumerWidget {
               children: [
                 _StatCard(
                   value: '$xp',
-                  label: 'monuments',
+                  label: AppLocalizations.of(context).profile_stat_monuments,
                 ),
                 const SizedBox(width: UrbinkSpacing.sm),
                 _StatCard(
@@ -175,10 +175,13 @@ class _ProfileHeader extends ConsumerWidget {
                     data: (n) => '$n',
                     orElse: () => '—',
                   ),
-                  label: 'sorties',
+                  label: AppLocalizations.of(context).profile_stat_sorties,
                 ),
                 const SizedBox(width: UrbinkSpacing.sm),
-                const _StatCard(value: '1', label: 'ville'),
+                _StatCard(
+                  value: '1',
+                  label: AppLocalizations.of(context).profile_stat_ville,
+                ),
               ],
             ),
           ),
@@ -278,56 +281,54 @@ class _SessionsListState extends ConsumerState<_SessionsList> {
     final sessionsAsync = ref.watch(sessionsByDayProvider);
     final l10n = AppLocalizations.of(context);
 
-    return Expanded(
-      child: sessionsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => Center(child: Text(l10n.profile_error_loading)),
-        data: (pageState) {
-          final sessions = pageState.sessions;
-          if (sessions.isEmpty) {
-            return UrbinkEmptyState(
-              emoji: '🗺️',
-              title: l10n.profile_no_sessions,
-            );
-          }
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(
-                    UrbinkSpacing.md,
-                    UrbinkSpacing.md,
-                    UrbinkSpacing.md,
-                    UrbinkSpacing.xs,
-                  ),
-                  itemCount: sessions.length + 1,
-                  itemBuilder: (ctx, i) {
-                    if (i == 0) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 12),
-                        child: Text(
-                          'Dernières sorties',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: UrbinkColors.onSurface,
-                          ),
-                        ),
-                      );
-                    }
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _SortieCard(session: sessions[i - 1]),
-                    );
-                  },
-                ),
-              ),
-              _PaginationFooter(pageState: pageState),
-            ],
+    return sessionsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (_, _) => Center(child: Text(l10n.profile_error_loading)),
+      data: (pageState) {
+        final sessions = pageState.sessions;
+        if (sessions.isEmpty) {
+          return UrbinkEmptyState(
+            emoji: '🗺️',
+            title: l10n.profile_no_sessions,
           );
-        },
-      ),
+        }
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.fromLTRB(
+                  UrbinkSpacing.md,
+                  UrbinkSpacing.md,
+                  UrbinkSpacing.md,
+                  UrbinkSpacing.xs,
+                ),
+                itemCount: sessions.length + 1,
+                itemBuilder: (ctx, i) {
+                  if (i == 0) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        l10n.profile_last_sessions,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: UrbinkColors.onSurface,
+                        ),
+                      ),
+                    );
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _SortieCard(session: sessions[i - 1]),
+                  );
+                },
+              ),
+            ),
+            _PaginationFooter(pageState: pageState),
+          ],
+        );
+      },
     );
   }
 }
@@ -440,9 +441,9 @@ class _SortieCard extends StatelessWidget {
                           color: UrbinkColors.primary,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text(
-                          'NOUVEAU',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context).badge_new_label,
+                          style: const TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,

@@ -561,4 +561,28 @@ class AppLocalizationsFr extends AppLocalizations {
   String rank_threshold_from(int count) {
     return 'À partir de $count monuments';
   }
+
+  @override
+  String get profile_anonymous_name => 'Explorateur Anonyme';
+
+  @override
+  String get profile_anonymous_initials => 'EA';
+
+  @override
+  String get profile_stat_monuments => 'monuments';
+
+  @override
+  String get profile_stat_sorties => 'sorties';
+
+  @override
+  String get profile_stat_ville => 'ville';
+
+  @override
+  String get profile_last_sessions => 'Dernières sorties';
+
+  @override
+  String get badge_new_label => 'NOUVEAU';
+
+  @override
+  String get rank_mythic => 'Mythique';
 }

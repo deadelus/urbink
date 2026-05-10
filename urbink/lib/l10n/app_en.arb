@@ -324,5 +324,29 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+
+  "profile_anonymous_name": "Anonymous Explorer",
+  "@profile_anonymous_name": { "description": "Name displayed for an anonymous account in the profile" },
+
+  "profile_anonymous_initials": "AE",
+  "@profile_anonymous_initials": { "description": "Initials shown in the anonymous avatar" },
+
+  "profile_stat_monuments": "monuments",
+  "@profile_stat_monuments": { "description": "Monuments stat label in ProfileScreen" },
+
+  "profile_stat_sorties": "outings",
+  "@profile_stat_sorties": { "description": "Outings stat label in ProfileScreen" },
+
+  "profile_stat_ville": "city",
+  "@profile_stat_ville": { "description": "Cities stat label in ProfileScreen" },
+
+  "profile_last_sessions": "Latest outings",
+  "@profile_last_sessions": { "description": "Header for the sessions list in ProfileScreen" },
+
+  "badge_new_label": "NEW",
+  "@badge_new_label": { "description": "Chip shown on today's outings in the profile list" },
+
+  "rank_mythic": "Mythic",
+  "@rank_mythic": { "description": "Legendary rank badge in the RanksScreen timeline" }
 }

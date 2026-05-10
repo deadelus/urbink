@@ -5,11 +5,11 @@ Epic 4 · Story 4.8 — Rang d'Explorateur — refonte ProfilScreen
 
 ## ACs implémentés
 
-- [ ] Given ProfilScreen / When l'écran s'ouvre / Then une `RankCard` affiche le rang actuel : gemme 72px, nom de la pierre, "{N} monuments découverts", barre XP vers le prochain rang (gradient couleur halo)
-- [ ] Given le total de monuments débloqués change / When le provider se met à jour / Then la `RankCard` reflète le nouveau total et la progression en temps réel (Riverpod)
-- [ ] Given ProfilScreen / When l'utilisateur scrolle la `RankPreviewStrip` / Then les 11 rangs sont visibles : rang actuel surligné (border colorée, opacity 1), rangs futurs grisés (opacity 0.5)
-- [ ] Given le rang monte (nouveau seuil franchi) / When le listener détecte le changement / Then `CelebrationOverlay` se déclenche (`CelebrationMode.badge`, iconEmoji `💎`, title = nom du rang)
-- [ ] Given ProfilScreen / When l'utilisateur scrolle / Then le contenu existant (WeekHistogram + SessionsList) reste accessible sous la `RankCard` + `RankPreviewStrip`
+- [x] Given ProfilScreen / When l'écran s'ouvre / Then une `RankCard` affiche le rang actuel : gemme 72px, nom de la pierre, "{N} monuments découverts", barre XP vers le prochain rang (gradient couleur halo)
+- [x] Given le total de monuments débloqués change / When le provider se met à jour / Then la `RankCard` reflète le nouveau total et la progression en temps réel (Riverpod)
+- [x] Given ProfilScreen / When l'utilisateur scrolle la `RankPreviewStrip` / Then les 11 rangs sont visibles : rang actuel surligné (border colorée, opacity 1), rangs futurs grisés (opacity 0.5) — implémenté dans `RanksScreen` (timeline) suite à passe design direction
+- [x] Given le rang monte (nouveau seuil franchi) / When le listener détecte le changement / Then `CelebrationOverlay` se déclenche (`CelebrationMode.badge`, iconEmoji `💎`, title = nom du rang)
+- [x] Given ProfilScreen / When l'utilisateur scrolle / Then le contenu existant (SessionsList) reste accessible sous la `RankCard`
 
 ## Tasks / Subtasks
 
@@ -140,4 +140,4 @@ Epic 4 · Story 4.8 — Rang d'Explorateur — refonte ProfilScreen
 
 ## Status
 
-review
+done

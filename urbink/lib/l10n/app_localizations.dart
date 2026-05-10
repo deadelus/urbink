@@ -1069,6 +1069,54 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'À partir de {count} monuments'**
   String rank_threshold_from(int count);
+
+  /// Nom affiché pour un compte anonyme dans le profil
+  ///
+  /// In fr, this message translates to:
+  /// **'Explorateur Anonyme'**
+  String get profile_anonymous_name;
+
+  /// Initiales affichées dans l'avatar anonyme
+  ///
+  /// In fr, this message translates to:
+  /// **'EA'**
+  String get profile_anonymous_initials;
+
+  /// Label stat monuments dans le ProfilScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'monuments'**
+  String get profile_stat_monuments;
+
+  /// Label stat sorties dans le ProfilScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'sorties'**
+  String get profile_stat_sorties;
+
+  /// Label stat villes dans le ProfilScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'ville'**
+  String get profile_stat_ville;
+
+  /// Titre de la section historique dans le ProfilScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Dernières sorties'**
+  String get profile_last_sessions;
+
+  /// Chip affiché sur les sorties du jour dans la liste profil
+  ///
+  /// In fr, this message translates to:
+  /// **'NOUVEAU'**
+  String get badge_new_label;
+
+  /// Badge rang Légendaire dans la timeline RanksScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Mythique'**
+  String get rank_mythic;
 }
 
 class _AppLocalizationsDelegate

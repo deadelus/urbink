@@ -438,9 +438,9 @@ class _RankRow extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(color: const Color(0x44D4A642)),
                         ),
-                        child: const Text(
-                          'Mythique',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context).rank_mythic,
+                          style: const TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.2,
