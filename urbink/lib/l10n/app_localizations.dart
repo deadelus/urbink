@@ -979,6 +979,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Vélo'**
   String get transport_bike;
+
+  /// Mode de déplacement tous modes (pied et vélo)
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous modes'**
+  String get transport_all;
+
+  /// Progression d'un objectif thématique
+  ///
+  /// In fr, this message translates to:
+  /// **'{unlocked} / {total} monuments'**
+  String objectif_progress(int unlocked, int total);
 }
 
 class _AppLocalizationsDelegate

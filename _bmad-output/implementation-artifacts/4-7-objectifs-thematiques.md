@@ -5,10 +5,10 @@ Epic 4 · Story 4.7 — Objectifs thématiques — activation et suivi progressi
 
 ## ACs implémentés
 
-- [ ] Given l'onglet Badges → onglet Objectifs / When l'écran est affiché / Then les 12 collections sont listées sous forme de cards : titre, description, icône, barre de progression N/Total, pills mode de déplacement compatible
-- [ ] Given un objectif activé par l'utilisateur / When il explore et passe près d'un monument de l'objectif / Then le point est coché automatiquement (via le système monument_proximity existant) et la progression se met à jour
-- [ ] Given un objectif complété à 100% / When le dernier monument est débloqué / Then CelebrationOverlay se déclenche en mode `badge` avec l'icône et le nom de la collection
-- [ ] Given la fiche d'un objectif (CollectionDetailScreen) / When l'utilisateur tape "Voir sur la carte" sur un monument non atteint / Then l'onglet Carte s'ouvre et se centre sur ce point via mapFocusProvider
+- [x] Given l'onglet Badges → onglet Objectifs / When l'écran est affiché / Then les 12 collections sont listées sous forme de cards : titre, description, icône, barre de progression N/Total, pills mode de déplacement compatible
+- [x] Given un objectif activé par l'utilisateur / When il explore et passe près d'un monument de l'objectif / Then le point est coché automatiquement (via le système monument_proximity existant) et la progression se met à jour
+- [x] Given un objectif complété à 100% / When le dernier monument est débloqué / Then CelebrationOverlay se déclenche en mode `badge` avec l'icône et le nom de la collection
+- [x] Given la fiche d'un objectif (CollectionDetailScreen) / When l'utilisateur tape "Voir sur la carte" sur un monument non atteint / Then l'onglet Carte s'ouvre et se centre sur ce point via mapFocusProvider
 
 ## Tasks / Subtasks
 
@@ -104,4 +104,4 @@ Epic 4 · Story 4.7 — Objectifs thématiques — activation et suivi progressi
 
 ## Status
 
-review
+done

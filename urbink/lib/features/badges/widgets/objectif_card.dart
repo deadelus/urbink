@@ -113,7 +113,7 @@ class ObjectifCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${stats.unlocked} / ${stats.total} monuments',
+                        l10n.objectif_progress(stats.unlocked, stats.total),
                         style: TextStyle(
                           fontSize: 11,
                           color: isComplete
@@ -160,6 +160,7 @@ class _TransportPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final (emoji, label) = switch (mode) {
       'bike' => ('🚲', l10n.transport_bike),
+      'all' => ('🚶🚲', l10n.transport_all),
       _ => ('🚶', l10n.transport_foot),
     };
 

@@ -30,17 +30,13 @@ class BadgesScreen extends ConsumerStatefulWidget {
 class _BadgesScreenState extends ConsumerState<BadgesScreen> {
   _Tab _tab = _Tab.objectifs;
 
-  /// IDs des collections déjà détectées comme complètes — évite les
-  /// re-déclenchements de célébration au rechargement de l'écran.
   final Set<String> _celebratedCollections = {};
+  ProviderSubscription<List<MonumentCollection>>? _collectionsSub;
 
   @override
   void initState() {
     super.initState();
-    // Détecte les collections qui atteignent 100% en temps réel.
-    // Guard : ignore le premier appel (prev == null) pour éviter une rafale
-    // de célébrations pour les collections déjà complètes au démarrage.
-    ref.listenManual(collectionsProvider, (prev, next) {
+    _collectionsSub = ref.listenManual(collectionsProvider, (prev, next) {
       if (prev == null) return;
       for (final col in next) {
         if (col.stats.pct == 100 && !_celebratedCollections.contains(col.id)) {
@@ -56,6 +52,12 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
         }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _collectionsSub?.close();
+    super.dispose();
   }
 
   @override
@@ -146,7 +148,7 @@ class _BadgesScreenState extends ConsumerState<BadgesScreen> {
             ),
           ),
 
-          // ── Tab toggle (3 onglets) ─────────────────────────────────────
+          // ── Tab toggle ─────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),

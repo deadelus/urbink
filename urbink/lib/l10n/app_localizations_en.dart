@@ -501,4 +501,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transport_bike => 'Cycling';
+
+  @override
+  String get transport_all => 'All modes';
+
+  @override
+  String objectif_progress(int unlocked, int total) {
+    return '$unlocked / $total monuments';
+  }
 }

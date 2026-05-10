@@ -518,5 +518,17 @@
   "@transport_foot": { "description": "Mode de déplacement à pied" },
 
   "transport_bike": "Vélo",
-  "@transport_bike": { "description": "Mode de déplacement à vélo" }
+  "@transport_bike": { "description": "Mode de déplacement à vélo" },
+
+  "transport_all": "Tous modes",
+  "@transport_all": { "description": "Mode de déplacement tous modes (pied et vélo)" },
+
+  "objectif_progress": "{unlocked} / {total} monuments",
+  "@objectif_progress": {
+    "description": "Progression d'un objectif thématique",
+    "placeholders": {
+      "unlocked": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  }
 }

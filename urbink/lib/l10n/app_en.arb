@@ -246,5 +246,17 @@
   "@transport_foot": { "description": "Walking transport mode" },
 
   "transport_bike": "Cycling",
-  "@transport_bike": { "description": "Cycling transport mode" }
+  "@transport_bike": { "description": "Cycling transport mode" },
+
+  "transport_all": "All modes",
+  "@transport_all": { "description": "All transport modes (walking and cycling)" },
+
+  "objectif_progress": "{unlocked} / {total} monuments",
+  "@objectif_progress": {
+    "description": "Thematic goal progress",
+    "placeholders": {
+      "unlocked": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  }
 }
