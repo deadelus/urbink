@@ -6,7 +6,6 @@ import 'package:urbink/features/profile/data/explorer_rank.dart';
 import 'package:urbink/features/profile/providers/explorer_rank_provider.dart';
 import 'package:urbink/features/profile/providers/profile_stats_provider.dart';
 import 'package:urbink/features/profile/providers/sessions_list_provider.dart';
-import 'package:urbink/features/profile/providers/week_sessions_provider.dart';
 import 'package:urbink/features/profile/screens/ranks_screen.dart';
 import 'package:urbink/features/profile/widgets/rank_card.dart';
 import 'package:urbink/features/sessions/models/session.dart';
@@ -84,7 +83,6 @@ class _ProfileHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedDay = ref.watch(selectedHistogramDayProvider);
     final rank = ref.watch(explorerRankProvider);
     final xp = ref.watch(explorerXpProvider);
     final sessionsCountAsync = ref.watch(profileSessionsCountProvider);
@@ -98,7 +96,7 @@ class _ProfileHeader extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar + nom + filtre jour
+          // Avatar + nom
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
             child: Row(
@@ -136,23 +134,14 @@ class _ProfileHeader extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Explorateur Anonyme',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: UrbinkColors.onSurface,
-                          letterSpacing: -.3,
-                          height: 1.1,
-                        ),
-                      ),
-                      if (selectedDay != null)
-                        _DayFilterChip(day: selectedDay, ref: ref),
-                    ],
+                const Text(
+                  'Explorateur Anonyme',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: UrbinkColors.onSurface,
+                    letterSpacing: -.3,
+                    height: 1.1,
                   ),
                 ),
               ],
@@ -195,50 +184,6 @@ class _ProfileHeader extends ConsumerWidget {
           ),
           const SizedBox(height: UrbinkSpacing.sm),
         ],
-      ),
-    );
-  }
-}
-
-class _DayFilterChip extends StatelessWidget {
-  const _DayFilterChip({required this.day, required this.ref});
-
-  final DateTime day;
-  final WidgetRef ref;
-
-  @override
-  Widget build(BuildContext context) {
-    final label = _formatDayShort(day);
-    return GestureDetector(
-      onTap: () => ref.read(selectedHistogramDayProvider.notifier).state = null,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: UrbinkSpacing.sm,
-          vertical: 4,
-        ),
-        decoration: BoxDecoration(
-          color: UrbinkColors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(UrbinkSpacing.radiusChip),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                color: UrbinkColors.primary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(
-              Icons.close_rounded,
-              size: 14,
-              color: UrbinkColors.primary,
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -307,7 +252,6 @@ class _SessionsList extends ConsumerStatefulWidget {
 }
 
 class _SessionsListState extends ConsumerState<_SessionsList> {
-  bool _simpleView = true;
   late final ScrollController _scrollController;
 
   @override
@@ -332,90 +276,58 @@ class _SessionsListState extends ConsumerState<_SessionsList> {
   @override
   Widget build(BuildContext context) {
     final sessionsAsync = ref.watch(sessionsByDayProvider);
-    final selectedDay = ref.watch(selectedHistogramDayProvider);
-
     final l10n = AppLocalizations.of(context);
-    return Column(
-      children: [
-        // Toggle Vue simple / Vue feed
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: UrbinkSpacing.md,
-            vertical: UrbinkSpacing.sm,
-          ),
-          child: Row(
+
+    return Expanded(
+      child: sessionsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, _) => Center(child: Text(l10n.profile_error_loading)),
+        data: (pageState) {
+          final sessions = pageState.sessions;
+          if (sessions.isEmpty) {
+            return UrbinkEmptyState(
+              emoji: '🗺️',
+              title: l10n.profile_no_sessions,
+            );
+          }
+          return Column(
             children: [
-              Text(
-                selectedDay != null
-                    ? l10n.profile_sessions_of(_formatDayLong(selectedDay))
-                    : l10n.profile_all_sessions,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: UrbinkColors.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-              const Spacer(),
-              _ViewToggle(
-                isSimple: _simpleView,
-                onChanged: (v) => setState(() => _simpleView = v),
-              ),
-            ],
-          ),
-        ),
-        const Divider(height: 1),
-        // Contenu
-        Expanded(
-          child: sessionsAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, _) => Center(child: Text(l10n.profile_error_loading)),
-            data: (pageState) {
-              final sessions = pageState.sessions;
-              if (sessions.isEmpty) {
-                return UrbinkEmptyState(
-                  emoji: '🗺️',
-                  title: selectedDay != null
-                      ? l10n.profile_no_sessions_day
-                      : l10n.profile_no_sessions,
-                );
-              }
-              if (_simpleView) {
-                return Column(
-                  children: [
-                    Expanded(
-                      child: ListView.separated(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.only(top: UrbinkSpacing.xs),
-                        itemCount: sessions.length,
-                        separatorBuilder: (_, _) =>
-                            const Divider(height: 1, indent: UrbinkSpacing.md),
-                        itemBuilder: (ctx, i) =>
-                            _SortieListTile(session: sessions[i]),
-                      ),
-                    ),
-                    _PaginationFooter(pageState: pageState),
-                  ],
-                );
-              }
-              // Vue feed — placeholder Epic 9
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('📸', style: TextStyle(fontSize: 40)),
-                    const SizedBox(height: UrbinkSpacing.sm),
-                    Text(
-                      l10n.profile_feed_placeholder,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: UrbinkColors.navInactive,
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.fromLTRB(
+                    UrbinkSpacing.md,
+                    UrbinkSpacing.md,
+                    UrbinkSpacing.md,
+                    UrbinkSpacing.xs,
+                  ),
+                  itemCount: sessions.length + 1,
+                  itemBuilder: (ctx, i) {
+                    if (i == 0) {
+                      return const Padding(
+                        padding: EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          'Dernières sorties',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: UrbinkColors.onSurface,
                           ),
-                    ),
-                  ],
+                        ),
+                      );
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _SortieCard(session: sessions[i - 1]),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ),
-      ],
+              ),
+              _PaginationFooter(pageState: pageState),
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -458,95 +370,11 @@ class _PaginationFooter extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Toggle vue simple / feed
+// Carte d'une sortie — style design direction
 // ---------------------------------------------------------------------------
 
-class _ViewToggle extends StatelessWidget {
-  const _ViewToggle({required this.isSimple, required this.onChanged});
-
-  final bool isSimple;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _ToggleButton(
-          label: l10n.profile_view_simple,
-          icon: Icons.list_rounded,
-          isActive: isSimple,
-          onTap: () => onChanged(true),
-        ),
-        const SizedBox(width: 4),
-        _ToggleButton(
-          label: l10n.profile_view_feed,
-          icon: Icons.grid_view_rounded,
-          isActive: !isSimple,
-          onTap: () => onChanged(false),
-        ),
-      ],
-    );
-  }
-}
-
-class _ToggleButton extends StatelessWidget {
-  const _ToggleButton({
-    required this.label,
-    required this.icon,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: isActive
-              ? UrbinkColors.primary.withValues(alpha: 0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(UrbinkSpacing.radiusChip),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 14,
-              color: isActive ? UrbinkColors.primary : UrbinkColors.navInactive,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                color: isActive ? UrbinkColors.primary : UrbinkColors.navInactive,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// ListTile compact d'une sortie
-// ---------------------------------------------------------------------------
-
-class _SortieListTile extends StatelessWidget {
-  const _SortieListTile({required this.session});
+class _SortieCard extends StatelessWidget {
+  const _SortieCard({required this.session});
 
   final Session session;
 
@@ -561,64 +389,94 @@ class _SortieListTile extends StatelessWidget {
         ? '${dur.inHours}h${dur.inMinutes.remainder(60).toString().padLeft(2, '0')}'
         : '${dur.inMinutes}min';
 
-    return ListTile(
-      dense: true,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: UrbinkSpacing.md,
-        vertical: UrbinkSpacing.xs,
+    final now = DateTime.now();
+    final isNew = session.sessionStart.year == now.year &&
+        session.sessionStart.month == now.month &&
+        session.sessionStart.day == now.day;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: UrbinkColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: UrbinkColors.border),
+        boxShadow: const [
+          BoxShadow(color: Color(0x06000000), blurRadius: 4, offset: Offset(0, 1)),
+        ],
       ),
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: UrbinkColors.primary.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Center(
-          child: Text(
-            session.mode.emoji,
-            style: const TextStyle(fontSize: 18),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: UrbinkColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Center(
+              child: Text(session.mode.emoji, style: const TextStyle(fontSize: 17)),
+            ),
           ),
-        ),
-      ),
-      title: Text(
-        date,
-        style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          color: UrbinkColors.onSurface,
-        ),
-      ),
-      subtitle: Text(
-        '${session.streetCount} rues · $distance · $duration',
-        style: const TextStyle(
-          fontSize: 12,
-          color: UrbinkColors.navInactive,
-        ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      date,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: UrbinkColors.onSurface,
+                      ),
+                    ),
+                    if (isNew) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: UrbinkColors.primary,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'NOUVEAU',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: .5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${session.streetCount} rues · $distance · $duration',
+                  style: const TextStyle(fontSize: 11, color: UrbinkColors.navInactive),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded, color: UrbinkColors.navInactive, size: 20),
+        ],
       ),
     );
   }
 }
 
 // ---------------------------------------------------------------------------
-// Helpers de formatage de date en français (sans dépendance locale intl)
+// Helpers de formatage de date en français
 // ---------------------------------------------------------------------------
 
 const _shortDays = ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'];
-const _longDays = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
 const _shortMonths = ['jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'aoû', 'sep', 'oct', 'nov', 'déc'];
 
-/// "lun 5 jan"
-String _formatDayShort(DateTime d) =>
-    '${_shortDays[d.weekday - 1]} ${d.day} ${_shortMonths[d.month - 1]}';
-
-/// "lundi 5 jan"
-String _formatDayLong(DateTime d) =>
-    '${_longDays[d.weekday - 1]} ${d.day} ${_shortMonths[d.month - 1]}';
-
-/// "lun 5 jan · 14:32"
 String _formatSessionDate(DateTime d) {
   final hh = d.hour.toString().padLeft(2, '0');
   final mm = d.minute.toString().padLeft(2, '0');
-  return '${_formatDayShort(d)} · $hh:$mm';
+  return '${_shortDays[d.weekday - 1]} ${d.day} ${_shortMonths[d.month - 1]} · $hh:$mm';
 }
