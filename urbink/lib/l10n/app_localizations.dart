@@ -1027,6 +1027,48 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'{current} sur {total}'**
   String rank_position(int current, int total);
+
+  /// Titre de l'écran RanksScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Rang d\'explorateur'**
+  String get ranks_screen_title;
+
+  /// Sous-titre de l'écran RanksScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'1 monument découvert = 1 XP'**
+  String get ranks_screen_subtitle;
+
+  /// Label du héros dans RanksScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Rang actuel · {current} sur {total}'**
+  String rank_hero_label(int current, int total);
+
+  /// Label prochain rang dans le héros RanksScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Prochain rang'**
+  String get rank_next_label;
+
+  /// Badge rang actuel dans la timeline des rangs
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous êtes ici'**
+  String get rank_you_are_here;
+
+  /// Seuil du rang Cristal (0 monument)
+  ///
+  /// In fr, this message translates to:
+  /// **'Point de départ'**
+  String get rank_threshold_start;
+
+  /// Seuil XP pour atteindre ce rang
+  ///
+  /// In fr, this message translates to:
+  /// **'À partir de {count} monuments'**
+  String rank_threshold_from(int count);
 }
 
 class _AppLocalizationsDelegate

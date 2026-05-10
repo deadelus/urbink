@@ -4,16 +4,16 @@ import 'package:urbink/features/gamification/models/celebration_event.dart';
 import 'package:urbink/features/gamification/providers/celebration_queue_provider.dart';
 import 'package:urbink/features/profile/data/explorer_rank.dart';
 import 'package:urbink/features/profile/providers/explorer_rank_provider.dart';
+import 'package:urbink/features/profile/providers/profile_stats_provider.dart';
 import 'package:urbink/features/profile/providers/sessions_list_provider.dart';
 import 'package:urbink/features/profile/providers/week_sessions_provider.dart';
+import 'package:urbink/features/profile/screens/ranks_screen.dart';
 import 'package:urbink/features/profile/widgets/rank_card.dart';
-import 'package:urbink/features/profile/widgets/rank_preview_strip.dart';
 import 'package:urbink/features/sessions/models/session.dart';
 import 'package:urbink/l10n/app_localizations.dart';
 import 'package:urbink/shared/constants/colors.dart';
 import 'package:urbink/shared/constants/spacing.dart';
 import 'package:urbink/shared/widgets/urbink_empty_state.dart';
-import 'package:urbink/shared/widgets/week_histogram.dart';
 
 /// Onglet Vous — Rang d'explorateur + historique personnel.
 ///
@@ -87,6 +87,7 @@ class _ProfileHeader extends ConsumerWidget {
     final selectedDay = ref.watch(selectedHistogramDayProvider);
     final rank = ref.watch(explorerRankProvider);
     final xp = ref.watch(explorerXpProvider);
+    final sessionsCountAsync = ref.watch(profileSessionsCountProvider);
 
     return Container(
       color: UrbinkColors.surface,
@@ -97,36 +98,101 @@ class _ProfileHeader extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Titre + filtre jour
+          // Avatar + nom + filtre jour
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
             child: Row(
               children: [
-                Text(
-                  AppLocalizations.of(context).profile_title,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: UrbinkColors.onSurface,
-                        fontWeight: FontWeight.w700,
+                // Avatar — cercle dark gradient initiales
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF1F2A37), Color(0xFF0F172A)],
+                    ),
+                    border: Border.all(color: UrbinkColors.border),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x2E0F172A),
+                        blurRadius: 10,
+                        offset: Offset(0, 2),
                       ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'EA',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFF8FAFC),
+                        height: 1,
+                      ),
+                    ),
+                  ),
                 ),
-                if (selectedDay != null) ...[
-                  const SizedBox(width: UrbinkSpacing.sm),
-                  _DayFilterChip(day: selectedDay, ref: ref),
-                ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Explorateur Anonyme',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: UrbinkColors.onSurface,
+                          letterSpacing: -.3,
+                          height: 1.1,
+                        ),
+                      ),
+                      if (selectedDay != null)
+                        _DayFilterChip(day: selectedDay, ref: ref),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(height: UrbinkSpacing.md),
-          const WeekHistogram(),
-          const SizedBox(height: UrbinkSpacing.md),
-          // RankCard
+          // RankCard — tappable → RanksScreen
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
-            child: RankCard(rank: rank, currentXp: xp),
+            child: RankCard(
+              rank: rank,
+              currentXp: xp,
+              onTap: () => Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute<void>(builder: (_) => const RanksScreen()),
+              ),
+            ),
           ),
-          const SizedBox(height: UrbinkSpacing.md),
-          // RankPreviewStrip
-          RankPreviewStrip(currentRank: rank),
+          const SizedBox(height: UrbinkSpacing.sm),
+          // Stats row — monuments · sorties · villes
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: UrbinkSpacing.md),
+            child: Row(
+              children: [
+                _StatCard(
+                  value: '$xp',
+                  label: 'monuments',
+                ),
+                const SizedBox(width: UrbinkSpacing.sm),
+                _StatCard(
+                  value: sessionsCountAsync.maybeWhen(
+                    data: (n) => '$n',
+                    orElse: () => '—',
+                  ),
+                  label: 'sorties',
+                ),
+                const SizedBox(width: UrbinkSpacing.sm),
+                const _StatCard(value: '1', label: 'ville'),
+              ],
+            ),
+          ),
           const SizedBox(height: UrbinkSpacing.sm),
         ],
       ),
@@ -170,6 +236,57 @@ class _DayFilterChip extends StatelessWidget {
               Icons.close_rounded,
               size: 14,
               color: UrbinkColors.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Carte stat (monuments / sorties / villes)
+// ---------------------------------------------------------------------------
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({required this.value, required this.label});
+
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: UrbinkColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: UrbinkColors.border),
+          boxShadow: const [
+            BoxShadow(color: Color(0x06000000), blurRadius: 4, offset: Offset(0, 1)),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: UrbinkColors.onSurface,
+                letterSpacing: -.5,
+                height: 1,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 10,
+                color: UrbinkColors.navInactive,
+                letterSpacing: .3,
+              ),
             ),
           ],
         ),

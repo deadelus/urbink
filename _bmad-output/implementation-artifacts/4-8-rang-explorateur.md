@@ -20,7 +20,12 @@ Epic 4 · Story 4.8 — Rang d'Explorateur — refonte ProfilScreen
 - [x] Créer `lib/features/profile/widgets/rank_preview_strip.dart` — `RankPreviewStrip` (scroll horizontal 11 gems 48px, current highlighted)
 - [x] Mettre à jour `profile_screen.dart` — `ConsumerStatefulWidget` + `_rankSub` listenManual → `celebrationQueueProvider` quand rang monte + `_ProfileHeader` intègre `RankCard` + `RankPreviewStrip`
 - [x] Ajouter clés i18n dans `app_fr.arb` + `app_en.arb` : `rank_explorer_label`, `rank_toward_next`, `rank_monuments_count`, `rank_max_reached`, `rank_all_label`, `rank_position`
+- [x] Ajouter 7 nouvelles clés i18n pour `RanksScreen` : `ranks_screen_title`, `ranks_screen_subtitle`, `rank_hero_label`, `rank_next_label`, `rank_you_are_here`, `rank_threshold_start`, `rank_threshold_from`
 - [x] `flutter gen-l10n`
+- [x] Ajouter champ `description` à `ExplorerRank` + textes des 11 rangs
+- [x] Créer `lib/features/profile/screens/ranks_screen.dart` — hero gem 120px + timeline 11 rangs
+- [x] Mettre à jour `rank_card.dart` — `onTap: VoidCallback?` + label position "RANG D'EXPLORATEUR · X/11"
+- [x] Refactoriser `profile_screen.dart` — suppression WeekHistogram + RankPreviewStrip, RankCard.onTap → RanksScreen
 - [x] Écrire `test/profile/explorer_rank_test.dart` (unit tests: rankForXp pour chaque seuil + edge cases)
 - [x] Écrire `test/profile/rank_card_test.dart` (widget tests: affichage RankCard + RankPreviewStrip)
 - [x] `flutter analyze --no-pub` → 0 issue ✅
@@ -118,6 +123,7 @@ Epic 4 · Story 4.8 — Rang d'Explorateur — refonte ProfilScreen
 - `urbink/lib/features/profile/widgets/gem_widget.dart` (nouveau)
 - `urbink/lib/features/profile/widgets/rank_card.dart` (nouveau)
 - `urbink/lib/features/profile/widgets/rank_preview_strip.dart` (nouveau)
+- `urbink/lib/features/profile/screens/ranks_screen.dart` (nouveau)
 - `urbink/lib/features/profile/screens/profile_screen.dart` (modifié)
 - `urbink/lib/l10n/app_fr.arb` (modifié)
 - `urbink/lib/l10n/app_en.arb` (modifié)
@@ -130,6 +136,7 @@ Epic 4 · Story 4.8 — Rang d'Explorateur — refonte ProfilScreen
 ## Change Log
 
 - Ajout Story 4.8 — Rang d'Explorateur : RankCard + RankPreviewStrip dans ProfilScreen, 11 pierres précieuses, listener rang → CelebrationOverlay (Date: 2026-05-10)
+- Passe UI : RanksScreen (hero 120px + timeline 11 rangs), ExplorerRank.description, RankCard.onTap → RanksScreen, suppression WeekHistogram + RankPreviewStrip du ProfilScreen (Date: 2026-05-10)
 
 ## Status
 

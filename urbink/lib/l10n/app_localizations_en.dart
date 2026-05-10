@@ -533,4 +533,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String rank_position(int current, int total) {
     return '$current of $total';
   }
+
+  @override
+  String get ranks_screen_title => 'Explorer rank';
+
+  @override
+  String get ranks_screen_subtitle => '1 monument discovered = 1 XP';
+
+  @override
+  String rank_hero_label(int current, int total) {
+    return 'Current rank · $current of $total';
+  }
+
+  @override
+  String get rank_next_label => 'Next rank';
+
+  @override
+  String get rank_you_are_here => 'You are here';
+
+  @override
+  String get rank_threshold_start => 'Starting point';
+
+  @override
+  String rank_threshold_from(int count) {
+    return 'From $count monuments';
+  }
 }

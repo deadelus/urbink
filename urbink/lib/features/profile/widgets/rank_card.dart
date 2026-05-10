@@ -13,10 +13,12 @@ class RankCard extends StatelessWidget {
     super.key,
     required this.rank,
     required this.currentXp,
+    this.onTap,
   });
 
   final ExplorerRank rank;
   final int currentXp;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +30,9 @@ class RankCard extends StatelessWidget {
         ? kExplorerRanks[rank.index + 1]
         : null;
 
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       decoration: BoxDecoration(
         color: UrbinkColors.surface,
         borderRadius: BorderRadius.circular(16),
@@ -74,7 +78,7 @@ class RankCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            l10n.rank_explorer_label,
+                            '${l10n.rank_explorer_label} · ${rank.index + 1}/${kExplorerRanks.length}',
                             style: const TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w700,
@@ -160,6 +164,7 @@ class RankCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

@@ -564,5 +564,37 @@
       "current": { "type": "int" },
       "total": { "type": "int" }
     }
+  },
+
+  "ranks_screen_title": "Rang d'explorateur",
+  "@ranks_screen_title": { "description": "Titre de l'écran RanksScreen" },
+
+  "ranks_screen_subtitle": "1 monument découvert = 1 XP",
+  "@ranks_screen_subtitle": { "description": "Sous-titre de l'écran RanksScreen" },
+
+  "rank_hero_label": "Rang actuel · {current} sur {total}",
+  "@rank_hero_label": {
+    "description": "Label du héros dans RanksScreen",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "rank_next_label": "Prochain rang",
+  "@rank_next_label": { "description": "Label prochain rang dans le héros RanksScreen" },
+
+  "rank_you_are_here": "Vous êtes ici",
+  "@rank_you_are_here": { "description": "Badge rang actuel dans la timeline des rangs" },
+
+  "rank_threshold_start": "Point de départ",
+  "@rank_threshold_start": { "description": "Seuil du rang Cristal (0 monument)" },
+
+  "rank_threshold_from": "À partir de {count} monuments",
+  "@rank_threshold_from": {
+    "description": "Seuil XP pour atteindre ce rang",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   }
 }

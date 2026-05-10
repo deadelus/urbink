@@ -292,5 +292,37 @@
       "current": { "type": "int" },
       "total": { "type": "int" }
     }
+  },
+
+  "ranks_screen_title": "Explorer rank",
+  "@ranks_screen_title": { "description": "Title of the RanksScreen" },
+
+  "ranks_screen_subtitle": "1 monument discovered = 1 XP",
+  "@ranks_screen_subtitle": { "description": "Subtitle of the RanksScreen" },
+
+  "rank_hero_label": "Current rank · {current} of {total}",
+  "@rank_hero_label": {
+    "description": "Hero label in RanksScreen",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "rank_next_label": "Next rank",
+  "@rank_next_label": { "description": "Next rank label in the RanksScreen hero" },
+
+  "rank_you_are_here": "You are here",
+  "@rank_you_are_here": { "description": "Current rank badge in the rank timeline" },
+
+  "rank_threshold_start": "Starting point",
+  "@rank_threshold_start": { "description": "Threshold label for Cristal rank (0 monuments)" },
+
+  "rank_threshold_from": "From {count} monuments",
+  "@rank_threshold_from": {
+    "description": "XP threshold to reach this rank",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   }
 }
