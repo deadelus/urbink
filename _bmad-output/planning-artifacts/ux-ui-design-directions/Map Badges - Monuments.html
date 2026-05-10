@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Monuments · Badges de Carte · Exploration</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=JetBrains+Mono:wght@300;400;500&family=Cinzel:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:        #0a0806;
+    --panel:     #120e0a;
+    --ink:       #f5e9d0;
+    --ink-dim:   #8b7a5a;
+    --ink-mute:  #5a4d36;
+    --rule:      #1f1810;
+
+    --gold-1:    oklch(94% 0.10 90);
+    --gold-2:    oklch(82% 0.14 82);
+    --gold-3:    oklch(64% 0.13 72);
+    --gold-4:    oklch(40% 0.09 60);
+    --gold-5:    oklch(25% 0.06 55);
+
+    --bronze-1:  oklch(70% 0.10 50);
+    --bronze-2:  oklch(48% 0.09 45);
+    --bronze-3:  oklch(28% 0.06 40);
+
+    --patine-1:  oklch(72% 0.08 175);
+    --patine-2:  oklch(50% 0.07 170);
+
+    /* map tones */
+    --map-bg:    #0d0a07;
+    --map-land:  #15110b;
+    --map-line:  #1f1810;
+    --map-water: #0a1014;
+    --map-ink:   #6f5d3e;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Cormorant Garamond",serif;}
+  body{
+    background:
+      radial-gradient(1400px 900px at 30% -10%, oklch(22% 0.05 70 / .25), transparent 60%),
+      var(--bg);
+    min-height:100vh;
+  }
+
+  /* ─── shell ─── */
+  .shell{ max-width:1480px; margin:0 auto; padding:48px 40px 80px; }
+
+  header.masthead{
+    display:grid; grid-template-columns:minmax(0,1fr) auto; gap:40px;
+    align-items:end; border-bottom:1px solid var(--rule); padding-bottom:24px; margin-bottom:32px;
+  }
+  header.masthead > div:first-child{ min-width:0; }
+  .eyebrow{
+    font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-dim); margin:0 0 14px; display:flex; align-items:center; gap:14px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--gold-2);box-shadow:0 0 10px var(--gold-2);}
+  h1{
+    font-weight:400; font-size:clamp(40px,5vw,72px); line-height:.96; letter-spacing:-.02em; margin:0;
+    background:linear-gradient(180deg, var(--gold-1) 0%, var(--gold-2) 50%, var(--gold-3) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  h1 em{font-style:italic;color:var(--ink-dim);-webkit-text-fill-color:var(--ink-dim);}
+  .meta{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--ink-dim); text-align:right; line-height:1.7;}
+  .meta b{color:var(--ink);font-weight:500;}
+  @media (max-width:1100px){
+    header.masthead{grid-template-columns:1fr;align-items:start;gap:20px;}
+    .meta{text-align:left;}
+  }
+
+  /* ─── style switcher ─── */
+  .switch{
+    display:flex; flex-wrap:wrap; gap:0; margin-bottom:24px;
+    border:1px solid var(--rule); background:var(--panel);
+  }
+  .switch button{
+    flex:1 1 auto; min-width:140px;
+    background:transparent; color:var(--ink-dim); border:0; border-right:1px solid var(--rule);
+    padding:14px 18px; cursor:pointer; text-align:left;
+    font-family:"JetBrains Mono",monospace; font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+    transition:all .25s ease;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .switch button:last-child{border-right:0;}
+  .switch button .num{ color:var(--ink-mute); font-size:9px; }
+  .switch button .nm{ color:var(--ink); font-weight:500; }
+  .switch button:hover{ background:#16110b; color:var(--ink); }
+  .switch button[aria-pressed="true"]{
+    background:linear-gradient(180deg, oklch(20% 0.04 65) 0%, oklch(12% 0.02 55) 100%);
+    color:var(--gold-2);
+    box-shadow: inset 0 1px 0 var(--gold-4), inset 0 -1px 0 #000;
+  }
+  .switch button[aria-pressed="true"] .nm{ color:var(--gold-1); }
+
+  /* ─── layout: map + sidebar ─── */
+  .layout{
+    display:grid; grid-template-columns: 1fr 320px; gap:1px;
+    background:var(--rule); border:1px solid var(--rule);
+  }
+  @media (max-width:980px){ .layout{grid-template-columns:1fr;} }
+
+  .map-wrap{
+    background:var(--map-bg);
+    aspect-ratio: 1.35 / 1;
+    position:relative; overflow:hidden;
+  }
+  .map-wrap svg.map{ width:100%; height:100%; display:block; }
+
+  /* corner marks */
+  .cmark{position:absolute;width:14px;height:14px;border:1px solid var(--gold-4);z-index:5;}
+  .cmark.tl{top:12px;left:12px;border-right:0;border-bottom:0;}
+  .cmark.tr{top:12px;right:12px;border-left:0;border-bottom:0;}
+  .cmark.bl{bottom:12px;left:12px;border-right:0;border-top:0;}
+  .cmark.br{bottom:12px;right:12px;border-left:0;border-top:0;}
+  .map-label{
+    position:absolute; top:16px; left:38px;
+    font-family:"JetBrains Mono",monospace; font-size:10px; letter-spacing:.22em;
+    color:var(--ink-mute); text-transform:uppercase; z-index:5;
+  }
+  .map-coord{
+    position:absolute; bottom:18px; right:38px;
+    font-family:"JetBrains Mono",monospace; font-size:9.5px; letter-spacing:.18em;
+    color:var(--ink-mute); z-index:5;
+  }
+  .map-scale{
+    position:absolute; bottom:18px; left:38px; z-index:5;
+    display:flex; align-items:center; gap:8px;
+    font-family:"JetBrains Mono",monospace; font-size:9px; color:var(--ink-mute); letter-spacing:.18em;
+  }
+  .map-scale .bar{ width:60px; height:1px; background:var(--ink-mute);}
+
+  /* badges layer */
+  .badges{ position:absolute; inset:0; z-index:4; pointer-events:none; }
+  .badge{
+    position:absolute; transform:translate(-50%,-50%);
+    pointer-events:auto; cursor:pointer;
+    transition: transform .35s cubic-bezier(.2,.7,.2,1.4), filter .25s ease;
+  }
+  .badge:hover{ transform:translate(-50%,-50%) scale(1.18); z-index:10;}
+  .badge.is-pin{ transform:translate(-50%,-100%); }
+  .badge.is-pin:hover{ transform:translate(-50%,-100%) scale(1.18); }
+
+  .badge svg{ display:block; }
+
+  /* tooltip */
+  .badge .tip{
+    position:absolute; left:50%; top:calc(100% + 10px);
+    transform:translateX(-50%);
+    background:var(--panel); border:1px solid var(--gold-4);
+    padding:6px 10px; min-width:160px; max-width:240px;
+    font-family:"Cormorant Garamond",serif; font-size:14px; line-height:1.2; color:var(--ink);
+    opacity:0; pointer-events:none; transition:opacity .2s ease;
+    white-space:nowrap; text-align:center;
+    box-shadow: 0 8px 24px rgba(0,0,0,.7);
+  }
+  .badge .tip .yr{
+    display:block; font-family:"JetBrains Mono",monospace; font-size:9.5px;
+    color:var(--gold-3); letter-spacing:.16em; margin-top:2px;
+  }
+  .badge:hover .tip{ opacity:1; }
+  .badge.is-pin .tip{ top:auto; bottom:calc(100% + 14px); }
+
+  /* ─── sidebar ─── */
+  .side{
+    background:var(--panel); padding:24px 22px;
+    display:flex; flex-direction:column; gap:18px;
+    max-height: 100%; overflow:auto;
+  }
+  .side h3{
+    font-family:"JetBrains Mono",monospace; font-size:10px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--ink-dim); margin:0 0 4px;
+    border-bottom:1px solid var(--rule); padding-bottom:10px;
+  }
+  .legend-style{
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .legend-style .row{
+    display:flex; gap:14px; align-items:center;
+    padding:10px 0; border-bottom:1px solid var(--rule);
+  }
+  .legend-style .row:last-child{border-bottom:0;}
+  .legend-style .pict{ width:54px; height:54px; flex:0 0 54px; display:grid; place-items:center;}
+  .legend-style .txt h4{margin:0; font-family:"Cormorant Garamond",serif; font-size:18px; font-weight:500; color:var(--ink); letter-spacing:.01em;}
+  .legend-style .txt p{margin:2px 0 0; font-family:"JetBrains Mono",monospace; font-size:9.5px; color:var(--ink-mute); letter-spacing:.14em; text-transform:uppercase; line-height:1.5;}
+
+  .list{ display:flex; flex-direction:column; gap:0; }
+  .list .it{
+    display:grid; grid-template-columns: 28px 1fr auto; gap:10px;
+    padding:9px 0; border-bottom:1px solid var(--rule);
+    font-family:"Cormorant Garamond",serif; align-items:center;
+  }
+  .list .it:last-child{border-bottom:0;}
+  .list .it .n{ font-family:"JetBrains Mono",monospace; font-size:10px; color:var(--gold-3); letter-spacing:.14em;}
+  .list .it .nm{ font-size:15px; color:var(--ink); line-height:1.15;}
+  .list .it .ar{ font-family:"JetBrains Mono",monospace; font-size:9px; color:var(--ink-mute); letter-spacing:.14em;}
+
+  /* notes */
+  .note{
+    margin-top:32px; padding:18px 22px; border:1px dashed var(--rule);
+    font-family:"JetBrains Mono",monospace; font-size:10.5px; line-height:1.7;
+    color:var(--ink-dim); letter-spacing:.06em;
+  }
+  .note b{ color:var(--gold-3); font-weight:500;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <div>
+      <p class="eyebrow"><span class="dot"></span>Étude · Badges &amp; Médaillons sur Carte · 6 styles</p>
+      <h1>Pièces de <em>Paris</em></h1>
+    </div>
+    <div class="meta">
+      <div>VUE · <b>carte interactive</b></div>
+      <div>SUJETS · <b>16 monuments</b></div>
+      <div>STYLES · <b>6 propositions</b></div>
+      <div>PALETTE · <b>oklch · or, bronze, patine</b></div>
+    </div>
+  </header>
+
+  <!-- style switcher -->
+  <nav class="switch" id="switch" role="tablist" aria-label="Style de badge"></nav>
+
+  <div class="layout">
+    <!-- MAP -->
+    <div class="map-wrap">
+      <span class="cmark tl"></span><span class="cmark tr"></span>
+      <span class="cmark bl"></span><span class="cmark br"></span>
+      <span class="map-label">Plan de Paris · 1:50 000</span>
+      <span class="map-coord">48.856° N · 2.352° E</span>
+      <span class="map-scale"><span class="bar"></span>1 km</span>
+
+      <!-- decorative map -->
+      <svg class="map" viewBox="0 0 1000 740" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+            <line x1="0" y1="0" x2="0" y2="6" stroke="oklch(15% 0.02 60)" stroke-width="1"/>
+          </pattern>
+          <radialGradient id="vignette" cx=".5" cy=".5" r=".7">
+            <stop offset="0" stop-color="transparent"/>
+            <stop offset="1" stop-color="#0a0806"/>
+          </radialGradient>
+        </defs>
+
+        <!-- land base -->
+        <rect width="1000" height="740" fill="var(--map-land)"/>
+        <rect width="1000" height="740" fill="url(#hatch)" opacity=".6"/>
+
+        <!-- Seine river (stylized curve through Paris) -->
+        <path d="M 0 380 C 120 360, 220 420, 320 430 S 460 460, 540 440 C 600 425, 660 400, 720 390 S 880 350, 1000 360"
+              stroke="oklch(28% 0.04 220)" stroke-width="38" fill="none" stroke-linecap="round" opacity=".55"/>
+        <path d="M 0 380 C 120 360, 220 420, 320 430 S 460 460, 540 440 C 600 425, 660 400, 720 390 S 880 350, 1000 360"
+              stroke="oklch(45% 0.05 220)" stroke-width="2" fill="none" opacity=".7"/>
+
+        <!-- Île de la Cité -->
+        <ellipse cx="500" cy="430" rx="40" ry="9" fill="var(--map-land)" stroke="oklch(35% 0.05 60)" stroke-width="1"/>
+        <!-- Île Saint-Louis -->
+        <ellipse cx="555" cy="438" rx="22" ry="6" fill="var(--map-land)" stroke="oklch(35% 0.05 60)" stroke-width="1"/>
+
+        <!-- arrondissement spiral (stylized) -->
+        <g stroke="oklch(22% 0.03 60)" stroke-width="1" fill="none" opacity=".6">
+          <circle cx="500" cy="370" r="60"/>
+          <circle cx="500" cy="370" r="120"/>
+          <circle cx="500" cy="370" r="190"/>
+          <circle cx="500" cy="370" r="270"/>
+          <circle cx="500" cy="370" r="350"/>
+        </g>
+
+        <!-- radial avenues -->
+        <g stroke="oklch(20% 0.03 60)" stroke-width=".8" opacity=".5">
+          <line x1="500" y1="370" x2="120" y2="80"/>
+          <line x1="500" y1="370" x2="880" y2="80"/>
+          <line x1="500" y1="370" x2="120" y2="660"/>
+          <line x1="500" y1="370" x2="880" y2="660"/>
+          <line x1="500" y1="370" x2="500" y2="40"/>
+          <line x1="500" y1="370" x2="500" y2="700"/>
+          <line x1="500" y1="370" x2="40"  y2="370"/>
+          <line x1="500" y1="370" x2="960" y2="370"/>
+        </g>
+
+        <!-- arrondissement labels -->
+        <g font-family="JetBrains Mono, monospace" font-size="11" fill="var(--map-ink)" opacity=".7" letter-spacing="2">
+          <text x="500" y="356" text-anchor="middle">I</text>
+          <text x="540" y="356" text-anchor="middle">IV</text>
+          <text x="430" y="320" text-anchor="middle">VIII</text>
+          <text x="430" y="500" text-anchor="middle">VII</text>
+          <text x="560" y="320" text-anchor="middle">IX</text>
+          <text x="600" y="500" text-anchor="middle">V</text>
+          <text x="500" y="240" text-anchor="middle">XVIII</text>
+          <text x="700" y="540" text-anchor="middle">XII</text>
+          <text x="200" y="320" text-anchor="middle">XVI</text>
+        </g>
+
+        <!-- vignette -->
+        <rect width="1000" height="740" fill="url(#vignette)" opacity=".7"/>
+      </svg>
+
+      <!-- BADGES LAYER -->
+      <div class="badges" id="badges"></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="side">
+      <div>
+        <h3>Style actif</h3>
+        <div id="active-style" style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold-1);margin-top:6px;">—</div>
+        <div id="active-desc" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim);letter-spacing:.1em;line-height:1.6;text-transform:uppercase;margin-top:6px;">—</div>
+      </div>
+
+      <div>
+        <h3>Comparatif</h3>
+        <div class="legend-style" id="legend"></div>
+      </div>
+
+      <div>
+        <h3>Monuments · 16</h3>
+        <div class="list" id="list"></div>
+      </div>
+    </aside>
+  </div>
+
+  <p class="note">
+    <b>NOTE</b> · Les positions sur la carte sont approximatives (carte stylisée, non géographique). En production, les coordonnées du GeoJSON
+    <code style="color:var(--ink);">monuments_paris</code> seraient projetées sur un fond Mapbox/Leaflet. Le style « <b>contour or</b> »
+    fonctionne le mieux à grande densité — le doré reste visible sans saturer la carte.
+  </p>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="goldV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="oklch(94% 0.10 90)"/>
+      <stop offset=".4"  stop-color="oklch(82% 0.14 82)"/>
+      <stop offset=".7"  stop-color="oklch(60% 0.13 70)"/>
+      <stop offset="1"   stop-color="oklch(36% 0.09 60)"/>
+    </linearGradient>
+    <linearGradient id="goldRim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0"   stop-color="oklch(96% 0.10 90)"/>
+      <stop offset=".5"  stop-color="oklch(70% 0.13 75)"/>
+      <stop offset="1"   stop-color="oklch(40% 0.09 65)"/>
+    </linearGradient>
+    <linearGradient id="bronzeV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="oklch(72% 0.11 55)"/>
+      <stop offset=".6" stop-color="oklch(50% 0.10 45)"/>
+      <stop offset="1" stop-color="oklch(28% 0.06 40)"/>
+    </linearGradient>
+    <linearGradient id="patineV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="oklch(76% 0.08 175)"/>
+      <stop offset="1" stop-color="oklch(40% 0.07 165)"/>
+    </linearGradient>
+    <radialGradient id="coinShade" cx=".35" cy=".35" r=".8">
+      <stop offset="0" stop-color="oklch(98% 0.06 90)"/>
+      <stop offset=".55" stop-color="oklch(75% 0.13 78)"/>
+      <stop offset="1" stop-color="oklch(35% 0.09 60)"/>
+    </radialGradient>
+    <radialGradient id="coinShadeBronze" cx=".35" cy=".35" r=".8">
+      <stop offset="0" stop-color="oklch(80% 0.10 55)"/>
+      <stop offset=".55" stop-color="oklch(52% 0.10 45)"/>
+      <stop offset="1" stop-color="oklch(22% 0.05 40)"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+<script>
+/* =========================================================
+   Monument data + map positions (% of map container)
+   ======================================================= */
+const monuments = [
+  {n:"Tour Eiffel",            ep:"1889", arr:"VII",  x:34, y:54, glyph:"eiffel"},
+  {n:"Palais du Louvre",       ep:"XII",  arr:"I",    x:51, y:50, glyph:"louvre"},
+  {n:"Notre-Dame",             ep:"XII",  arr:"IV",   x:53, y:58, glyph:"notredame"},
+  {n:"Arc de Triomphe",        ep:"1836", arr:"VIII", x:31, y:38, glyph:"arc"},
+  {n:"Colonne Vendôme",        ep:"1810", arr:"I",    x:48, y:44, glyph:"vendome"},
+  {n:"Panthéon",               ep:"1790", arr:"V",    x:55, y:64, glyph:"pantheon"},
+  {n:"Sacré-Cœur",             ep:"1914", arr:"XVIII",x:54, y:18, glyph:"sacrecoeur"},
+  {n:"Conciergerie",           ep:"XIV",  arr:"I",    x:50, y:55, glyph:"conciergerie"},
+  {n:"Colonne de Juillet",     ep:"1840", arr:"IV",   x:62, y:60, glyph:"juillet"},
+  {n:"Château de Vincennes",   ep:"XIV",  arr:"XII",  x:84, y:62, glyph:"vincennes"},
+  {n:"Palais de l'Élysée",     ep:"1722", arr:"VIII", x:39, y:42, glyph:"elysee"},
+  {n:"Opéra Garnier",          ep:"1875", arr:"IX",   x:48, y:38, glyph:"opera"},
+  {n:"Sainte-Chapelle",        ep:"1248", arr:"I",    x:50, y:53, glyph:"saintechapelle"},
+  {n:"Hôtel des Invalides",    ep:"1706", arr:"VII",  x:40, y:58, glyph:"invalides"},
+  {n:"Tour Saint-Jacques",     ep:"1523", arr:"IV",   x:54, y:54, glyph:"stjacques"},
+  {n:"Palais-Royal",           ep:"1639", arr:"I",    x:50, y:46, glyph:"palaisroyal"},
+];
+
+/* =========================================================
+   Compact glyphs — 80x80 viewBox
+   Each is just a silhouette path/group; receives `fill` via CSS var
+   ======================================================= */
+const G = {
+  eiffel: `<polygon points="22,68 32,46 40,30 48,46 58,68 53,68 42,42 38,42 27,68" />
+           <rect x="28" y="44" width="24" height="2.5"/>
+           <rect x="34" y="28" width="12" height="1.8"/>
+           <rect x="38" y="14" width="4" height="14"/>
+           <polygon points="38,14 42,14 40,8"/>`,
+  louvre: `<rect x="14" y="36" width="52" height="28"/>
+           <polygon points="22,64 40,38 58,64"/>
+           <polygon points="32,36 48,36 40,28"/>
+           <rect x="14" y="32" width="52" height="2"/>`,
+  notredame: `<rect x="32" y="32" width="16" height="34"/>
+              <rect x="20" y="22" width="10" height="44"/>
+              <rect x="50" y="22" width="10" height="44"/>
+              <polygon points="38,32 42,32 40,18"/>
+              <circle cx="40" cy="46" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>`,
+  arc: `<rect x="18" y="22" width="44" height="44"/>
+        <path d="M 32 66 L 32 42 Q 32 32 40 32 Q 48 32 48 42 L 48 66 Z" fill="rgba(0,0,0,.45)"/>
+        <rect x="18" y="20" width="44" height="3"/>`,
+  vendome: `<rect x="36" y="20" width="8" height="42"/>
+            <rect x="32" y="62" width="16" height="6"/>
+            <rect x="34" y="16" width="12" height="4"/>
+            <rect x="38" y="8" width="4" height="8"/>`,
+  pantheon: `<rect x="18" y="40" width="44" height="26"/>
+             <rect x="18" y="36" width="44" height="4"/>
+             <polygon points="18,36 62,36 40,24"/>
+             <path d="M 28 36 Q 40 12 52 36 Z"/>
+             <rect x="38" y="14" width="4" height="6"/>`,
+  sacrecoeur: `<rect x="22" y="40" width="36" height="26"/>
+               <path d="M 28 40 Q 40 14 52 40 Z"/>
+               <rect x="36" y="14" width="8" height="6"/>
+               <rect x="38" y="6" width="4" height="10"/>
+               <path d="M 16 46 Q 22 36 28 46 Z"/>
+               <path d="M 52 46 Q 58 36 64 46 Z"/>`,
+  conciergerie: `<rect x="22" y="36" width="36" height="30"/>
+                 <rect x="14" y="26" width="12" height="40"/>
+                 <rect x="54" y="26" width="12" height="40"/>
+                 <polygon points="14,26 26,26 20,18"/>
+                 <polygon points="54,26 66,26 60,18"/>`,
+  juillet: `<rect x="36" y="20" width="8" height="42"/>
+            <rect x="30" y="62" width="20" height="6"/>
+            <rect x="32" y="16" width="16" height="4"/>
+            <polygon points="36,16 44,16 40,8"/>`,
+  vincennes: `<rect x="14" y="44" width="52" height="22"/>
+              <rect x="28" y="22" width="24" height="22"/>
+              <rect x="24" y="18" width="6" height="26"/>
+              <rect x="50" y="18" width="6" height="26"/>
+              <polygon points="24,18 56,18 40,8"/>`,
+  elysee: `<rect x="14" y="44" width="52" height="22"/>
+           <polygon points="14,44 66,44 58,32 22,32"/>
+           <rect x="32" y="28" width="16" height="38"/>
+           <polygon points="32,28 48,28 40,18"/>`,
+  opera: `<rect x="14" y="44" width="52" height="22"/>
+          <rect x="28" y="34" width="24" height="32"/>
+          <path d="M 24 34 Q 40 14 56 34 Z"/>
+          <rect x="36" y="10" width="8" height="6"/>`,
+  saintechapelle: `<rect x="22" y="38" width="36" height="28"/>
+                   <polygon points="22,38 58,38 40,24"/>
+                   <rect x="36" y="14" width="8" height="14"/>
+                   <polygon points="36,14 44,14 40,4"/>`,
+  invalides: `<rect x="10" y="48" width="60" height="18"/>
+              <rect x="28" y="34" width="24" height="32"/>
+              <path d="M 22 34 Q 40 6 58 34 Z"/>
+              <rect x="36" y="10" width="8" height="8"/>
+              <rect x="38" y="2" width="4" height="8"/>`,
+  stjacques: `<rect x="28" y="14" width="24" height="52"/>
+              <polygon points="26,14 54,14 40,4"/>
+              <rect x="32" y="22" width="4" height="8"/>
+              <rect x="44" y="22" width="4" height="8"/>
+              <rect x="32" y="36" width="4" height="8"/>
+              <rect x="44" y="36" width="4" height="8"/>`,
+  palaisroyal: `<rect x="12" y="42" width="56" height="24"/>
+                <polygon points="12,42 68,42 58,30 22,30"/>
+                <rect x="32" y="26" width="16" height="20"/>
+                <polygon points="32,26 48,26 40,18"/>`
+};
+
+/* =========================================================
+   Six badge styles — return {svg, className}
+   Each takes glyphKey + label index + monument
+   ======================================================= */
+
+function curveText(id, text, r) {
+  // returns a <path id> the text follows (top arc)
+  return `<path id="${id}" d="M ${50-r} 50 A ${r} ${r} 0 0 1 ${50+r} 50" fill="none"/>`;
+}
+
+const styles = {
+  /* ---------------------------------------------------- */
+  filled: {
+    name:"Pièce dorée pleine",
+    desc:"Frappe massive · or poli",
+    size:62,
+    render: (m, idx) => `
+      <svg width="62" height="62" viewBox="0 0 100 100">
+        <!-- shadow -->
+        <ellipse cx="50" cy="92" rx="28" ry="4" fill="rgba(0,0,0,.6)"/>
+        <!-- outer rim -->
+        <circle cx="50" cy="50" r="46" fill="url(#goldRim)"/>
+        <!-- inner field -->
+        <circle cx="50" cy="50" r="40" fill="url(#coinShade)"/>
+        <!-- inner ring -->
+        <circle cx="50" cy="50" r="40" fill="none" stroke="oklch(35% 0.08 55)" stroke-width=".7" opacity=".6"/>
+        <circle cx="50" cy="50" r="36" fill="none" stroke="oklch(35% 0.08 55)" stroke-width=".5" opacity=".4"/>
+        <!-- glyph in dark -->
+        <g transform="translate(10 14) scale(1)" fill="oklch(22% 0.05 55)" color="oklch(22% 0.05 55)">${G[m.glyph]}</g>
+        <!-- top arc text -->
+        <defs>${curveText('cT'+idx, '', 30)}</defs>
+        <text font-family="Cinzel, serif" font-size="6.5" font-weight="600" fill="oklch(28% 0.06 55)" letter-spacing="1.2">
+          <textPath href="#cT${idx}" startOffset="50%" text-anchor="middle">${m.n.toUpperCase().slice(0,18)}</textPath>
+        </text>
+        <!-- bottom date -->
+        <text x="50" y="86" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="6" fill="oklch(28% 0.06 55)" letter-spacing="1">${m.ep}</text>
+        <!-- highlight -->
+        <ellipse cx="38" cy="32" rx="14" ry="6" fill="oklch(98% 0.05 90 / .35)"/>
+      </svg>`,
+  },
+
+  /* ---------------------------------------------------- */
+  outline: {
+    name:"Contour or",
+    desc:"Anneau seul · intérieur sombre",
+    size:54,
+    render: (m, idx) => `
+      <svg width="54" height="54" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="oklch(10% 0.02 55 / .9)" stroke="url(#goldRim)" stroke-width="2"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="url(#goldRim)" stroke-width=".6" opacity=".7"/>
+        <g transform="translate(10 14)" fill="url(#goldV)" color="oklch(80% 0.13 78)">${G[m.glyph]}</g>
+        <defs>${curveText('cO'+idx,'',32)}</defs>
+        <text font-family="Cinzel, serif" font-size="5.5" font-weight="500" fill="oklch(80% 0.13 78)" letter-spacing="1">
+          <textPath href="#cO${idx}" startOffset="50%" text-anchor="middle">${m.n.toUpperCase().slice(0,22)}</textPath>
+        </text>
+      </svg>`,
+  },
+
+  /* ---------------------------------------------------- */
+  engraved: {
+    name:"Médaille gravée",
+    desc:"Double cercle · gravure fine",
+    size:64,
+    render: (m, idx) => `
+      <svg width="64" height="64" viewBox="0 0 100 100">
+        <ellipse cx="50" cy="92" rx="30" ry="4" fill="rgba(0,0,0,.5)"/>
+        <circle cx="50" cy="50" r="46" fill="oklch(50% 0.10 65)" stroke="oklch(94% 0.10 90)" stroke-width="1.4"/>
+        <circle cx="50" cy="50" r="40" fill="oklch(58% 0.12 70)"/>
+        <!-- engraved field rays -->
+        ${Array.from({length:36}).map((_,i)=>{
+          const a = i*10*Math.PI/180;
+          const x1 = 50+Math.cos(a)*40, y1 = 50+Math.sin(a)*40;
+          const x2 = 50+Math.cos(a)*36, y2 = 50+Math.sin(a)*36;
+          return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="oklch(38% 0.08 60)" stroke-width=".6"/>`;
+        }).join("")}
+        <circle cx="50" cy="50" r="34" fill="oklch(72% 0.13 78)" stroke="oklch(38% 0.08 60)" stroke-width=".6"/>
+        <g transform="translate(10 14)" fill="oklch(28% 0.06 55)" color="oklch(28% 0.06 55)">${G[m.glyph]}</g>
+        <defs>${curveText('cE'+idx,'',28)}</defs>
+        <text font-family="Cinzel, serif" font-size="5.5" font-weight="600" fill="oklch(22% 0.05 55)" letter-spacing="1.4">
+          <textPath href="#cE${idx}" startOffset="50%" text-anchor="middle">★ ${m.n.toUpperCase().slice(0,16)} ★</textPath>
+        </text>
+        <text x="50" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="5" fill="oklch(22% 0.05 55)" letter-spacing="1">${m.ep}</text>
+        <ellipse cx="36" cy="30" rx="14" ry="5" fill="oklch(98% 0.05 90 / .4)"/>
+      </svg>`,
+  },
+
+  /* ---------------------------------------------------- */
+  patina: {
+    name:"Jeton patiné",
+    desc:"Bronze vert-de-gris · usé",
+    size:60,
+    render: (m, idx) => `
+      <svg width="60" height="60" viewBox="0 0 100 100">
+        <ellipse cx="50" cy="92" rx="28" ry="4" fill="rgba(0,0,0,.55)"/>
+        <circle cx="50" cy="50" r="46" fill="url(#coinShadeBronze)"/>
+        <!-- patina splotches -->
+        <circle cx="32" cy="38" r="10" fill="oklch(58% 0.07 170 / .45)"/>
+        <circle cx="62" cy="60" r="14" fill="oklch(52% 0.06 175 / .35)"/>
+        <circle cx="68" cy="32" r="6"  fill="oklch(60% 0.07 170 / .4)"/>
+        <circle cx="40" cy="68" r="8"  fill="oklch(50% 0.06 165 / .35)"/>
+        <!-- inner ring -->
+        <circle cx="50" cy="50" r="40" fill="none" stroke="oklch(28% 0.05 40)" stroke-width=".6" opacity=".8"/>
+        <g transform="translate(10 14)" fill="oklch(22% 0.04 40)" color="oklch(22% 0.04 40)">${G[m.glyph]}</g>
+        <defs>${curveText('cP'+idx,'',32)}</defs>
+        <text font-family="Cinzel, serif" font-size="5.5" font-weight="600" fill="oklch(20% 0.04 40)" letter-spacing="1.2">
+          <textPath href="#cP${idx}" startOffset="50%" text-anchor="middle">${m.n.toUpperCase().slice(0,18)}</textPath>
+        </text>
+        <text x="50" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="5.5" fill="oklch(20% 0.04 40)" letter-spacing="1">${m.ep}</text>
+        <!-- nicks -->
+        <path d="M 8 40 L 14 42" stroke="oklch(15% 0.02 40)" stroke-width="1"/>
+        <path d="M 88 58 L 94 56" stroke="oklch(15% 0.02 40)" stroke-width="1"/>
+      </svg>`,
+  },
+
+  /* ---------------------------------------------------- */
+  pin: {
+    name:"Marqueur épingle",
+    desc:"Pièce avec pointe · pin de carte",
+    size:54,
+    pin:true,
+    render: (m, idx) => `
+      <svg width="54" height="64" viewBox="0 0 100 120">
+        <!-- shadow ground -->
+        <ellipse cx="50" cy="116" rx="10" ry="2" fill="rgba(0,0,0,.7)"/>
+        <!-- stem -->
+        <polygon points="36,86 64,86 50,114" fill="url(#goldV)"/>
+        <polygon points="40,86 60,86 50,108" fill="oklch(45% 0.10 65)" opacity=".8"/>
+        <!-- coin -->
+        <circle cx="50" cy="48" r="44" fill="url(#goldRim)"/>
+        <circle cx="50" cy="48" r="38" fill="oklch(10% 0.02 55)" stroke="url(#goldRim)" stroke-width=".8"/>
+        <g transform="translate(10 12)" fill="url(#goldV)" color="oklch(80% 0.13 78)">${G[m.glyph]}</g>
+        <text x="50" y="82" text-anchor="middle" font-family="Cinzel, serif" font-size="5.5" fill="oklch(82% 0.12 80)" letter-spacing="1.2" font-weight="600">${m.ep}</text>
+        <!-- highlight -->
+        <ellipse cx="38" cy="30" rx="14" ry="5" fill="oklch(98% 0.05 90 / .25)"/>
+      </svg>`,
+  },
+
+  /* ---------------------------------------------------- */
+  seal: {
+    name:"Sceau de cire",
+    desc:"Cachet irrégulier · contour or",
+    size:60,
+    render: (m, idx) => `
+      <svg width="60" height="60" viewBox="0 0 100 100">
+        <ellipse cx="50" cy="92" rx="30" ry="4" fill="rgba(0,0,0,.55)"/>
+        <!-- irregular wax blob -->
+        <path d="M 50 6
+                 C 70 4, 92 22, 94 42
+                 C 96 60, 88 82, 70 92
+                 C 56 98, 38 96, 24 86
+                 C 8 74, 4 54, 10 36
+                 C 16 18, 32 6, 50 6 Z"
+              fill="oklch(38% 0.12 28)"
+              stroke="url(#goldRim)" stroke-width="2"/>
+        <!-- inner shading -->
+        <path d="M 50 14 C 68 14, 86 28, 88 46 C 88 68, 72 86, 52 88 C 30 88, 14 70, 14 48 C 16 30, 30 14, 50 14 Z"
+              fill="oklch(30% 0.10 25 / .7)"/>
+        <!-- highlight -->
+        <ellipse cx="36" cy="28" rx="14" ry="6" fill="oklch(75% 0.15 35 / .35)"/>
+        <!-- glyph -->
+        <g transform="translate(10 14)" fill="url(#goldV)" color="oklch(80% 0.13 78)">${G[m.glyph]}</g>
+        <defs>${curveText('cS'+idx,'',30)}</defs>
+        <text font-family="Cinzel, serif" font-size="5.5" font-weight="600" fill="url(#goldV)" letter-spacing="1.2">
+          <textPath href="#cS${idx}" startOffset="50%" text-anchor="middle">${m.n.toUpperCase().slice(0,18)}</textPath>
+        </text>
+        <text x="50" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="5" fill="oklch(82% 0.12 80)" letter-spacing="1">${m.ep}</text>
+      </svg>`,
+  },
+};
+
+/* =========================================================
+   Render
+   ======================================================= */
+const switchEl = document.getElementById("switch");
+const badgesEl = document.getElementById("badges");
+const listEl   = document.getElementById("list");
+const legendEl = document.getElementById("legend");
+const activeStyleEl = document.getElementById("active-style");
+const activeDescEl  = document.getElementById("active-desc");
+
+const order = ["filled","outline","engraved","patina","pin","seal"];
+let current = "outline"; // best for map density
+
+// Build switcher
+order.forEach((k,i)=>{
+  const s = styles[k];
+  const b = document.createElement("button");
+  b.setAttribute("aria-pressed", k===current?"true":"false");
+  b.dataset.key = k;
+  b.innerHTML = `<span class="num">№ 0${i+1}</span><span class="nm">${s.name}</span>`;
+  b.addEventListener("click", ()=>setStyle(k));
+  switchEl.appendChild(b);
+});
+
+// Build legend (mini sample of each style with one monument)
+order.forEach(k=>{
+  const s = styles[k];
+  const sampleM = monuments[1]; // Louvre
+  const row = document.createElement("div");
+  row.className = "row";
+  row.innerHTML = `
+    <div class="pict">${s.render(sampleM, 'L'+k)}</div>
+    <div class="txt">
+      <h4>${s.name}</h4>
+      <p>${s.desc}</p>
+    </div>`;
+  legendEl.appendChild(row);
+});
+
+// Build list
+monuments.forEach((m,i)=>{
+  const it = document.createElement("div");
+  it.className = "it";
+  it.innerHTML = `<span class="n">${String(i+1).padStart(2,"0")}</span><span class="nm">${m.n}</span><span class="ar">${m.arr}</span>`;
+  listEl.appendChild(it);
+});
+
+function setStyle(k){
+  current = k;
+  [...switchEl.children].forEach(b=>b.setAttribute("aria-pressed", b.dataset.key===k?"true":"false"));
+  activeStyleEl.textContent = styles[k].name;
+  activeDescEl.textContent  = styles[k].desc;
+  renderBadges();
+}
+
+function renderBadges(){
+  const s = styles[current];
+  badgesEl.innerHTML = "";
+  monuments.forEach((m, i)=>{
+    const wrap = document.createElement("div");
+    wrap.className = "badge" + (s.pin?" is-pin":"");
+    wrap.style.left = m.x + "%";
+    wrap.style.top  = m.y + "%";
+    wrap.innerHTML = s.render(m, i) + `
+      <div class="tip">${m.n}<span class="yr">${m.ep} · ${m.arr}ᵉ</span></div>`;
+    badgesEl.appendChild(wrap);
+  });
+}
+
+setStyle(current);
+</script>
+</body>
+</html>

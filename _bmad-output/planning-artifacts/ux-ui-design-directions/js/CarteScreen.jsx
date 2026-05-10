@@ -17,7 +17,7 @@ const NAV_APPS = [
   {icon:'🚗',title:'Waze',sub:'Voiture uniquement'},
 ];
 
-const SNAP = {collapsed:72, peek:280, expanded:580};
+const SNAP = {collapsed:72, expanded:580};
 
 const CarteScreen = ({onNavigate, globalState, setGlobalState, lang='fr', cityData}) => {
   const {React} = window;
@@ -68,7 +68,7 @@ const CarteScreen = ({onNavigate, globalState, setGlobalState, lang='fr', cityDa
 
   const startSession = () => {
     setSession({active:true,km:1.2,streets:12,secs:0});
-    setSnap('collapsed');
+    setSnap('expanded');
     setSubView('start');
   };
 
@@ -82,10 +82,14 @@ const CarteScreen = ({onNavigate, globalState, setGlobalState, lang='fr', cityDa
 
   const sheetH = SNAP[snap];
   const mapBottom = 74;
-  const mapTop = session.active ? 94 : 50;
+  const mapTop = 50;
 
   // Content inside bottom sheet based on state
   const renderSheetContent = () => {
+    if (session.active) return <SheetSession
+      session={session} onStop={stopSession} lang={lang} snap={snap}
+      T={T} IC={IC}/>;
+
     if (subView==='itineraires') return <SheetItineraires
       itins={ITINERAIRES} selItin={selItin} setSelItin={setSelItin}
       onBack={()=>setSubView('start')} onSelect={(i)=>{setSelItin(i);setSubView('navChoice');}}
@@ -108,8 +112,7 @@ const CarteScreen = ({onNavigate, globalState, setGlobalState, lang='fr', cityDa
   return (
     <div style={{position:'relative',width:390,height:844,overflow:'hidden',background:T.bg,fontFamily:'Inter,sans-serif'}}>
       <DynamicIsland/>
-      <StatusBar light={session.active}/>
-      {session.active && <SessionBar km={session.km} streets={session.streets} secs={session.secs}/>}
+      <StatusBar/>
 
       {/* Map */}
       <MapView exploredStreets={explored} sessionActive={session.active} top={mapTop} bottom={mapBottom}/>
@@ -135,49 +138,37 @@ const CarteScreen = ({onNavigate, globalState, setGlobalState, lang='fr', cityDa
       )}
 
       {/* Zones pill */}
-      <div style={{position:'absolute',left:16,bottom:session.active?94:sheetH+82,zIndex:20,transition:'bottom .35s ease'}}>
+      <div style={{position:'absolute',left:16,bottom:sheetH+82,zIndex:20,transition:'bottom .35s ease'}}>
         <ZonesPill active={zones} onToggle={()=>setZones(v=>!v)}/>
       </div>
 
-      {/* Stop session button */}
-      {session.active && (
-        <div onClick={stopSession} style={{
-          position:'absolute',bottom:90,right:16,width:52,height:52,
-          background:T.red,borderRadius:14,display:'flex',alignItems:'center',
-          justifyContent:'center',boxShadow:'0 4px 12px rgba(220,38,38,.45)',
-          cursor:'pointer',zIndex:60
-        }}>
-          <IC.stop/>
-        </div>
-      )}
-
-      {/* Bottom Sheet */}
-      {!session.active && (
-        <div style={{
-          position:'absolute',left:0,right:0,bottom:74,
-          height:SNAP.expanded+4,
-          transform:`translateY(${SNAP.expanded - sheetH}px)`,
-          transition:'transform .4s cubic-bezier(.4,0,.2,1)',
-          background:'rgba(255,255,255,.94)',
-          backdropFilter:'blur(16px)',
-          borderRadius:'24px 24px 0 0',
-          boxShadow:'0 -6px 24px rgba(0,0,0,.08)',
-          zIndex:30,
-          display:'flex',flexDirection:'column',
-        }}>
-          <div onClick={()=>setSnap(s => s==='collapsed'?'peek':s==='peek'?'expanded':'peek')} style={{cursor:'pointer'}}>
-            <DragHandle/>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:4,padding:'4px 0',fontSize:12,color:T.muted,fontWeight:500}}>
-              {snap==='collapsed' ? <><IC.chevUp c={T.muted} s={14}/> {tFn(lang,'sheet_hint_collapsed')}</> :
-               snap==='peek'     ? <><IC.chevUp c={T.muted} s={14}/> {tFn(lang,'sheet_hint_peek')}</> :
-                                   <><IC.chevDn c={T.muted} s={14}/> {tFn(lang,'sheet_hint_expanded')}</>}
-            </div>
-          </div>
-          <div style={{flex:1,overflowY:snap==='expanded'?'auto':'hidden'}}>
-            {renderSheetContent()}
+      {/* Bottom Sheet — visible even during session (shows monitor) */}
+      <div style={{
+        position:'absolute',left:0,right:0,bottom:74,
+        height:SNAP.expanded+4,
+        transform:`translateY(${SNAP.expanded - sheetH}px)`,
+        transition:'transform .4s cubic-bezier(.4,0,.2,1)',
+        background:T.surface,
+        backdropFilter:'blur(16px)',
+        borderRadius:'24px 24px 0 0',
+        borderTop:`1px solid ${T.border}`,
+        boxShadow:'0 -6px 24px rgba(0,0,0,.25)',
+        zIndex:30,
+        overflow:'hidden',
+        display:'flex',flexDirection:'column',
+      }}>
+        <div onClick={()=>setSnap(s => s==='collapsed'?'expanded':'collapsed')} style={{cursor:'pointer'}}>
+          <DragHandle/>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:4,padding:'4px 0',fontSize:12,color:T.muted,fontWeight:500}}>
+            {snap==='collapsed'
+              ? <><IC.chevUp c={T.muted} s={14}/> {session.active?tFn(lang,'sheet_hint_session'):tFn(lang,'sheet_hint_collapsed')}</>
+              : <><IC.chevDn c={T.muted} s={14}/> {tFn(lang,'sheet_hint_expanded')}</>}
           </div>
         </div>
-      )}
+        <div style={{flex:1,overflowY:snap==='expanded'?'auto':'hidden'}}>
+          {renderSheetContent()}
+        </div>
+      </div>
 
       <BottomNav active="carte" onChange={onNavigate} lang={lang}/>
     </div>
@@ -198,7 +189,7 @@ const SheetStart = ({snap,mode,setMode,onSelectItin,onStart,T,IC,ModeCard,Primar
 
   return (
     <div style={{padding:'8px 0'}}>
-      <div style={{fontSize:16,fontWeight:700,color:T.text,padding:'0 16px',marginBottom:12}}>{tFn(lang,'sheet_title')}</div>
+      {snap==='expanded' && <div style={{fontSize:16,fontWeight:700,color:T.text,padding:'0 16px',marginBottom:12}}>{tFn(lang,'sheet_title')}</div>}
 
       {/* Mode cards */}
       <div style={{display:'flex',gap:8,padding:'0 16px',marginBottom:12}}>
@@ -218,8 +209,6 @@ const SheetStart = ({snap,mode,setMode,onSelectItin,onStart,T,IC,ModeCard,Primar
 
       {/* Expanded extras */}
       {snap==='expanded' && <>
-        <div style={{height:14}}/>
-        <StatsRow items={[{icon:'📏',val:'~2,4 km'},{icon:'⏱',val:'~30 min'},{icon:'🗺️',val:'~15 rues'}]}/>
         <div style={{padding:'16px 16px 0'}}>
           <div style={{fontSize:13,fontWeight:700,color:T.text,marginBottom:10}}>{tFn(lang,'layers_title')}</div>
           <div style={{background:T.surfVar,borderRadius:14,overflow:'hidden'}}>
@@ -278,5 +267,100 @@ const SheetNavChoice = ({itin,navApp,setNavApp,onBack,onStart,T,IC,TextBtn,NavOp
     <div style={{padding:'8px 16px 16px'}}><PrimaryBtn label="🧭  C'est parti !" color="amber" onClick={onStart}/></div>
   </div>
 );
+
+// ─── Session monitor (in-sheet) ───────────────────────────────────────────────
+const SheetSession = ({session, onStop, lang='fr', snap, T, IC}) => {
+  const tFn = window.t || ((l,k)=>k);
+  const mm = String(Math.floor(session.secs/60)).padStart(2,'0');
+  const ss = String(session.secs%60).padStart(2,'0');
+  const pace = session.km>0 ? (session.secs/60/session.km) : 0;
+  const paceStr = pace>0 && isFinite(pace) ? `${Math.floor(pace)}'${String(Math.floor((pace%1)*60)).padStart(2,'0')}"` : '--\'--"';
+
+  return (
+    <div style={{padding:'4px 16px 16px'}}>
+      {/* Live indicator */}
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
+        <div style={{width:8,height:8,borderRadius:'50%',background:T.green,animation:'pulse 1.5s infinite'}}/>
+        <span style={{fontSize:12,fontWeight:700,color:T.green,letterSpacing:.4,textTransform:'uppercase'}}>
+          {tFn(lang,'session_live')||'Sortie en cours'}
+        </span>
+        <div style={{flex:1}}/>
+        <span style={{fontSize:11,color:T.muted,fontWeight:500}}>🚶 {tFn(lang,'mode_libre')||'Libre'}</span>
+      </div>
+
+      {/* Main metric — timer */}
+      <div style={{textAlign:'center',marginBottom:16}}>
+        <div style={{fontSize:48,fontWeight:800,color:T.text,fontVariantNumeric:'tabular-nums',letterSpacing:-1,lineHeight:1}}>
+          {mm}:{ss}
+        </div>
+        <div style={{fontSize:11,color:T.muted,fontWeight:600,letterSpacing:.6,textTransform:'uppercase',marginTop:4}}>
+          {tFn(lang,'session_duration')||'Durée'}
+        </div>
+      </div>
+
+      {/* Stats grid */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:14}}>
+        <div style={{background:T.surfVar,borderRadius:12,padding:'10px 8px',textAlign:'center'}}>
+          <div style={{fontSize:20,fontWeight:700,color:T.text,fontVariantNumeric:'tabular-nums'}}>{session.km.toFixed(2)}</div>
+          <div style={{fontSize:10,color:T.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:.4,marginTop:2}}>km</div>
+        </div>
+        <div style={{background:T.surfVar,borderRadius:12,padding:'10px 8px',textAlign:'center'}}>
+          <div style={{fontSize:20,fontWeight:700,color:T.primary,fontVariantNumeric:'tabular-nums'}}>{session.streets}</div>
+          <div style={{fontSize:10,color:T.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:.4,marginTop:2}}>{tFn(lang,'streets')||'Rues'}</div>
+        </div>
+        <div style={{background:T.surfVar,borderRadius:12,padding:'10px 8px',textAlign:'center'}}>
+          <div style={{fontSize:20,fontWeight:700,color:T.text,fontVariantNumeric:'tabular-nums'}}>{paceStr}</div>
+          <div style={{fontSize:10,color:T.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:.4,marginTop:2}}>{tFn(lang,'pace')||'Allure'}</div>
+        </div>
+      </div>
+
+      {/* Stop button — replaces "Démarrer" */}
+      <div onClick={onStop} style={{
+        background:T.red,color:'white',height:52,borderRadius:14,
+        display:'flex',alignItems:'center',justifyContent:'center',gap:10,
+        fontSize:15,fontWeight:700,cursor:'pointer',
+        boxShadow:'0 4px 14px rgba(220,38,38,.35)',
+      }}>
+        <IC.stop s={18}/> {tFn(lang,'btn_stop')||'Arrêter la sortie'}
+      </div>
+
+      {/* Expanded extras */}
+      {snap==='expanded' && <>
+        <div style={{marginTop:18,fontSize:13,fontWeight:700,color:T.text,marginBottom:10}}>
+          {tFn(lang,'live_progress')||'Progression en direct'}
+        </div>
+        <div style={{background:T.surfVar,borderRadius:14,padding:14}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+            <span style={{fontSize:12,color:T.muted,fontWeight:500}}>{tFn(lang,'zone_progress')||'Zone explorée'}</span>
+            <span style={{fontSize:12,color:T.text,fontWeight:700}}>{Math.min(100,Math.round(session.streets/50*100))}%</span>
+          </div>
+          <div style={{height:6,borderRadius:3,background:T.surfVar,overflow:'hidden'}}>
+            <div style={{height:'100%',width:`${Math.min(100,session.streets/50*100)}%`,background:T.primary,borderRadius:3,transition:'width .4s'}}/>
+          </div>
+          <div style={{display:'flex',justifyContent:'space-between',marginTop:14,paddingTop:12,borderTop:`1px solid ${T.border}`}}>
+            <div>
+              <div style={{fontSize:10,color:T.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:.4}}>🏆 {tFn(lang,'new_streets')||'Nouvelles rues'}</div>
+              <div style={{fontSize:18,fontWeight:700,color:T.primary,marginTop:2}}>+{session.streets-12}</div>
+            </div>
+            <div style={{textAlign:'right'}}>
+              <div style={{fontSize:10,color:T.muted,fontWeight:600,textTransform:'uppercase',letterSpacing:.4}}>⚡ {tFn(lang,'calories')||'Calories'}</div>
+              <div style={{fontSize:18,fontWeight:700,color:T.text,marginTop:2}}>{Math.round(session.km*65)} kcal</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{marginTop:14,padding:'12px 14px',background:T.a10,border:`1px solid ${T.a22}`,borderRadius:12,display:'flex',gap:10,alignItems:'flex-start'}}>
+          <span style={{fontSize:18}}>💡</span>
+          <div style={{flex:1}}>
+            <div style={{fontSize:12,fontWeight:700,color:T.text,marginBottom:2}}>{tFn(lang,'tip_title')||'Astuce'}</div>
+            <div style={{fontSize:11,color:T.muted,lineHeight:1.4}}>{tFn(lang,'tip_session')||'Tournez à droite à la prochaine intersection pour explorer une nouvelle zone.'}</div>
+          </div>
+        </div>
+      </>}
+
+      <style>{`@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}`}</style>
+    </div>
+  );
+};
 
 Object.assign(window, {CarteScreen});

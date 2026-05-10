@@ -486,4 +486,30 @@ class AppLocalizationsFr extends AppLocalizations {
   String badge_locked_hint(String radius) {
     return 'Passe à $radius m pour débloquer ce badge.';
   }
+
+  @override
+  String get tab_objectifs => 'Objectifs';
+
+  @override
+  String get objectif_activate => 'Activer';
+
+  @override
+  String get objectif_deactivate => 'Actif';
+
+  @override
+  String get objectif_complete => 'Complété';
+
+  @override
+  String get transport_foot => 'À pied';
+
+  @override
+  String get transport_bike => 'Vélo';
+
+  @override
+  String get transport_all => 'Tous modes';
+
+  @override
+  String objectif_progress(int unlocked, int total) {
+    return '$unlocked / $total monuments';
+  }
 }

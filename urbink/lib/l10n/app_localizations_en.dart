@@ -483,4 +483,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String badge_locked_hint(String radius) {
     return 'Get within $radius m to unlock this badge.';
   }
+
+  @override
+  String get tab_objectifs => 'Goals';
+
+  @override
+  String get objectif_activate => 'Activate';
+
+  @override
+  String get objectif_deactivate => 'Active';
+
+  @override
+  String get objectif_complete => 'Complete';
+
+  @override
+  String get transport_foot => 'Walking';
+
+  @override
+  String get transport_bike => 'Cycling';
+
+  @override
+  String get transport_all => 'All modes';
+
+  @override
+  String objectif_progress(int unlocked, int total) {
+    return '$unlocked / $total monuments';
+  }
 }

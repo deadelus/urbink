@@ -150,7 +150,7 @@ const CreateItineraireScreen = ({onBack, onCreate, lang='fr', cityData}) => {
       </div>
 
       {/* Bottom sheet */}
-      <div style={{position:'absolute',left:0,right:0,bottom:74,background:'rgba(255,255,255,.95)',backdropFilter:'blur(16px)',borderRadius:'24px 24px 0 0',boxShadow:'0 -6px 24px rgba(0,0,0,.08)',zIndex:30}}>
+      <div style={{position:'absolute',left:0,right:0,bottom:74,background:T.surface,backdropFilter:'blur(16px)',borderRadius:'24px 24px 0 0',borderTop:`1px solid ${T.border}`,boxShadow:'0 -6px 24px rgba(0,0,0,.25)',zIndex:30}}>
         <DragHandle/>
         <div style={{height:12}}/>
         {/* Mode tabs */}

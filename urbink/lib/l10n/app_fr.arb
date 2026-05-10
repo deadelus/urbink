@@ -500,5 +500,35 @@
     "placeholders": {
       "radius": { "type": "String" }
     }
+  },
+
+  "tab_objectifs": "Objectifs",
+  "@tab_objectifs": { "description": "Label onglet Objectifs thématiques dans BadgesScreen" },
+
+  "objectif_activate": "Activer",
+  "@objectif_activate": { "description": "Bouton activation d'un objectif thématique" },
+
+  "objectif_deactivate": "Actif",
+  "@objectif_deactivate": { "description": "Bouton désactivation d'un objectif thématique (état actif)" },
+
+  "objectif_complete": "Complété",
+  "@objectif_complete": { "description": "Label objectif thématique complété à 100%" },
+
+  "transport_foot": "À pied",
+  "@transport_foot": { "description": "Mode de déplacement à pied" },
+
+  "transport_bike": "Vélo",
+  "@transport_bike": { "description": "Mode de déplacement à vélo" },
+
+  "transport_all": "Tous modes",
+  "@transport_all": { "description": "Mode de déplacement tous modes (pied et vélo)" },
+
+  "objectif_progress": "{unlocked} / {total} monuments",
+  "@objectif_progress": {
+    "description": "Progression d'un objectif thématique",
+    "placeholders": {
+      "unlocked": { "type": "int" },
+      "total": { "type": "int" }
+    }
   }
 }

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Urbink — Zones overlay (6 variations)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0D1117; font-family: 'Inter', sans-serif; overflow: hidden; color: #E2E8F0; }
+#root { width: 100vw; height: 100vh; }
+button { font-family: inherit; }
+::-webkit-scrollbar { display: none; }
+* { -webkit-tap-highlight-color: transparent; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="js/ParisData.jsx"></script>
+<script type="text/babel" src="js/ZonesOverlay.jsx"></script>
+
+<script type="text/babel">
+'use strict';
+const { useState } = React;
+
+// ───── iOS-style phone frame (self-contained so we don't depend on app chrome)
+const PhoneFrame = ({children, label, tone='light'}) => (
+  <div style={{
+    width: 390, height: 680,
+    position: 'relative',
+    background: '#F8FAFC',
+    borderRadius: 38,
+    boxShadow: '0 1px 0 rgba(255,255,255,.06) inset, 0 30px 60px -10px rgba(0,0,0,.45), 0 0 0 10px #18181B, 0 0 0 11px #2A2A30',
+    overflow: 'hidden',
+    fontFamily: 'Inter, sans-serif',
+  }}>
+    {/* Dynamic Island */}
+    <div style={{position:'absolute',top:10,left:'50%',transform:'translateX(-50%)',width:110,height:32,background:'#000',borderRadius:20,zIndex:200}}/>
+    {/* Status bar */}
+    <div style={{position:'absolute',top:0,left:0,right:0,height:48,display:'flex',alignItems:'flex-end',justifyContent:'space-between',padding:'0 26px 6px',zIndex:100,color:'#0F172A'}}>
+      <span style={{fontSize:14,fontWeight:600}}>9:41</span>
+      <div style={{display:'flex',alignItems:'center',gap:5}}>
+        <span style={{fontSize:10,fontWeight:600}}>•••• 5G</span>
+        <div style={{width:22,height:11,borderRadius:3,border:'1.3px solid #0F172A',position:'relative'}}>
+          <div style={{position:'absolute',inset:1,borderRadius:1,background:'#0F172A',width:13}}/>
+        </div>
+      </div>
+    </div>
+    {children}
+    {/* Bottom tab bar stub */}
+    <div style={{position:'absolute',left:0,right:0,bottom:0,height:66,background:'#fff',borderTop:'1px solid #E2E8F0',display:'flex',alignItems:'center',justifyContent:'space-around',zIndex:50,paddingBottom:12}}>
+      {['Carte','Parcours','Social','Badges','Profil'].map((l,i)=>(
+        <div key={i} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:3}}>
+          <div style={{width:20,height:20,borderRadius:5,background:i===0?'#256F4C':'#CBD5E1'}}/>
+          <span style={{fontSize:9,fontWeight:i===0?600:500,color:i===0?'#256F4C':'#64748B'}}>{l}</span>
+        </div>
+      ))}
+    </div>
+    {/* Home indicator */}
+    <div style={{position:'absolute',bottom:6,left:'50%',transform:'translateX(-50%)',width:120,height:4,background:'#0F172A',borderRadius:2,zIndex:60}}/>
+  </div>
+);
+
+// ───── ZonesPill top-right badge (showing state "ON")
+const ZonesPill = ({mode='Arr.'}) => (
+  <div style={{
+    position:'absolute', left:16, top:58,
+    display:'inline-flex',alignItems:'center',gap:6,
+    background:'#fff', borderRadius:20, padding:'7px 12px 7px 10px',
+    boxShadow:'0 2px 12px rgba(0,0,0,.12)',
+    fontSize:11, fontWeight:600, color:'#0F172A', zIndex:40,
+    border:'1px solid #E2E8F0',
+  }}>
+    <div style={{width:7,height:7,background:'#256F4C',borderRadius:'50%'}}/>
+    Zones · {mode}
+  </div>
+);
+
+// ───── City pill (mirrors Urbink CityHeaderBar on light bg)
+const CityPill = () => (
+  <div style={{
+    position:'absolute', right:16, top:58,
+    display:'inline-flex',alignItems:'center',gap:5,
+    background:'rgba(255,255,255,.95)', borderRadius:20, padding:'7px 10px 7px 8px',
+    boxShadow:'0 2px 12px rgba(0,0,0,.12)',
+    fontSize:11, fontWeight:600, color:'#256F4C', zIndex:40,
+    border:'1px solid #E2E8F0',
+  }}>
+    <span style={{fontSize:12}}>🇫🇷</span>
+    Paris
+    <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M19 9l-7 7-7-7" stroke="#256F4C" strokeWidth="2.5" strokeLinecap="round"/></svg>
+  </div>
+);
+
+// ───── Legend ribbon (bottom of map)
+const Legend = ({items}) => (
+  <div style={{
+    position:'absolute', left:12, right:12, bottom:82,
+    background:'rgba(255,255,255,.92)', backdropFilter:'blur(10px)',
+    borderRadius:14, padding:'10px 14px',
+    boxShadow:'0 4px 16px rgba(0,0,0,.10)', zIndex:45,
+    display:'flex', alignItems:'center', gap:12, fontSize:11, fontWeight:500, color:'#64748B',
+    border:'1px solid rgba(226,232,240,.8)',
+  }}>
+    {items.map((it,i)=>(
+      <React.Fragment key={i}>
+        <div style={{display:'flex',alignItems:'center',gap:6}}>
+          {it.swatch}
+          <span style={{color:'#0F172A',fontWeight:600}}>{it.label}</span>
+        </div>
+        {i<items.length-1 && <div style={{width:1,height:14,background:'#E2E8F0'}}/>}
+      </React.Fragment>
+    ))}
+  </div>
+);
+
+// ───── The main card: phone frame + map + overlay
+const VariantCard = ({title, zoom, OverlayComponent, legendItems, subtitleNote, zoomLabel}) => {
+  return (
+    <div style={{position:'relative',width:390,height:680}}>
+      <PhoneFrame>
+        {/* Map area (between status bar and tab bar) */}
+        <div style={{position:'absolute',top:48,left:0,right:0,bottom:66,overflow:'hidden'}}>
+          <window.MapShell zoom={zoom}>
+            <OverlayComponent zoom={zoom}/>
+          </window.MapShell>
+        </div>
+        {/* Chrome overlays */}
+        <ZonesPill mode={zoom==='far'?'Arr.':'Quartier'}/>
+        <CityPill/>
+        {/* Zoom level indicator */}
+        <div style={{
+          position:'absolute', right:16, bottom:82, zIndex:40,
+          background:'#0F172A', color:'#fff', borderRadius:10,
+          padding:'6px 10px', fontSize:10, fontWeight:600,
+          fontFamily:'JetBrains Mono, monospace', letterSpacing:.5,
+          boxShadow:'0 4px 12px rgba(0,0,0,.3)',
+        }}>
+          {zoomLabel}
+        </div>
+        {/* Legend */}
+        {legendItems && <Legend items={legendItems}/>}
+      </PhoneFrame>
+      {subtitleNote && (
+        <div style={{marginTop:14,color:'#94A3B8',fontSize:12,lineHeight:1.5,maxWidth:360,fontFamily:'JetBrains Mono, monospace'}}>
+          {subtitleNote}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ───── Variant meta ───────────────────────────────────────────────────────────
+const swatch = (bg, border) => (
+  <div style={{width:14,height:10,borderRadius:3,background:bg,border:`1px solid ${border||'transparent'}`}}/>
+);
+
+const VARIANTS = [
+  {
+    id:'v1', title:'V1 · Contour pointillé',
+    subtitle:'Minimal cartographique',
+    note:'// Hairline dashed borders only.\n// No fill, no distraction.\n// Numbers in muted grey.',
+    Overlay: window.V1_DottedOutline,
+    legend: [
+      {swatch: <svg width="18" height="6"><line x1="0" y1="3" x2="18" y2="3" stroke="#0F172A" strokeOpacity=".35" strokeDasharray="3,2.5"/></svg>, label:'Limite'},
+    ],
+  },
+  {
+    id:'v2', title:'V2 · Teinte progressive',
+    subtitle:'Data-driven : plus tu marches, plus c\'est vert',
+    note:'// Fill opacity = exploration %.\n// Choropleth classique,\n// récompense visuelle forte.',
+    Overlay: window.V2_ProgressTint,
+    legend: [
+      {swatch:swatch('rgba(37,111,76,.12)','#256F4C'), label:'< 30%'},
+      {swatch:swatch('rgba(37,111,76,.3)','#256F4C'),  label:'30-70%'},
+      {swatch:swatch('rgba(37,111,76,.5)','#256F4C'),  label:'> 70%'},
+    ],
+  },
+  {
+    id:'v3', title:'V3 · Découpe papier',
+    subtitle:'Éditorial, quartiers comme tuiles ivoire',
+    note:'// Two-tone ivory tiles + soft drop shadow.\n// Crimson Pro numerals (feel of a travel journal).\n// Green "seal" opacity encodes progress.',
+    Overlay: window.V3_PaperCut,
+    legend: [
+      {swatch:swatch('#F5F1E6','#BDB296'), label:'Tuile claire'},
+      {swatch:swatch('#EEE8D6','#BDB296'), label:'Tuile foncée'},
+      {swatch:<div style={{width:10,height:10,borderRadius:'50%',background:'rgba(37,111,76,.4)'}}/>, label:'Progression'},
+    ],
+  },
+  {
+    id:'v4', title:'V4 · Étiquettes ancrées',
+    subtitle:'Style carte touristique, numéros en Crimson Pro',
+    note:'// Outlined zones + floating circle badges.\n// Numerals in serif — borrow the look of\n// Plans de Paris from the 1970s.',
+    Overlay: window.V4_CartographicLabels,
+    legend: [
+      {swatch:<div style={{width:12,height:12,borderRadius:'50%',background:'#fff',border:'1.3px solid #256F4C'}}/>, label:'Arr.'},
+      {swatch:swatch('rgba(37,111,76,.05)','#1a5438'), label:'Zone'},
+    ],
+  },
+  {
+    id:'v5', title:'V5 · Heatmap ambre inversée',
+    subtitle:'Focus sur ce qu\'il reste à découvrir',
+    note:'// Low-exploration zones glow amber.\n// Bold: inverts the usual "green = good"\n// logic to surface opportunities.',
+    Overlay: window.V5_InverseHeatmap,
+    legend: [
+      {swatch:swatch('rgba(245,158,11,.35)','#B8832E'), label:'À explorer'},
+      {swatch:swatch('rgba(37,111,76,.2)','#256F4C'), label:'Déjà parcouru'},
+    ],
+  },
+  {
+    id:'v6', title:'V6 · Pastilles + rayures',
+    subtitle:'Audacieux : rayures pour terrain vague, pastilles flottantes',
+    note:'// Diagonal stripes = unexplored territory.\n// Solid green fill unlocks at 50%.\n// Amber pill when a zone hits 80%+.',
+    Overlay: window.V6_StripedPill,
+    legend: [
+      {swatch:<svg width="18" height="10"><defs><pattern id="lgs" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="4" stroke="#256F4C" strokeWidth="1.2" opacity=".4"/></pattern></defs><rect width="18" height="10" fill="url(#lgs)" stroke="#256F4C" strokeOpacity=".3"/></svg>, label:'Vierge'},
+      {swatch:swatch('rgba(37,111,76,.4)','#256F4C'), label:'Parcouru'},
+      {swatch:<div style={{width:14,height:10,borderRadius:5,background:'#F59E0B',border:'1px solid #B8832E'}}/>, label:'Complet'},
+    ],
+  },
+];
+
+// ───── Build the canvas
+const App = () => {
+  const { DesignCanvas, DCSection, DCArtboard } = window;
+
+  return (
+    <DesignCanvas
+      title="Urbink — Overlay quartiers & arrondissements"
+      subtitle="6 variations · zoom adaptatif · à déclencher via le ZonesPill existant"
+    >
+      {/* Row 1: Dézoomé (Arrondissements) */}
+      <DCSection id="far" title="Dézoomé · 20 arrondissements" subtitle="Vue ville entière — la spirale en escargot">
+        {VARIANTS.map(v => (
+          <DCArtboard key={v.id+'-far'} id={v.id+'-far'} label={v.title} width={390} height={720}>
+            <VariantCard
+              title={v.title}
+              zoom="far"
+              OverlayComponent={v.Overlay}
+              legendItems={v.legend}
+              subtitleNote={v.note}
+              zoomLabel="ZOOM 11 · ARR."
+            />
+          </DCArtboard>
+        ))}
+      </DCSection>
+
+      {/* Row 2: Zoomé (Quartiers du 4e) */}
+      <DCSection id="near" title="Zoomé · Quartiers (4e arr.)" subtitle="Apparition automatique au-delà de zoom 14 — les arrondissements s'effacent au profit des 4 quartiers">
+        {VARIANTS.map(v => (
+          <DCArtboard key={v.id+'-near'} id={v.id+'-near'} label={v.title+' · zoom'} width={390} height={720}>
+            <VariantCard
+              title={v.title}
+              zoom="near"
+              OverlayComponent={v.Overlay}
+              legendItems={v.legend}
+              subtitleNote={null}
+              zoomLabel="ZOOM 14 · QUARTIER"
+            />
+          </DCArtboard>
+        ))}
+      </DCSection>
+    </DesignCanvas>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@ import 'package:urbink/features/badges/data/paris_monuments.dart';
 
 // ---------------------------------------------------------------------------
 // 12 collections thématiques — Paris
+// transportModes : 'foot' | 'bike' | 'all'
 // ---------------------------------------------------------------------------
 
 CollectionMonument _m(String id) => kParisMonuments[id]!;
@@ -15,6 +16,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: 'Le must absolu de Paris',
     icon: '⭐',
     color: const Color(0xFFF59E0B),
+    transportModes: const ['foot', 'bike'],
     monuments: [
       _m('PA00088801'),
       _m('PA00086250'),
@@ -30,6 +32,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: 'Le patrimoine religieux',
     icon: '⛪',
     color: const Color(0xFF7C3AED),
+    transportModes: const ['foot'],
     monuments: [
       _m('PA00086250'),
       _m('PA75180004'),
@@ -46,6 +49,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: 'La Seine traversée',
     icon: '🌉',
     color: const Color(0xFF0891B2),
+    transportModes: const ['foot', 'bike'],
     monuments: [
       _m('PA00085999'),
       _m('PA00088798'),
@@ -61,6 +65,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: "L'héritage monarchique",
     icon: '👑',
     color: const Color(0xFFB45309),
+    transportModes: const ['foot', 'bike'],
     monuments: [
       _m('PA00085992'),
       _m('DN00000008'),
@@ -76,6 +81,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: 'Paris côté coulisses',
     icon: '🎭',
     color: const Color(0xFFBE185D),
+    transportModes: const ['foot'],
     monuments: [
       _m('PA00089004'),
       _m('ACR0000698'),
@@ -91,6 +97,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: "L'architecture du XXe",
     icon: '🏗️',
     color: const Color(0xFF475569),
+    transportModes: const ['foot', 'bike'],
     monuments: [
       _m('ACR0000721'),
       _m('WIKI_TOUR_MONTPARNASSE'),
@@ -106,6 +113,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: 'Verdure et prestige',
     icon: '🌳',
     color: const Color(0xFF256F4C),
+    transportModes: const ['foot'],
     monuments: [
       _m('PA00086476'),
       _m('PA00088880'),
@@ -122,6 +130,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: 'Les joyaux méconnus',
     icon: '🗝️',
     color: const Color(0xFF92400E),
+    transportModes: const ['foot'],
     monuments: [
       _m('PA00088431'),
       _m('PA00086278'),
@@ -137,6 +146,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: 'Demeures secrètes du Marais',
     icon: '🏰',
     color: const Color(0xFF9D174D),
+    transportModes: const ['foot'],
     monuments: [
       _m('PA00086278'),
       _m('PA00086125'),
@@ -153,6 +163,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: 'Paris en pierre et bronze',
     icon: '🗿',
     color: const Color(0xFF334155),
+    transportModes: const ['foot', 'bike'],
     monuments: [
       _m('PA00086002'),
       _m('PA00086006'),
@@ -171,6 +182,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: 'Savoir-faire et mémoire ouvrière',
     icon: '⚙️',
     color: const Color(0xFF374151),
+    transportModes: const ['foot', 'bike'],
     monuments: [
       _m('PA00086598'),
       _m('PA00086755'),
@@ -186,6 +198,7 @@ final kParisCollections = <MonumentCollection>[
     subtitle: 'Adresses légendaires de Paris',
     icon: '🍽️',
     color: const Color(0xFF7F1D1D),
+    transportModes: const ['foot'],
     monuments: [
       _m('PA00086004'),
       _m('PA00086249'),

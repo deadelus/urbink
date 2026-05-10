@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Médailles Gravées · Planche · Monuments de Paris</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=JetBrains+Mono:wght@300;400;500&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0806; --panel:#120e0a; --ink:#f5e9d0; --ink-dim:#8b7a5a; --ink-mute:#5a4d36; --rule:#1f1810;
+    --gold-1:oklch(94% 0.10 90); --gold-2:oklch(82% 0.14 82); --gold-3:oklch(64% 0.13 72); --gold-4:oklch(40% 0.09 60);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Cormorant Garamond",serif;}
+  body{
+    background:radial-gradient(1200px 800px at 30% -10%, oklch(22% 0.05 70 / .25), transparent 60%), var(--bg);
+    min-height:100vh;
+  }
+  .frame{ max-width:1480px; margin:0 auto; padding:56px 48px 88px; }
+  header.masthead{
+    display:grid; grid-template-columns:minmax(0,1fr) auto; gap:40px;
+    align-items:end; border-bottom:1px solid var(--rule); padding-bottom:24px; margin-bottom:48px;
+  }
+  header.masthead > div:first-child{ min-width:0; }
+  .eyebrow{
+    font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ink-dim); margin:0 0 14px; display:flex; align-items:center; gap:14px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--gold-2);box-shadow:0 0 10px var(--gold-2);}
+  h1{
+    font-weight:400; font-family:"Cinzel",serif; font-size:clamp(40px,5vw,76px); line-height:.96;
+    letter-spacing:.02em; margin:0;
+    background:linear-gradient(180deg, var(--gold-1) 0%, var(--gold-2) 50%, var(--gold-3) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  h1 em{font-style:italic;font-family:"Cormorant Garamond",serif;font-weight:500;color:var(--ink-dim);-webkit-text-fill-color:var(--ink-dim);}
+  .meta{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--ink-dim); text-align:right; line-height:1.7;}
+  .meta b{color:var(--ink);font-weight:500;}
+  @media (max-width:1100px){ header.masthead{grid-template-columns:1fr;align-items:start;gap:18px;} .meta{text-align:left;} }
+  .grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+    background:var(--rule); border:1px solid var(--rule);
+  }
+  @media (max-width:1100px){ .grid{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:780px){  .grid{grid-template-columns:repeat(2,1fr);} }
+  .cell{
+    background:var(--panel); aspect-ratio:1/1; position:relative; overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .cell::before{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 80% at 50% 110%, oklch(28% 0.06 65 / .45), transparent 60%),
+      linear-gradient(180deg, oklch(14% 0.02 60) 0%, oklch(8% 0.015 50) 100%);
+  }
+  .tick{position:absolute;width:9px;height:9px;border-color:var(--gold-4);border-style:solid;border-width:0;z-index:3;}
+  .tick.tl{top:10px;left:10px;border-top-width:1px;border-left-width:1px;}
+  .tick.tr{top:10px;right:10px;border-top-width:1px;border-right-width:1px;}
+  .tick.bl{bottom:10px;left:10px;border-bottom-width:1px;border-left-width:1px;}
+  .tick.br{bottom:10px;right:10px;border-bottom-width:1px;border-right-width:1px;}
+  .id{position:absolute;top:14px;left:18px;font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.18em;color:var(--ink-mute);z-index:4;text-transform:uppercase;}
+  .arr{position:absolute;top:14px;right:18px;font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.16em;color:var(--gold-3);z-index:4;}
+  .stage{flex:1;position:relative;z-index:2;display:grid;place-items:center;padding:28px 18px 8px;}
+  .stage svg.medal{width:88%;max-width:280px;height:auto;filter: drop-shadow(0 12px 30px oklch(70% 0.13 75 / .18));}
+  .label{
+    position:relative;z-index:3;padding:14px 20px 18px;
+    border-top:1px solid oklch(20% 0.02 60 / .6);
+    background: linear-gradient(180deg, transparent, oklch(8% 0.015 50 / .6));
+    text-align:center;
+  }
+  .label .name{font-family:"Cinzel",serif;font-weight:500;font-size:13.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-1);margin:0 0 4px;text-wrap:balance;}
+  .label .sub{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-mute);}
+  .label .sub b{color:var(--gold-3);font-weight:500;}
+  footer.foot{
+    margin-top:48px;padding-top:24px;border-top:1px solid var(--rule);
+    display:flex;justify-content:space-between;
+    font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--ink-mute);letter-spacing:.16em;text-transform:uppercase;
+  }
+  footer.foot b{color:var(--gold-3);font-weight:500;}
+</style>
+</head>
+<body>
+<div class="frame">
+  <header class="masthead">
+    <div>
+      <p class="eyebrow"><span class="dot"></span>Planche · Médailles Gravées · 16/16</p>
+      <h1>Médailles<br><em>de Paris</em></h1>
+    </div>
+    <div class="meta">
+      <div>STYLE · <b>frappe gravée double cercle</b></div>
+      <div>METAL · <b>or · oklch</b></div>
+      <div>FORMAT · <b>1:1 · vector</b></div>
+      <div>PIECES · <b>16 monuments</b></div>
+    </div>
+  </header>
+  <div class="grid" id="grid"></div>
+  <footer class="foot">
+    <span>Urbink · Atlas Médailles</span>
+    <span><b>16</b> pièces · <b>SVG</b> · <b>cinzel + cormorant</b></span>
+    <span>v.02 · 2026</span>
+  </footer>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="oklch(96% 0.10 90)"/>
+      <stop offset=".45" stop-color="oklch(80% 0.14 80)"/>
+      <stop offset=".7"  stop-color="oklch(55% 0.12 65)"/>
+      <stop offset="1"   stop-color="oklch(34% 0.08 55)"/>
+    </linearGradient>
+    <radialGradient id="field" cx=".4" cy=".35" r=".85">
+      <stop offset="0"   stop-color="oklch(86% 0.12 84)"/>
+      <stop offset=".55" stop-color="oklch(68% 0.13 74)"/>
+      <stop offset="1"   stop-color="oklch(38% 0.09 60)"/>
+    </radialGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="oklch(28% 0.07 55)"/>
+      <stop offset="1" stop-color="oklch(18% 0.04 50)"/>
+    </linearGradient>
+    <linearGradient id="hi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="oklch(98% 0.06 90)"/>
+      <stop offset="1" stop-color="oklch(82% 0.13 80)"/>
+    </linearGradient>
+    <linearGradient id="sh" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="oklch(55% 0.10 65)"/>
+      <stop offset="1" stop-color="oklch(28% 0.07 55)"/>
+    </linearGradient>
+    <pattern id="hatchV" width="1.2" height="3" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="3" stroke="oklch(28% 0.07 55)" stroke-width=".55" opacity=".55"/>
+    </pattern>
+    <pattern id="hatchD" width="2" height="2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="2" stroke="oklch(28% 0.07 55)" stroke-width=".5" opacity=".55"/>
+    </pattern>
+  </defs>
+</svg>
+
+<script>
+const I = "url(#ink)";
+const S = "url(#sh)";
+const H = "url(#hi)";
+const HV = "url(#hatchV)";
+const HD = "url(#hatchD)";
+
+const monuments = [
+  {id:"01", arr:"VII",  name:"Tour Eiffel",            yr:"1889", k:"eiffel"},
+  {id:"02", arr:"I",    name:"Palais du Louvre",       yr:"1546", k:"louvre"},
+  {id:"03", arr:"IV",   name:"Notre-Dame",             yr:"1163", k:"notredame"},
+  {id:"04", arr:"VIII", name:"Arc de Triomphe",        yr:"1836", k:"arc"},
+  {id:"05", arr:"I",    name:"Colonne Vendôme",        yr:"1810", k:"vendome"},
+  {id:"06", arr:"V",    name:"Panthéon",               yr:"1790", k:"pantheon"},
+  {id:"07", arr:"XVIII",name:"Sacré-Cœur",             yr:"1914", k:"sacrecoeur"},
+  {id:"08", arr:"I",    name:"Conciergerie",           yr:"XIVe", k:"conciergerie"},
+  {id:"09", arr:"IV",   name:"Colonne de Juillet",     yr:"1840", k:"juillet"},
+  {id:"10", arr:"XII",  name:"Château de Vincennes",   yr:"XIVe", k:"vincennes"},
+  {id:"11", arr:"VIII", name:"Palais de l'Élysée",     yr:"1722", k:"elysee"},
+  {id:"12", arr:"IX",   name:"Opéra Garnier",          yr:"1875", k:"opera"},
+  {id:"13", arr:"I",    name:"Sainte-Chapelle",        yr:"1248", k:"saintechapelle"},
+  {id:"14", arr:"VII",  name:"Hôtel des Invalides",    yr:"1706", k:"invalides"},
+  {id:"15", arr:"IV",   name:"Tour Saint-Jacques",     yr:"1523", k:"stjacques"},
+  {id:"16", arr:"I",    name:"Palais-Royal",           yr:"1639", k:"palaisroyal"},
+];
+
+const glyphs = {
+  eiffel: `
+    <line x1="10" y1="92" x2="90" y2="92" stroke="${I}" stroke-width=".7"/>
+    <path d="M 18 92 Q 30 68 38 50 Q 44 38 50 22 Q 56 38 62 50 Q 70 68 82 92 L 78 92 Q 68 70 60 54 Q 54 40 50 28 Q 46 40 40 54 Q 32 70 22 92 Z" fill="${I}"/>
+    <path d="M 26 92 Q 36 70 42 56 L 50 36 L 58 56 Q 64 70 74 92 Z" fill="${HD}"/>
+    <rect x="32" y="58" width="36" height="2.4" fill="${I}"/>
+    <path d="M 34 58 Q 42 50 50 58" stroke="${I}" stroke-width=".7" fill="none"/>
+    <path d="M 50 58 Q 58 50 66 58" stroke="${I}" stroke-width=".7" fill="none"/>
+    <line x1="38" y1="58" x2="50" y2="38" stroke="${I}" stroke-width=".5"/>
+    <line x1="62" y1="58" x2="50" y2="38" stroke="${I}" stroke-width=".5"/>
+    <line x1="40" y1="56" x2="60" y2="56" stroke="${I}" stroke-width=".4"/>
+    <line x1="42" y1="50" x2="58" y2="50" stroke="${I}" stroke-width=".4"/>
+    <line x1="44" y1="44" x2="56" y2="44" stroke="${I}" stroke-width=".4"/>
+    <rect x="40" y="36.5" width="20" height="2" fill="${I}"/>
+    <rect x="46" y="20" width="8" height="16" fill="${I}"/>
+    <line x1="48" y1="22" x2="48" y2="34" stroke="${S}" stroke-width=".4"/>
+    <line x1="52" y1="22" x2="52" y2="34" stroke="${S}" stroke-width=".4"/>
+    <rect x="44" y="18" width="12" height="2" fill="${I}"/>
+    <polygon points="48,18 52,18 50,8" fill="${I}"/>
+    <rect x="49.4" y="3" width="1.2" height="5" fill="${I}"/>
+    <circle cx="50" cy="3" r="1" fill="${I}"/>`,
+  louvre: `
+    <line x1="6" y1="92" x2="94" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="6" y="48" width="88" height="44" fill="${HD}"/>
+    <rect x="6" y="46" width="88" height="2" fill="${I}"/>
+    ${Array.from({length:11}).map((_,i)=>{const x=10+i*8;return `<rect x="${x}" y="58" width="2.4" height="34" fill="${I}"/><rect x="${x-.4}" y="56" width="3.2" height="2" fill="${I}"/><rect x="${x-.4}" y="92" width="3.2" height="1.5" fill="${I}"/>`}).join("")}
+    <rect x="4" y="44" width="92" height="1" fill="${I}"/>
+    <rect x="6" y="40" width="88" height="4" fill="${HV}"/>
+    <polygon points="34,44 66,44 50,30" fill="${I}"/>
+    <polygon points="36,44 64,44 50,32" fill="${HD}"/>
+    <circle cx="50" cy="40" r="1.4" fill="${H}"/>
+    <polygon points="32,92 50,46 68,92" fill="${H}"/>
+    <polygon points="50,46 68,92 50,92" fill="${S}"/>
+    <line x1="50" y1="46" x2="50" y2="92" stroke="${I}" stroke-width=".55"/>
+    ${Array.from({length:7}).map((_,i)=>{const y=52+i*6;const dx=(y-46)*18/46;return `<line x1="${50-dx}" y1="${y}" x2="${50+dx}" y2="${y}" stroke="${I}" stroke-width=".4" opacity=".8"/>`}).join("")}
+    <line x1="32" y1="92" x2="50" y2="46" stroke="${I}" stroke-width=".4"/>
+    <line x1="68" y1="92" x2="50" y2="46" stroke="${I}" stroke-width=".4"/>`,
+  notredame: `
+    <line x1="6" y1="92" x2="94" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="22" y="48" width="56" height="44" fill="${HD}"/>
+    <rect x="14" y="20" width="20" height="72" fill="${I}"/>
+    <rect x="66" y="20" width="20" height="72" fill="${I}"/>
+    <path d="M 18 50 L 18 38 Q 18 32 24 32 Q 30 32 30 38 L 30 50 Z" fill="${HD}"/>
+    <path d="M 70 50 L 70 38 Q 70 32 76 32 Q 82 32 82 38 L 82 50 Z" fill="${HD}"/>
+    <path d="M 18 70 L 18 58 Q 18 52 24 52 Q 30 52 30 58 L 30 70 Z" fill="${HD}"/>
+    <path d="M 70 70 L 70 58 Q 70 52 76 52 Q 82 52 82 58 L 82 70 Z" fill="${HD}"/>
+    ${[14,18,22,26,30].map(x=>`<rect x="${x}" y="16" width="2.5" height="4" fill="${I}"/>`).join("")}
+    ${[66,70,74,78,82].map(x=>`<rect x="${x}" y="16" width="2.5" height="4" fill="${I}"/>`).join("")}
+    <rect x="14" y="44" width="72" height="3" fill="${I}"/>
+    ${Array.from({length:10}).map((_,i)=>`<rect x="${17+i*7}" y="40" width="2" height="4" fill="${HV}"/>`).join("")}
+    <circle cx="50" cy="60" r="9" fill="${HD}" stroke="${I}" stroke-width="1"/>
+    <circle cx="50" cy="60" r="6" fill="none" stroke="${I}" stroke-width=".55"/>
+    <circle cx="50" cy="60" r="3" fill="${I}"/>
+    ${[0,30,60,90,120,150].map(a=>{const r1=3,r2=9;const c=Math.cos(a*Math.PI/180),s=Math.sin(a*Math.PI/180);return `<line x1="${50+c*r1}" y1="${60+s*r1}" x2="${50+c*r2}" y2="${60+s*r2}" stroke="${I}" stroke-width=".5"/>`}).join("")}
+    <path d="M 42 92 L 42 80 Q 42 72 50 72 Q 58 72 58 80 L 58 92 Z" fill="${I}"/>
+    <path d="M 44 92 L 44 80 Q 44 74 50 74 Q 56 74 56 80 L 56 92 Z" fill="${HD}"/>
+    <polygon points="46,48 54,48 50,18" fill="${HD}" stroke="${I}" stroke-width=".5"/>
+    <rect x="49" y="14" width="2" height="6" fill="${I}"/>
+    <circle cx="50" cy="13" r="1" fill="${I}"/>
+    <path d="M 22 64 Q 18 70 14 78" stroke="${I}" stroke-width=".4" fill="none"/>
+    <path d="M 78 64 Q 82 70 86 78" stroke="${I}" stroke-width=".4" fill="none"/>`,
+  arc: `
+    <line x1="6" y1="92" x2="94" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="14" y="22" width="72" height="70" fill="${I}"/>
+    <rect x="10" y="18" width="80" height="6" fill="${HV}"/>
+    <rect x="10" y="14" width="80" height="4" fill="${I}"/>
+    <path d="M 36 92 L 36 50 Q 36 32 50 32 Q 64 32 64 50 L 64 92 Z" fill="${HD}"/>
+    <path d="M 38 92 L 38 50 Q 38 34 50 34 Q 62 34 62 50 L 62 92 Z" fill="none" stroke="${I}" stroke-width=".5"/>
+    ${Array.from({length:6}).map((_,i)=>{const y=40+i*8;return `<rect x="44" y="${y}" width="12" height="2" fill="${I}" opacity=".5"/>`}).join("")}
+    <path d="M 18 92 L 18 76 Q 18 68 24 68 Q 30 68 30 76 L 30 92 Z" fill="${HD}"/>
+    <path d="M 70 92 L 70 76 Q 70 68 76 68 Q 82 68 82 76 L 82 92 Z" fill="${HD}"/>
+    <rect x="18" y="40" width="14" height="20" fill="${HD}" stroke="${I}" stroke-width=".6"/>
+    <rect x="68" y="40" width="14" height="20" fill="${HD}" stroke="${I}" stroke-width=".6"/>
+    <path d="M 22 56 Q 25 48 28 56" stroke="${I}" stroke-width=".5" fill="none"/>
+    <path d="M 24 52 L 24 60" stroke="${I}" stroke-width=".5"/>
+    <path d="M 72 56 Q 75 48 78 56" stroke="${I}" stroke-width=".5" fill="none"/>
+    <path d="M 74 52 L 74 60" stroke="${I}" stroke-width=".5"/>
+    <rect x="14" y="28" width="72" height="2" fill="${I}"/>
+    <rect x="14" y="22" width="2" height="70" fill="${I}"/>
+    <rect x="84" y="22" width="2" height="70" fill="${I}"/>`,
+  vendome: `
+    <line x1="6" y1="92" x2="94" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="34" y="84" width="32" height="8" fill="${I}"/>
+    <rect x="32" y="80" width="36" height="4" fill="${HV}"/>
+    <rect x="30" y="78" width="40" height="2" fill="${I}"/>
+    <rect x="38" y="84" width="24" height="6" fill="none" stroke="${H}" stroke-width=".4"/>
+    <rect x="42" y="22" width="16" height="56" fill="${I}"/>
+    ${Array.from({length:12}).map((_,i)=>{const y=24+i*4.5;return `<path d="M 42 ${y} Q 50 ${y+1.5} 58 ${y}" stroke="${H}" stroke-width=".55" fill="none" opacity=".9"/>`}).join("")}
+    <rect x="42" y="22" width=".8" height="56" fill="${H}"/>
+    <rect x="57.2" y="22" width=".8" height="56" fill="${S}"/>
+    <rect x="38" y="18" width="24" height="4" fill="${HV}"/>
+    <rect x="36" y="14" width="28" height="4" fill="${I}"/>
+    <path d="M 38 18 Q 42 14 46 18" stroke="${H}" stroke-width=".5" fill="none"/>
+    <path d="M 54 18 Q 58 14 62 18" stroke="${H}" stroke-width=".5" fill="none"/>
+    <rect x="40" y="10" width="20" height="4" fill="${I}"/>
+    <ellipse cx="50" cy="6" rx="2" ry="2" fill="${I}"/>
+    <rect x="48.5" y="3" width="3" height="6" fill="${I}"/>
+    <path d="M 47 5 Q 43 8 45 11 Q 49 9 51 9 Z" fill="${I}"/>
+    <path d="M 53 5 Q 57 8 55 11 Q 51 9 49 9 Z" fill="${I}"/>
+    <line x1="51" y1="5" x2="55" y2="0" stroke="${I}" stroke-width=".8"/>
+    <circle cx="55" cy="0" r=".8" fill="${I}"/>`,
+  pantheon: `
+    <line x1="4" y1="92" x2="96" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="14" y="60" width="72" height="32" fill="${HD}"/>
+    <rect x="22" y="86" width="56" height="1.5" fill="${I}"/>
+    <rect x="20" y="88" width="60" height="1.5" fill="${I}"/>
+    <rect x="18" y="90" width="64" height="1.5" fill="${I}"/>
+    ${[26,32,38,44,56,62,68,74].map(x=>`<rect x="${x}" y="60" width="2.6" height="26" fill="${I}"/><rect x="${x-.4}" y="58" width="3.4" height="2" fill="${I}"/><rect x="${x-.5}" y="86" width="3.6" height="1.5" fill="${I}"/>`).join("")}
+    <rect x="12" y="54" width="76" height="4" fill="${HV}"/>
+    <rect x="10" y="52" width="80" height="2" fill="${I}"/>
+    <polygon points="14,54 86,54 50,32" fill="${I}"/>
+    <polygon points="18,54 82,54 50,36" fill="${HD}"/>
+    <ellipse cx="50" cy="46" rx="3" ry="2" fill="${I}"/>
+    <path d="M 38 50 Q 44 44 50 48" stroke="${I}" stroke-width=".4" fill="none"/>
+    <path d="M 62 50 Q 56 44 50 48" stroke="${I}" stroke-width=".4" fill="none"/>
+    <rect x="34" y="22" width="32" height="14" fill="${HD}"/>
+    ${[37,42,47,53,58,63].map(x=>`<rect x="${x-.5}" y="22" width="2" height="14" fill="${I}"/>`).join("")}
+    <rect x="32" y="20" width="36" height="2" fill="${I}"/>
+    <rect x="34" y="36" width="32" height="2" fill="${I}"/>
+    <path d="M 26 22 Q 50 -8 74 22 Z" fill="${HD}" stroke="${I}" stroke-width=".7"/>
+    ${[0,30,60,90,120,150,180].map(a=>{const x=50+Math.cos((180-a)*Math.PI/180)*24;const y=22-Math.sin((180-a)*Math.PI/180)*24;return `<line x1="50" y1="22" x2="${x}" y2="${y}" stroke="${I}" stroke-width=".35" opacity=".6"/>`}).join("")}
+    <path d="M 30 20 Q 38 -2 48 -2" stroke="${H}" stroke-width=".7" fill="none" opacity=".8"/>
+    <rect x="46" y="-4" width="8" height="6" fill="${I}"/>
+    <rect x="44" y="-6" width="12" height="2" fill="${I}"/>
+    <rect x="48" y="-12" width="4" height="6" fill="${I}"/>
+    <rect x="49" y="-15" width="2" height="3" fill="${I}"/>`,
+  sacrecoeur: `
+    <line x1="4" y1="92" x2="96" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="6" y="84" width="88" height="8" fill="${HD}"/>
+    <rect x="14" y="60" width="72" height="24" fill="${HD}"/>
+    <rect x="14" y="46" width="20" height="14" fill="${I}"/>
+    <rect x="66" y="46" width="20" height="14" fill="${I}"/>
+    <path d="M 14 46 Q 24 30 34 46 Z" fill="${HD}" stroke="${I}" stroke-width=".5"/>
+    <path d="M 66 46 Q 76 30 86 46 Z" fill="${HD}" stroke="${I}" stroke-width=".5"/>
+    <ellipse cx="24" cy="46" rx="10" ry="1.5" fill="${I}"/>
+    <ellipse cx="76" cy="46" rx="10" ry="1.5" fill="${I}"/>
+    <rect x="23" y="22" width="2" height="6" fill="${I}"/>
+    <rect x="75" y="22" width="2" height="6" fill="${I}"/>
+    <line x1="24" y1="46" x2="24" y2="30" stroke="${I}" stroke-width=".4"/>
+    <line x1="76" y1="46" x2="76" y2="30" stroke="${I}" stroke-width=".4"/>
+    <rect x="38" y="50" width="24" height="34" fill="${I}"/>
+    <path d="M 40 84 L 40 70 Q 40 64 44 64 Q 48 64 48 70 L 48 84 Z" fill="${HD}"/>
+    <path d="M 50 84 L 50 70 Q 50 64 54 64 Q 58 64 58 70 L 58 84 Z" fill="${HD}"/>
+    <path d="M 46 60 L 46 54 Q 46 50 50 50 Q 54 50 54 54 L 54 60 Z" fill="${HD}"/>
+    <ellipse cx="50" cy="58" rx="2" ry="1.5" fill="${I}"/>
+    <rect x="36" y="32" width="28" height="16" fill="${HD}"/>
+    ${[38,42,46,50,54,58,62].map(x=>`<rect x="${x}" y="34" width="1.4" height="12" fill="${I}"/>`).join("")}
+    <rect x="34" y="30" width="32" height="2" fill="${I}"/>
+    <rect x="36" y="48" width="28" height="2" fill="${I}"/>
+    <path d="M 26 32 Q 50 -2 74 32 Z" fill="${H}" stroke="${I}" stroke-width=".7"/>
+    <path d="M 30 30 Q 38 6 50 4" stroke="${HV}" stroke-width="1.5" fill="none" opacity=".6"/>
+    ${[0,30,60,90,120,150,180].map(a=>{const x=50+Math.cos((180-a)*Math.PI/180)*24;const y=32-Math.sin((180-a)*Math.PI/180)*30;return `<line x1="50" y1="32" x2="${x}" y2="${y}" stroke="${I}" stroke-width=".35" opacity=".5"/>`}).join("")}
+    <rect x="46" y="-2" width="8" height="6" fill="${HD}" stroke="${I}" stroke-width=".4"/>
+    <rect x="44" y="-4" width="12" height="2" fill="${I}"/>
+    <rect x="49" y="-14" width="2" height="12" fill="${I}"/>
+    <rect x="46" y="-10" width="8" height="2" fill="${I}"/>`,
+  conciergerie: `
+    <line x1="4" y1="88" x2="96" y2="88" stroke="${I}" stroke-width=".5"/>
+    <line x1="4" y1="91" x2="96" y2="91" stroke="${I}" stroke-width=".4" opacity=".7"/>
+    ${[10,30,50,70,86].map(x=>`<path d="M ${x} 92 Q ${x+3} 91 ${x+6} 92" stroke="${I}" stroke-width=".4" fill="none" opacity=".6"/>`).join("")}
+    <rect x="22" y="50" width="56" height="38" fill="${HD}"/>
+    ${Array.from({length:14}).map((_,i)=>`<rect x="${24+i*4}" y="46" width="2.5" height="4" fill="${I}"/>`).join("")}
+    <rect x="22" y="48" width="56" height="2" fill="${I}"/>
+    ${[28,38,48,58,68].map(x=>`<path d="M ${x} 80 L ${x} 64 Q ${x} 60 ${x+3} 60 Q ${x+6} 60 ${x+6} 64 L ${x+6} 80 Z" fill="${I}"/><line x1="${x+3}" y1="62" x2="${x+3}" y2="80" stroke="${HD}" stroke-width=".4"/>`).join("")}
+    <rect x="44" y="38" width="12" height="12" fill="${I}"/>
+    <circle cx="50" cy="44" r="3" fill="${H}" stroke="${I}" stroke-width=".5"/>
+    <line x1="50" y1="44" x2="50" y2="42" stroke="${I}" stroke-width=".4"/>
+    <line x1="50" y1="44" x2="51.5" y2="45" stroke="${I}" stroke-width=".4"/>
+    <rect x="10" y="20" width="14" height="68" fill="${I}"/>
+    ${[28,40,52,64,76].map(y=>`<rect x="14" y="${y}" width="2" height="5" fill="${HD}"/>`).join("")}
+    <polygon points="10,20 24,20 17,4" fill="${HV}" stroke="${I}" stroke-width=".5"/>
+    <rect x="16.4" y="0" width="1.2" height="4" fill="${I}"/>
+    <rect x="76" y="20" width="14" height="68" fill="${I}"/>
+    ${[28,40,52,64,76].map(y=>`<rect x="80" y="${y}" width="2" height="5" fill="${HD}"/>`).join("")}
+    <polygon points="76,20 90,20 83,4" fill="${HV}" stroke="${I}" stroke-width=".5"/>
+    <rect x="82.4" y="0" width="1.2" height="4" fill="${I}"/>
+    <rect x="64" y="30" width="10" height="20" fill="${I}"/>
+    <polygon points="64,30 74,30 69,18" fill="${HV}" stroke="${I}" stroke-width=".4"/>`,
+  juillet: `
+    <line x1="6" y1="92" x2="94" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="32" y="84" width="36" height="8" fill="${I}"/>
+    <rect x="30" y="80" width="40" height="4" fill="${HV}"/>
+    <rect x="28" y="78" width="44" height="2" fill="${I}"/>
+    <rect x="36" y="84" width="28" height="6" fill="none" stroke="${H}" stroke-width=".4"/>
+    <rect x="44" y="22" width="12" height="56" fill="${I}"/>
+    ${[45.5,48,50,52,54.5].map(x=>`<line x1="${x}" y1="24" x2="${x}" y2="76" stroke="${H}" stroke-width=".25" opacity=".6"/>`).join("")}
+    <rect x="44" y="22" width=".8" height="56" fill="${H}"/>
+    ${[28,38,48,58,68].map(y=>`<circle cx="50" cy="${y}" r=".8" fill="${H}"/>`).join("")}
+    <rect x="40" y="18" width="20" height="4" fill="${HV}"/>
+    <rect x="38" y="14" width="24" height="4" fill="${I}"/>
+    <rect x="42" y="10" width="16" height="4" fill="${I}"/>
+    <path d="M 47 5 Q 38 0 36 -8 Q 44 -2 49 4 Z" fill="${I}"/>
+    <path d="M 53 5 Q 62 0 64 -8 Q 56 -2 51 4 Z" fill="${I}"/>
+    <ellipse cx="50" cy="6" rx="2" ry="2" fill="${I}"/>
+    <rect x="48.5" y="3" width="3" height="6" fill="${I}"/>
+    <line x1="50" y1="9" x2="48" y2="12" stroke="${I}" stroke-width=".8"/>
+    <line x1="50" y1="9" x2="53" y2="11" stroke="${I}" stroke-width=".8"/>
+    <line x1="51" y1="5" x2="56" y2="-1" stroke="${I}" stroke-width=".7"/>
+    <polygon points="55,-1 58,-1 56.5,-6" fill="${H}"/>`,
+  vincennes: `
+    <line x1="4" y1="92" x2="96" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="6" y="62" width="88" height="28" fill="${HD}"/>
+    ${Array.from({length:22}).map((_,i)=>`<rect x="${7+i*4}" y="58" width="2" height="4" fill="${I}"/>`).join("")}
+    <rect x="6" y="60" width="88" height="2" fill="${I}"/>
+    <path d="M 44 90 L 44 76 Q 44 70 50 70 Q 56 70 56 76 L 56 90 Z" fill="${I}"/>
+    <line x1="46" y1="78" x2="46" y2="90" stroke="${HD}" stroke-width=".3"/>
+    <line x1="50" y1="74" x2="50" y2="90" stroke="${HD}" stroke-width=".3"/>
+    <line x1="54" y1="78" x2="54" y2="90" stroke="${HD}" stroke-width=".3"/>
+    <rect x="6" y="50" width="10" height="12" fill="${I}"/>
+    <rect x="84" y="50" width="10" height="12" fill="${I}"/>
+    <polygon points="6,50 16,50 11,40" fill="${HV}" stroke="${I}" stroke-width=".4"/>
+    <polygon points="84,50 94,50 89,40" fill="${HV}" stroke="${I}" stroke-width=".4"/>
+    <rect x="36" y="20" width="28" height="48" fill="${I}"/>
+    <rect x="38" y="22" width="24" height="44" fill="${HV}" opacity=".6"/>
+    <rect x="32" y="14" width="8" height="54" fill="${I}"/>
+    <rect x="60" y="14" width="8" height="54" fill="${I}"/>
+    <polygon points="32,14 40,14 36,4" fill="${HV}" stroke="${I}" stroke-width=".4"/>
+    <polygon points="60,14 68,14 64,4" fill="${HV}" stroke="${I}" stroke-width=".4"/>
+    <polygon points="36,20 64,20 50,8" fill="${HD}" stroke="${I}" stroke-width=".5"/>
+    ${[28,38,48,58].map(y=>`<rect x="42" y="${y}" width="2" height="6" fill="${HD}"/><rect x="56" y="${y}" width="2" height="6" fill="${HD}"/>`).join("")}
+    <rect x="36" y="22" width="28" height="2" fill="${I}"/>
+    ${Array.from({length:8}).map((_,i)=>`<rect x="${37+i*3.5}" y="20" width="1.5" height="2" fill="${I}"/>`).join("")}
+    <line x1="50" y1="0" x2="50" y2="-6" stroke="${I}" stroke-width=".4"/>
+    <path d="M 50 -6 L 56 -5 L 50 -3 Z" fill="${I}"/>`,
+  elysee: `
+    <line x1="4" y1="92" x2="96" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="4" y="86" width="92" height="6" fill="${HD}"/>
+    <rect x="10" y="50" width="80" height="36" fill="${HD}"/>
+    <polygon points="10,50 90,50 82,38 18,38" fill="${I}"/>
+    <polygon points="14,48 86,48 80,40 20,40" fill="${HV}" opacity=".7"/>
+    <rect x="38" y="34" width="24" height="52" fill="${I}"/>
+    <polygon points="38,34 62,34 50,22" fill="${HD}" stroke="${I}" stroke-width=".5"/>
+    <ellipse cx="50" cy="30" rx="2" ry="1.2" fill="${I}"/>
+    <rect x="42" y="56" width="16" height="6" fill="${HD}"/>
+    ${Array.from({length:7}).map((_,i)=>`<rect x="${43+i*2.2}" y="58" width=".8" height="3" fill="${I}"/>`).join("")}
+    <rect x="42" y="55" width="16" height="1" fill="${I}"/>
+    <path d="M 46 86 L 46 70 Q 46 64 50 64 Q 54 64 54 70 L 54 86 Z" fill="${HD}"/>
+    <rect x="44" y="42" width="4" height="6" fill="${HD}" stroke="${I}" stroke-width=".3"/>
+    <rect x="52" y="42" width="4" height="6" fill="${HD}" stroke="${I}" stroke-width=".3"/>
+    ${[14,22,30,68,76,84].map(x=>`<rect x="${x}" y="62" width="4" height="14" fill="${I}"/><path d="M ${x} 62 Q ${x+2} 58 ${x+4} 62" fill="${I}"/>`).join("")}
+    ${[14,22,30,68,76,84].map(x=>`<rect x="${x}" y="44" width="4" height="10" fill="${I}"/>`).join("")}
+    <rect x="10" y="56" width="80" height="1" fill="${I}"/>
+    ${[18,26,74,82].map(x=>`<rect x="${x-2}" y="42" width="4" height="6" fill="${HD}" stroke="${I}" stroke-width=".3"/><polygon points="${x-3},42 ${x+3},42 ${x},38" fill="${I}"/>`).join("")}
+    <rect x="22" y="34" width="4" height="6" fill="${I}"/>
+    <rect x="74" y="34" width="4" height="6" fill="${I}"/>
+    <line x1="50" y1="22" x2="50" y2="14" stroke="${I}" stroke-width=".4"/>
+    <path d="M 50 14 L 56 15 L 50 17 Z" fill="${I}"/>`,
+  opera: `
+    <line x1="4" y1="92" x2="96" y2="92" stroke="${I}" stroke-width=".7"/>
+    ${[88,90].map(y=>`<rect x="14" y="${y}" width="72" height="1" fill="${I}"/>`).join("")}
+    <rect x="14" y="62" width="72" height="26" fill="${HD}"/>
+    ${[16,26,36,46,56,66,76].map(x=>`<path d="M ${x} 86 L ${x} 70 Q ${x} 64 ${x+4} 64 Q ${x+8} 64 ${x+8} 70 L ${x+8} 86 Z" fill="${I}"/><path d="M ${x+1} 86 L ${x+1} 70 Q ${x+1} 65 ${x+4} 65 Q ${x+7} 65 ${x+7} 70 L ${x+7} 86 Z" fill="${HD}"/>`).join("")}
+    <rect x="12" y="60" width="76" height="2" fill="${I}"/>
+    <rect x="14" y="42" width="72" height="18" fill="${I}"/>
+    ${[16,22,32,38,48,54,64,70,80].map(x=>`<rect x="${x}" y="44" width="2" height="14" fill="${HD}"/><rect x="${x-.4}" y="42" width="2.8" height="2" fill="${HV}"/>`).join("")}
+    <rect x="12" y="38" width="76" height="4" fill="${HV}"/>
+    <rect x="10" y="36" width="80" height="2" fill="${I}"/>
+    <rect x="14" y="28" width="72" height="8" fill="${HD}"/>
+    ${[24,40,60,76].map(x=>`<ellipse cx="${x}" cy="24" rx="1.5" ry="1.2" fill="${I}"/><rect x="${x-1}" y="22" width="2" height="6" fill="${I}"/>`).join("")}
+    <ellipse cx="16" cy="22" rx="3" ry="2" fill="${I}"/>
+    <ellipse cx="84" cy="22" rx="3" ry="2" fill="${I}"/>
+    <polygon points="6,42 22,42 14,28" fill="${HD}" stroke="${I}" stroke-width=".4"/>
+    <polygon points="78,42 94,42 86,28" fill="${HD}" stroke="${I}" stroke-width=".4"/>
+    <rect x="38" y="20" width="24" height="10" fill="${HD}"/>
+    ${[40,44,48,52,56,60].map(x=>`<rect x="${x-.5}" y="22" width="1.5" height="6" fill="${I}"/>`).join("")}
+    <rect x="36" y="18" width="28" height="2" fill="${I}"/>
+    <path d="M 32 20 Q 50 -4 68 20 Z" fill="${I}"/>
+    <path d="M 36 18 Q 50 -2 64 18 Z" fill="${HD}"/>
+    ${[0,30,60,90,120,150,180].map(a=>{const x=50+Math.cos((180-a)*Math.PI/180)*18;const y=20-Math.sin((180-a)*Math.PI/180)*22;return `<line x1="50" y1="20" x2="${x}" y2="${y}" stroke="${I}" stroke-width=".3" opacity=".7"/>`}).join("")}
+    <rect x="46" y="-4" width="8" height="4" fill="${I}"/>
+    <polygon points="46,-4 54,-4 50,-10" fill="${HV}"/>
+    <rect x="49" y="-14" width="2" height="4" fill="${I}"/>`,
+  saintechapelle: `
+    <line x1="6" y1="92" x2="94" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="22" y="50" width="56" height="42" fill="${HD}"/>
+    ${[22,34,46,58,70,78].map(x=>`<rect x="${x}" y="40" width="3" height="52" fill="${I}"/><polygon points="${x},42 ${x+3},42 ${x+1.5},36" fill="${I}"/>`).join("")}
+    ${[22,34,46,58,70,78].map(x=>`<polygon points="${x-.5},36 ${x+3.5},36 ${x+1.5},28" fill="${I}"/>`).join("")}
+    ${[22,34,46,58,70,78].map(x=>`<rect x="${x+1.1}" y="24" width=".8" height="4" fill="${I}"/>`).join("")}
+    ${[26,38,50,62].map(x=>`<path d="M ${x} 88 L ${x} 64 Q ${x} 56 ${x+3} 56 Q ${x+6} 56 ${x+6} 64 L ${x+6} 88 Z" fill="${I}"/><line x1="${x+3}" y1="56" x2="${x+3}" y2="88" stroke="${HD}" stroke-width=".4"/>`).join("")}
+    <circle cx="50" cy="38" r="11" fill="${HD}" stroke="${I}" stroke-width="1.2"/>
+    <circle cx="50" cy="38" r="3" fill="${I}"/>
+    ${Array.from({length:12}).map((_,i)=>{const a=i*30*Math.PI/180;const x1=50+Math.cos(a)*3.5,y1=38+Math.sin(a)*3.5;const x2=50+Math.cos(a)*10,y2=38+Math.sin(a)*10;return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${I}" stroke-width=".5"/>`}).join("")}
+    <circle cx="50" cy="38" r="7" fill="none" stroke="${I}" stroke-width=".5"/>
+    <polygon points="36,28 64,28 50,16" fill="${I}"/>
+    <polygon points="38,28 62,28 50,18" fill="${HD}"/>
+    <rect x="48" y="0" width="4" height="16" fill="${I}"/>
+    <polygon points="46,16 54,16 50,-4" fill="${I}"/>
+    <polygon points="47,16 53,16 50,0" fill="${HD}"/>
+    <rect x="49.4" y="-10" width="1.2" height="6" fill="${I}"/>
+    <rect x="48" y="-8" width="4" height="1" fill="${I}"/>`,
+  invalides: `
+    <line x1="4" y1="92" x2="96" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="4" y="88" width="92" height="4" fill="${HD}"/>
+    <rect x="4" y="68" width="92" height="20" fill="${I}"/>
+    ${[6,12,18,24,76,82,88].map(x=>`<rect x="${x}" y="72" width="3" height="6" fill="${HD}"/>`).join("")}
+    ${[6,12,18,24,76,82,88].map(x=>`<rect x="${x}" y="80" width="3" height="6" fill="${HD}"/>`).join("")}
+    <rect x="4" y="66" width="92" height="2" fill="${I}"/>
+    <rect x="34" y="50" width="32" height="38" fill="${I}"/>
+    ${[36,42,48,54,60].map(x=>`<rect x="${x}" y="60" width="2" height="22" fill="${HD}"/><rect x="${x-.4}" y="58" width="2.8" height="2" fill="${HV}"/>`).join("")}
+    <polygon points="34,50 66,50 50,38" fill="${HV}" stroke="${I}" stroke-width=".5"/>
+    <ellipse cx="50" cy="46" rx="2" ry="1.2" fill="${I}"/>
+    <path d="M 46 88 L 46 76 Q 46 70 50 70 Q 54 70 54 76 L 54 88 Z" fill="${HD}"/>
+    <rect x="38" y="22" width="24" height="14" fill="${HD}"/>
+    ${[40,44,48,52,56,60].map(x=>`<rect x="${x-.4}" y="24" width="1.6" height="10" fill="${I}"/>`).join("")}
+    <rect x="36" y="20" width="28" height="2" fill="${I}"/>
+    <rect x="38" y="36" width="24" height="2" fill="${I}"/>
+    <path d="M 28 22 Q 50 -10 72 22 Z" fill="${H}" stroke="${I}" stroke-width=".7"/>
+    ${[0,20,40,60,90,120,140,160,180].map(a=>{const x=50+Math.cos((180-a)*Math.PI/180)*22;const y=22-Math.sin((180-a)*Math.PI/180)*32;return `<line x1="50" y1="22" x2="${x}" y2="${y}" stroke="${I}" stroke-width=".55" opacity=".85"/>`}).join("")}
+    ${[35,45,55,65].map(x=>{const y = 14 - Math.abs(x-50)*.4;return `<circle cx="${x}" cy="${y}" r=".7" fill="${I}"/>`}).join("")}
+    <path d="M 32 18 Q 38 -2 48 -6" stroke="${HV}" stroke-width="2" fill="none" opacity=".5"/>
+    <rect x="44" y="-10" width="12" height="6" fill="${HV}" stroke="${I}" stroke-width=".4"/>
+    <path d="M 44 -10 Q 50 -16 56 -10 Z" fill="${HD}" stroke="${I}" stroke-width=".4"/>
+    <rect x="49.4" y="-22" width="1.2" height="6" fill="${I}"/>`,
+  stjacques: `
+    <line x1="6" y1="92" x2="94" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="20" y="86" width="60" height="6" fill="${HD}"/>
+    <rect x="36" y="78" width="28" height="8" fill="${I}"/>
+    <rect x="34" y="76" width="32" height="2" fill="${I}"/>
+    <rect x="36" y="22" width="28" height="56" fill="${I}"/>
+    <rect x="34" y="22" width="2" height="56" fill="${HV}"/>
+    <rect x="64" y="22" width="2" height="56" fill="${HV}"/>
+    ${[28,42,56,70].map(y=>`<path d="M 40 ${y+10} L 40 ${y+2} Q 40 ${y-1} 43 ${y-1} Q 46 ${y-1} 46 ${y+2} L 46 ${y+10} Z" fill="${HD}"/><path d="M 54 ${y+10} L 54 ${y+2} Q 54 ${y-1} 57 ${y-1} Q 60 ${y-1} 60 ${y+2} L 60 ${y+10} Z" fill="${HD}"/>`).join("")}
+    <rect x="34" y="38" width="32" height=".7" fill="${I}"/>
+    <rect x="34" y="52" width="32" height=".7" fill="${I}"/>
+    <rect x="34" y="66" width="32" height=".7" fill="${I}"/>
+    <rect x="34" y="22" width="32" height="2" fill="${I}"/>
+    ${[34,42,50,58,66].map(x=>`<rect x="${x-1}" y="14" width="2" height="8" fill="${HD}"/><polygon points="${x-2},14 ${x+2},14 ${x},6" fill="${I}"/>`).join("")}
+    <rect x="34" y="20" width="32" height="2" fill="${HV}"/>
+    <ellipse cx="50" cy="2" rx="1.5" ry="1.5" fill="${I}"/>
+    <rect x="48.5" y="-1" width="3" height="6" fill="${I}"/>
+    <line x1="55" y1="-6" x2="52" y2="6" stroke="${I}" stroke-width=".5"/>
+    <path d="M 47 1 Q 44 4 46 7 L 50 7 Z" fill="${I}"/>
+    <path d="M 53 1 Q 56 4 54 7 L 50 7 Z" fill="${I}"/>`,
+  palaisroyal: `
+    <line x1="4" y1="92" x2="96" y2="92" stroke="${I}" stroke-width=".7"/>
+    <rect x="4" y="84" width="92" height="8" fill="${HD}"/>
+    <rect x="14" y="78" width="3" height="6" fill="${H}"/>
+    <rect x="14" y="78" width="3" height="1.5" fill="${I}"/>
+    <rect x="14" y="81" width="3" height="1.5" fill="${I}"/>
+    <rect x="22" y="76" width="3" height="8" fill="${H}"/>
+    <rect x="22" y="76" width="3" height="1.5" fill="${I}"/>
+    <rect x="22" y="79" width="3" height="1.5" fill="${I}"/>
+    <rect x="22" y="82" width="3" height="1.5" fill="${I}"/>
+    <rect x="76" y="76" width="3" height="8" fill="${H}"/>
+    <rect x="76" y="76" width="3" height="1.5" fill="${I}"/>
+    <rect x="76" y="79" width="3" height="1.5" fill="${I}"/>
+    <rect x="76" y="82" width="3" height="1.5" fill="${I}"/>
+    <rect x="84" y="78" width="3" height="6" fill="${H}"/>
+    <rect x="84" y="78" width="3" height="1.5" fill="${I}"/>
+    <rect x="84" y="81" width="3" height="1.5" fill="${I}"/>
+    <rect x="6" y="46" width="88" height="38" fill="${HD}"/>
+    ${[8,16,24,32,68,76,84].map(x=>`<path d="M ${x} 84 L ${x} 70 Q ${x} 64 ${x+3} 64 Q ${x+6} 64 ${x+6} 70 L ${x+6} 84 Z" fill="${I}"/>`).join("")}
+    ${[8,16,24,32,68,76,84].map(x=>`<rect x="${x}" y="50" width="6" height="10" fill="${I}"/><line x1="${x+3}" y1="50" x2="${x+3}" y2="60" stroke="${HD}" stroke-width=".3"/><rect x="${x-.5}" y="60" width="7" height="1" fill="${I}"/>`).join("")}
+    <rect x="6" y="62" width="88" height="1" fill="${I}"/>
+    <rect x="6" y="48" width="88" height="1" fill="${I}"/>
+    <rect x="4" y="44" width="92" height="2" fill="${I}"/>
+    <rect x="6" y="40" width="88" height="4" fill="${HV}"/>
+    <polygon points="6,40 94,40 86,28 14,28" fill="${I}"/>
+    ${[20,30,70,80].map(x=>`<rect x="${x-2}" y="32" width="4" height="6" fill="${HD}" stroke="${I}" stroke-width=".3"/><polygon points="${x-3},32 ${x+3},32 ${x},27" fill="${I}"/>`).join("")}
+    <rect x="22" y="22" width="4" height="6" fill="${I}"/>
+    <rect x="74" y="22" width="4" height="6" fill="${I}"/>
+    <rect x="40" y="34" width="20" height="50" fill="${I}"/>
+    <polygon points="40,34 60,34 50,22" fill="${HD}" stroke="${I}" stroke-width=".4"/>
+    <path d="M 46 84 L 46 70 Q 46 64 50 64 Q 54 64 54 70 L 54 84 Z" fill="${HD}"/>
+    <circle cx="50" cy="44" r="2.5" fill="${H}" stroke="${I}" stroke-width=".4"/>
+    <line x1="50" y1="44" x2="50" y2="42.2" stroke="${I}" stroke-width=".3"/>
+    <line x1="50" y1="44" x2="51.5" y2="45" stroke="${I}" stroke-width=".3"/>
+    <ellipse cx="50" cy="30" rx="1.5" ry=".8" fill="${I}"/>`,
+};
+
+function medal(m, idx){
+  const upperText = m.name.toUpperCase();
+  const len = upperText.length;
+  // arc font-size adapts: long names use a longer arc; short names a tighter one
+  const fs  = len > 22 ? 9.5 : len > 18 ? 11 : len > 14 ? 12.5 : 13.5;
+  const ls  = len > 22 ? 1.6 : len > 18 ? 2.2 : 2.8;
+  return `
+  <svg class="medal" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- cast shadow under coin -->
+    <ellipse cx="110" cy="212" rx="86" ry="7" fill="rgba(0,0,0,.65)"/>
+
+    <!-- ===== ANTIQUE STRUCTURE =====
+         Layers (outer→inner): outer milled rim · groove · field
+         Inscription lives ON the field, on a top arc + bottom arc.
+         No competing inner concentric circles.                         -->
+
+    <!-- outer milled (reeded) rim — the wide gold band -->
+    <circle cx="110" cy="110" r="108" fill="url(#rim)"/>
+    <!-- milled edge: radial ticks around the very outside -->
+    ${Array.from({length:120}).map((_,i)=>{
+      const a = i*3*Math.PI/180;
+      const x1 = 110+Math.cos(a)*108, y1 = 110+Math.sin(a)*108;
+      const x2 = 110+Math.cos(a)*104, y2 = 110+Math.sin(a)*104;
+      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="oklch(28% 0.07 55)" stroke-width=".55" opacity=".6"/>`;
+    }).join("")}
+    <!-- inner edge of milled rim (dark groove) -->
+    <circle cx="110" cy="110" r="102" fill="none" stroke="oklch(22% 0.05 50)" stroke-width="1.2"/>
+    <!-- highlight rim above groove -->
+    <circle cx="110" cy="110" r="100.6" fill="none" stroke="oklch(96% 0.08 88 / .55)" stroke-width=".7"/>
+
+    <!-- main metal field -->
+    <circle cx="110" cy="110" r="100" fill="url(#field)"/>
+
+    <!-- subtle aged metal speckle / wear marks (random, but seeded) -->
+    ${(()=>{
+       const out=[];const seed=idx*7919;
+       for(let k=0;k<24;k++){
+         const r = 30 + ((seed*(k+3))%55);
+         const a = ((seed*13*(k+1))%360)*Math.PI/180;
+         const x = 110+Math.cos(a)*r, y = 110+Math.sin(a)*r;
+         const rr = 0.4 + ((k*seed)%7)/10;
+         out.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr.toFixed(2)}" fill="oklch(35% 0.08 55)" opacity=".35"/>`);
+       }
+       // a few scratches
+       for(let k=0;k<5;k++){
+         const a = ((seed*7*(k+2))%360)*Math.PI/180;
+         const r = 50 + (k*7);
+         const x = 110+Math.cos(a)*r, y = 110+Math.sin(a)*r;
+         out.push(`<line x1="${(x-3).toFixed(1)}" y1="${(y-1).toFixed(1)}" x2="${(x+3).toFixed(1)}" y2="${(y+1).toFixed(1)}" stroke="oklch(32% 0.07 55)" stroke-width=".35" opacity=".5"/>`);
+       }
+       return out.join("");
+    })()}
+
+    <!-- arc paths -->
+    <defs>
+      <!-- top arc: name follows it (text reads left→right along upper curve) -->
+      <path id="topArc-${idx}" d="M 36 110 A 74 74 0 0 1 184 110" fill="none"/>
+      <!-- bottom arc: date / arrondissement -->
+      <path id="botArc-${idx}" d="M 40 124 A 70 70 0 0 0 180 124" fill="none"/>
+    </defs>
+
+    <!-- ENGRAVED NAME (top arc) — engraving effect: deep shadow + body + thin highlight -->
+    <text font-family="Cinzel, serif" font-size="${fs}" font-weight="600" letter-spacing="${ls}">
+      <textPath href="#topArc-${idx}" startOffset="50%" text-anchor="middle" fill="oklch(18% 0.05 50)">${upperText}</textPath>
+    </text>
+    <text font-family="Cinzel, serif" font-size="${fs}" font-weight="600" letter-spacing="${ls}" transform="translate(0 .8)" opacity=".4">
+      <textPath href="#topArc-${idx}" startOffset="50%" text-anchor="middle" fill="oklch(96% 0.08 88)">${upperText}</textPath>
+    </text>
+
+    <!-- ENGRAVED DATE (bottom arc) -->
+    <text font-family="Cinzel, serif" font-size="9" font-weight="500" letter-spacing="3.4">
+      <textPath href="#botArc-${idx}" startOffset="50%" text-anchor="middle" fill="oklch(18% 0.05 50)">·  ${m.yr}  ·  ${m.arr}ᵉ ARR.  ·</textPath>
+    </text>
+    <text font-family="Cinzel, serif" font-size="9" font-weight="500" letter-spacing="3.4" transform="translate(0 .7)" opacity=".4">
+      <textPath href="#botArc-${idx}" startOffset="50%" text-anchor="middle" fill="oklch(96% 0.08 88)">·  ${m.yr}  ·  ${m.arr}ᵉ ARR.  ·</textPath>
+    </text>
+
+    <!-- side fleurons separating top and bottom arcs (numismatic convention) -->
+    <g fill="oklch(20% 0.05 50)">
+      <g transform="translate(28 117)">
+        <circle cx="0" cy="0" r="1.6"/>
+        <circle cx="-4" cy="0" r=".7"/>
+        <circle cx="4" cy="0" r=".7"/>
+      </g>
+      <g transform="translate(192 117)">
+        <circle cx="0" cy="0" r="1.6"/>
+        <circle cx="-4" cy="0" r=".7"/>
+        <circle cx="4" cy="0" r=".7"/>
+      </g>
+    </g>
+
+    <!-- main glyph (centered, sized to live ABOVE the bottom arc and BELOW the top arc) -->
+    <g transform="translate(45 36) scale(1.3)" opacity=".96">
+      ${glyphs[m.k]}
+    </g>
+
+    <!-- raised metal highlights -->
+    <ellipse cx="78" cy="54" rx="44" ry="18" fill="oklch(98% 0.06 88 / .22)"/>
+    <ellipse cx="72" cy="46" rx="22" ry="6" fill="oklch(98% 0.06 88 / .3)"/>
+    <!-- bottom curved shadow inside rim (gives 3D depth) -->
+    <path d="M 16 140 A 98 98 0 0 0 204 140" stroke="oklch(28% 0.07 55 / .55)" stroke-width="4" fill="none"/>
+    <!-- inner top rim highlight -->
+    <path d="M 22 88 A 92 92 0 0 1 198 88" stroke="oklch(96% 0.08 88 / .35)" stroke-width="1.5" fill="none"/>
+  </svg>`;
+}
+
+const grid = document.getElementById("grid");
+monuments.forEach((m,i)=>{
+  const cell = document.createElement("article");
+  cell.className = "cell";
+  cell.innerHTML = `
+    <span class="tick tl"></span><span class="tick tr"></span>
+    <span class="tick bl"></span><span class="tick br"></span>
+    <div class="id">№ ${m.id}</div>
+    <div class="arr">${m.arr}ᵉ</div>
+    <div class="stage">${medal(m, i)}</div>
+    <div class="label">
+      <p class="name">${m.name}</p>
+      <div class="sub"><b>${m.yr}</b> · ${m.arr}ᵉ ARR.</div>
+    </div>`;
+  grid.appendChild(cell);
+});
+</script>
+</body>
+</html>

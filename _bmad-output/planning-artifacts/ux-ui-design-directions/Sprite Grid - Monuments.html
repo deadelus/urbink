@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Monuments de Paris — Sprite Grid · Doré</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:        #0a0806;
+    --bg-2:      #120e0a;
+    --ink:       #f5e9d0;
+    --ink-dim:   #8b7a5a;
+    --ink-mute:  #5a4d36;
+    --rule:      #1f1810;
+
+    --gold-1:    oklch(92% 0.10 90);   /* highlight */
+    --gold-2:    oklch(80% 0.14 80);   /* mid */
+    --gold-3:    oklch(62% 0.13 70);   /* deep */
+    --gold-4:    oklch(40% 0.09 60);   /* shadow */
+    --gold-5:    oklch(25% 0.06 55);   /* deepest */
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Cormorant Garamond",serif;}
+
+  body{
+    background:
+      radial-gradient(1200px 700px at 20% -10%, oklch(22% 0.05 70 / .35), transparent 60%),
+      radial-gradient(900px 600px at 100% 110%, oklch(20% 0.04 60 / .25), transparent 60%),
+      var(--bg);
+    min-height:100vh;
+  }
+
+  .frame{
+    max-width:1440px;
+    margin:0 auto;
+    padding:64px 56px 96px;
+  }
+
+  /* ── Header ─────────────────────────────── */
+  header.masthead{
+    display:grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    align-items:end;
+    gap:48px;
+    padding-bottom:28px;
+    border-bottom:1px solid var(--rule);
+    margin-bottom:48px;
+  }
+  header.masthead > div:first-child{ min-width:0; }
+  @media (max-width:1100px){
+    header.masthead{
+      grid-template-columns: 1fr;
+      gap:24px;
+      align-items:start;
+    }
+    .meta{ text-align:left; }
+  }
+  .eyebrow{
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    margin:0 0 18px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--gold-2);box-shadow:0 0 10px var(--gold-2);}
+  h1{
+    font-weight:300;
+    font-size:clamp(48px,6.4vw,92px);
+    line-height:.95;
+    letter-spacing:-.02em;
+    margin:0;
+    background:linear-gradient(180deg, var(--gold-1) 0%, var(--gold-2) 45%, var(--gold-3) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  h1 em{font-style:italic;font-weight:300;color:var(--ink-dim);-webkit-text-fill-color:var(--ink-dim);}
+  .meta{
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    color:var(--ink-dim);
+    text-align:right;
+    line-height:1.7;
+  }
+  .meta b{color:var(--ink);font-weight:500;}
+
+  /* ── Grid ───────────────────────────────── */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:1px;
+    background:var(--rule);
+    border:1px solid var(--rule);
+  }
+  @media (max-width:1100px){ .grid{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:780px){  .grid{grid-template-columns:repeat(2,1fr);} }
+
+  .sprite{
+    background:var(--bg-2);
+    aspect-ratio:1/1;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    transition:background .35s ease;
+  }
+  .sprite::before{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(120% 80% at 50% 110%, oklch(30% 0.08 65 / .55), transparent 60%),
+      linear-gradient(180deg, oklch(14% 0.02 60) 0%, oklch(8% 0.015 50) 100%);
+    z-index:0;
+  }
+  .sprite::after{
+    /* subtle grain via repeating gradient */
+    content:"";position:absolute;inset:0;
+    background-image:
+      repeating-linear-gradient(45deg, oklch(100% 0 0 / .015) 0 1px, transparent 1px 3px);
+    z-index:1;
+    pointer-events:none;
+  }
+  .sprite:hover{ background:#160f08; }
+  .sprite:hover .glow{ opacity:1; }
+
+  /* corner ticks */
+  .tick{position:absolute;width:10px;height:10px;border-color:var(--gold-4);border-style:solid;border-width:0;z-index:3;}
+  .tick.tl{top:10px;left:10px;border-top-width:1px;border-left-width:1px;}
+  .tick.tr{top:10px;right:10px;border-top-width:1px;border-right-width:1px;}
+  .tick.bl{bottom:10px;left:10px;border-bottom-width:1px;border-left-width:1px;}
+  .tick.br{bottom:10px;right:10px;border-bottom-width:1px;border-right-width:1px;}
+
+  .id{
+    position:absolute;top:14px;left:18px;
+    font-family:"JetBrains Mono",monospace;
+    font-size:9.5px;letter-spacing:.18em;
+    color:var(--ink-mute);z-index:4;
+    text-transform:uppercase;
+  }
+  .arr{
+    position:absolute;top:14px;right:18px;
+    font-family:"JetBrains Mono",monospace;
+    font-size:9.5px;letter-spacing:.16em;
+    color:var(--gold-3);z-index:4;
+  }
+
+  .art{
+    position:relative;z-index:2;
+    flex:1;
+    display:grid;
+    place-items:end center;
+    padding:38px 28px 0;
+  }
+  .art svg{
+    width:78%;
+    max-width:240px;
+    height:auto;
+    filter: drop-shadow(0 6px 20px oklch(70% 0.14 75 / .15));
+  }
+  .glow{
+    position:absolute;left:50%;bottom:24%;
+    transform:translateX(-50%);
+    width:60%;height:30%;
+    background:radial-gradient(ellipse at center, oklch(75% 0.15 75 / .4), transparent 70%);
+    filter:blur(20px);
+    opacity:.7;
+    z-index:1;
+    transition:opacity .4s ease;
+  }
+  .baseline{
+    position:absolute;left:8%;right:8%;bottom:84px;height:1px;
+    background:linear-gradient(90deg, transparent, var(--gold-4) 20%, var(--gold-4) 80%, transparent);
+    z-index:2;opacity:.6;
+  }
+
+  .label{
+    position:relative;z-index:3;
+    padding:18px 22px 22px;
+    border-top:1px solid oklch(20% 0.02 60 / .6);
+    background: linear-gradient(180deg, transparent, oklch(8% 0.015 50 / .6));
+  }
+  .label .name{
+    font-size:19px;
+    line-height:1.15;
+    font-weight:400;
+    letter-spacing:.005em;
+    color:var(--ink);
+    margin:0 0 6px;
+    text-wrap:balance;
+  }
+  .label .sub{
+    font-family:"JetBrains Mono",monospace;
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    display:flex;justify-content:space-between;gap:10px;
+  }
+  .label .sub .epoch{ color:var(--gold-3); }
+
+  /* ── Footer ────────────────────────────── */
+  footer.foot{
+    margin-top:48px;
+    padding-top:24px;
+    border-top:1px solid var(--rule);
+    display:flex;justify-content:space-between;
+    font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;
+    color:var(--ink-mute);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+  }
+  footer.foot b{color:var(--gold-3);font-weight:500;}
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <header class="masthead">
+    <div>
+      <p class="eyebrow"><span class="dot"></span>Sprite Atlas · Édition Dorée · 16/16</p>
+      <h1>Monuments <em>emblématiques</em><br>de Paris</h1>
+    </div>
+    <div class="meta">
+      <div>SOURCE · <b>monuments_paris.geojson</b></div>
+      <div>FILTRE · <b>palais &amp; monuments</b></div>
+      <div>PALETTE · <b>oklch · gold</b></div>
+      <div>FORMAT · <b>1:1 · vector</b></div>
+    </div>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <footer class="foot">
+    <span>Urbink · Atlas Sprite</span>
+    <span><b>16</b> sprites · <b>SVG</b> · <b>doré</b></span>
+    <span>v.01 · 2026</span>
+  </footer>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Vertical gold gradient: highlight top, deep bottom -->
+    <linearGradient id="goldV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="oklch(92% 0.10 90)"/>
+      <stop offset=".35" stop-color="oklch(82% 0.14 82)"/>
+      <stop offset=".65" stop-color="oklch(64% 0.13 72)"/>
+      <stop offset="1"   stop-color="oklch(38% 0.09 60)"/>
+    </linearGradient>
+    <!-- Horizontal sheen -->
+    <linearGradient id="goldH" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"   stop-color="oklch(55% 0.10 65)"/>
+      <stop offset=".5"  stop-color="oklch(88% 0.12 85)"/>
+      <stop offset="1"   stop-color="oklch(50% 0.09 60)"/>
+    </linearGradient>
+    <!-- Dim gold for back/shadow facets -->
+    <linearGradient id="goldDim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="oklch(60% 0.10 70)"/>
+      <stop offset="1"   stop-color="oklch(30% 0.07 55)"/>
+    </linearGradient>
+    <!-- Outline -->
+    <linearGradient id="goldEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="oklch(96% 0.08 90)"/>
+      <stop offset="1" stop-color="oklch(45% 0.10 65)"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<script>
+/* =========================================================
+   Monument data — 16 iconic Paris monuments
+   ======================================================= */
+const monuments = [
+  {id:"DN.04",  name:"Palais du Louvre",           epoch:"XII–XIXᵉ",   arr:"01ᵉ", svg:"louvre"},
+  {id:"PA.5992",name:"Tour Eiffel",                epoch:"1889",       arr:"07ᵉ", svg:"eiffel"},
+  {id:"PA.5808",name:"Cathédrale Notre-Dame",      epoch:"XIIᵉ",       arr:"04ᵉ", svg:"notredame"},
+  {id:"PA.5253",name:"Arc de Triomphe",            epoch:"1836",       arr:"08ᵉ", svg:"arc"},
+  {id:"PA.5790",name:"Colonne Vendôme",            epoch:"1810",       arr:"01ᵉ", svg:"vendome"},
+  {id:"PA.5253",name:"Panthéon",                   epoch:"1790",       arr:"05ᵉ", svg:"pantheon"},
+  {id:"PA.5253",name:"Sacré-Cœur de Montmartre",   epoch:"1914",       arr:"18ᵉ", svg:"sacrecoeur"},
+  {id:"PA.5991",name:"Conciergerie",               epoch:"XIVᵉ",       arr:"01ᵉ", svg:"conciergerie"},
+  {id:"PA.6253",name:"Colonne de Juillet",         epoch:"1840",       arr:"04ᵉ", svg:"juillet"},
+  {id:"DN.09",  name:"Château de Vincennes",       epoch:"XIVᵉ",       arr:"12ᵉ", svg:"vincennes"},
+  {id:"DN.05",  name:"Palais de l'Élysée",         epoch:"1722",       arr:"08ᵉ", svg:"elysee"},
+  {id:"PA.5253",name:"Opéra Garnier",              epoch:"1875",       arr:"09ᵉ", svg:"opera"},
+  {id:"PA.5253",name:"Sainte-Chapelle",            epoch:"1248",       arr:"01ᵉ", svg:"saintechapelle"},
+  {id:"PA.5253",name:"Hôtel des Invalides",        epoch:"1706",       arr:"07ᵉ", svg:"invalides"},
+  {id:"PA.5253",name:"Tour Saint-Jacques",         epoch:"1523",       arr:"04ᵉ", svg:"stjacques"},
+  {id:"DN.08",  name:"Domaine du Palais-Royal",    epoch:"1639",       arr:"01ᵉ", svg:"palaisroyal"},
+];
+
+/* =========================================================
+   SVG silhouettes — geometric, ~200x200 viewBox
+   Using only rectangles, polygons, circles, ellipses.
+   Each = a stylized icon in gold, no over-detail.
+   ======================================================= */
+const G = "url(#goldV)";
+const GH = "url(#goldH)";
+const GD = "url(#goldDim)";
+const GE = "url(#goldEdge)";
+
+const sprites = {
+  /* ── EIFFEL — 4 legs converging, 2 platforms, mast */
+  eiffel: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- ground line -->
+      <rect x="20" y="178" width="160" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- silhouette: 4 curved legs approximated -->
+      <polygon points="40,178 70,120 100,80 130,120 160,178 150,178 125,128 100,100 75,128 50,178" fill="${G}"/>
+      <!-- platform 1 -->
+      <rect x="68" y="118" width="64" height="6" fill="${GH}"/>
+      <rect x="68" y="124" width="64" height="2" fill="${GD}"/>
+      <!-- mid lattice -->
+      <polygon points="80,124 100,80 120,124 116,124 100,90 84,124" fill="${GD}"/>
+      <!-- platform 2 -->
+      <rect x="86" y="78" width="28" height="4" fill="${GH}"/>
+      <!-- top tower -->
+      <rect x="94" y="40" width="12" height="38" fill="${G}"/>
+      <polygon points="94,40 106,40 100,16" fill="${GH}"/>
+      <!-- mast -->
+      <rect x="99" y="6" width="2" height="12" fill="${GE}"/>
+      <circle cx="100" cy="6" r="2" fill="${G}"/>
+    </svg>`,
+
+  /* ── LOUVRE — pyramid + classical wing */
+  louvre: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="178" width="180" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- back wing -->
+      <rect x="14" y="100" width="172" height="78" fill="${GD}"/>
+      <!-- columns -->
+      ${Array.from({length:11}).map((_,i)=>`<rect x="${22+i*15}" y="118" width="3" height="60" fill="${G}"/>`).join("")}
+      <!-- cornice -->
+      <rect x="14" y="96" width="172" height="6" fill="${GH}"/>
+      <rect x="14" y="92" width="172" height="3" fill="${GE}"/>
+      <!-- pediment center -->
+      <polygon points="80,96 120,96 100,76" fill="${G}"/>
+      <!-- pyramid foreground -->
+      <polygon points="60,178 100,108 140,178" fill="${GH}" opacity=".9"/>
+      <polygon points="100,108 140,178 100,178" fill="${GD}" opacity=".95"/>
+      <!-- pyramid grid -->
+      <line x1="100" y1="108" x2="100" y2="178" stroke="${GE}" stroke-width=".7" opacity=".6"/>
+      ${Array.from({length:5}).map((_,i)=>{const y=120+i*12;const dx=(y-108)*40/70;return `<line x1="${100-dx}" y1="${y}" x2="${100+dx}" y2="${y}" stroke="${GE}" stroke-width=".5" opacity=".5"/>`}).join("")}
+    </svg>`,
+
+  /* ── NOTRE-DAME — two square towers + rose + spire */
+  notredame: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="178" width="160" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- nave body -->
+      <rect x="40" y="80" width="120" height="98" fill="${GD}"/>
+      <!-- rose -->
+      <circle cx="100" cy="115" r="14" fill="none" stroke="${G}" stroke-width="1.5"/>
+      <circle cx="100" cy="115" r="7"  fill="none" stroke="${GH}" stroke-width=".8"/>
+      <line x1="86" y1="115" x2="114" y2="115" stroke="${GH}" stroke-width=".5"/>
+      <line x1="100" y1="101" x2="100" y2="129" stroke="${GH}" stroke-width=".5"/>
+      <!-- twin towers -->
+      <rect x="34" y="40" width="36" height="138" fill="${G}"/>
+      <rect x="130" y="40" width="36" height="138" fill="${G}"/>
+      <!-- tower openings -->
+      <rect x="44" y="78" width="16" height="28" fill="${GD}"/>
+      <rect x="140" y="78" width="16" height="28" fill="${GD}"/>
+      <rect x="44" y="50" width="16" height="20" fill="${GD}"/>
+      <rect x="140" y="50" width="16" height="20" fill="${GD}"/>
+      <!-- crenellations -->
+      ${[34,42,50,58,66].map(x=>`<rect x="${x}" y="36" width="4" height="6" fill="${GH}"/>`).join("")}
+      ${[130,138,146,154,162].map(x=>`<rect x="${x}" y="36" width="4" height="6" fill="${GH}"/>`).join("")}
+      <!-- spire -->
+      <polygon points="96,80 104,80 100,40" fill="${GH}"/>
+      <rect x="99" y="36" width="2" height="6" fill="${GE}"/>
+    </svg>`,
+
+  /* ── ARC DE TRIOMPHE */
+  arc: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="178" width="160" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- main block -->
+      <rect x="40" y="50" width="120" height="128" fill="${G}"/>
+      <!-- attic top -->
+      <rect x="36" y="44" width="128" height="10" fill="${GH}"/>
+      <rect x="36" y="40" width="128" height="4" fill="${GE}"/>
+      <!-- main arch -->
+      <path d="M 78 178 L 78 110 Q 78 78 100 78 Q 122 78 122 110 L 122 178 Z" fill="${GD}"/>
+      <!-- side niches -->
+      <rect x="50" y="140" width="14" height="38" fill="${GD}"/>
+      <rect x="136" y="140" width="14" height="38" fill="${GD}"/>
+      <!-- relief lines -->
+      <rect x="50" y="100" width="14" height="14" fill="${GD}"/>
+      <rect x="136" y="100" width="14" height="14" fill="${GD}"/>
+      <!-- top frieze -->
+      <rect x="44" y="62" width="112" height="3" fill="${GE}" opacity=".7"/>
+      <rect x="44" y="68" width="112" height="2" fill="${GE}" opacity=".5"/>
+    </svg>`,
+
+  /* ── COLONNE VENDÔME */
+  vendome: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="178" width="160" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- pedestal -->
+      <rect x="74" y="160" width="52" height="18" fill="${GD}"/>
+      <rect x="70" y="156" width="60" height="6"  fill="${GH}"/>
+      <!-- column shaft with spiral -->
+      <rect x="86" y="46" width="28" height="114" fill="${G}"/>
+      ${Array.from({length:14}).map((_,i)=>`<path d="M 86 ${52+i*8} Q 100 ${56+i*8} 114 ${52+i*8}" stroke="${GE}" stroke-width=".6" fill="none" opacity=".7"/>`).join("")}
+      <!-- capital -->
+      <rect x="82" y="40" width="36" height="6" fill="${GH}"/>
+      <rect x="80" y="36" width="40" height="4" fill="${GE}"/>
+      <!-- top platform -->
+      <rect x="86" y="28" width="28" height="8" fill="${GD}"/>
+      <!-- statue (Napoleon) -->
+      <ellipse cx="100" cy="22" rx="3" ry="3" fill="${GH}"/>
+      <rect x="98" y="14" width="4" height="10" fill="${G}"/>
+      <rect x="95" y="18" width="10" height="6" fill="${G}"/>
+    </svg>`,
+
+  /* ── PANTHÉON — pediment + dome */
+  pantheon: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="178" width="180" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- main body -->
+      <rect x="30" y="120" width="140" height="58" fill="${GD}"/>
+      <!-- portico steps -->
+      <rect x="50" y="170" width="100" height="3" fill="${GE}"/>
+      <rect x="50" y="174" width="100" height="3" fill="${GE}"/>
+      <!-- columns -->
+      ${[58,72,86,100,114,128,142].map(x=>`<rect x="${x}" y="120" width="5" height="50" fill="${G}"/>`).join("")}
+      <!-- entablature -->
+      <rect x="46" y="114" width="108" height="6" fill="${GH}"/>
+      <!-- pediment -->
+      <polygon points="46,114 154,114 100,80" fill="${G}"/>
+      <!-- drum -->
+      <rect x="74" y="56" width="52" height="24" fill="${GD}"/>
+      ${[80,90,100,110,120].map(x=>`<rect x="${x-1}" y="60" width="2" height="14" fill="${GE}" opacity=".7"/>`).join("")}
+      <!-- dome -->
+      <path d="M 70 56 Q 100 6 130 56 Z" fill="${G}"/>
+      <ellipse cx="100" cy="56" rx="30" ry="5" fill="${GH}"/>
+      <!-- lantern -->
+      <rect x="96" y="14" width="8" height="10" fill="${GH}"/>
+      <rect x="98" y="6" width="4" height="8" fill="${GE}"/>
+    </svg>`,
+
+  /* ── SACRÉ-CŒUR — central dome + 2 side domes */
+  sacrecoeur: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="178" width="180" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- base -->
+      <rect x="20" y="130" width="160" height="48" fill="${GD}"/>
+      <!-- side wings -->
+      <rect x="34" y="110" width="40" height="22" fill="${G}"/>
+      <rect x="126" y="110" width="40" height="22" fill="${G}"/>
+      <!-- side small domes -->
+      <path d="M 38 110 Q 54 86 70 110 Z" fill="${GH}"/>
+      <path d="M 130 110 Q 146 86 162 110 Z" fill="${GH}"/>
+      <rect x="53" y="80" width="2" height="8" fill="${GE}"/>
+      <rect x="145" y="80" width="2" height="8" fill="${GE}"/>
+      <!-- central facade -->
+      <rect x="76" y="92" width="48" height="40" fill="${G}"/>
+      <!-- arch entry -->
+      <path d="M 92 132 L 92 116 Q 92 104 100 104 Q 108 104 108 116 L 108 132 Z" fill="${GD}"/>
+      <!-- main drum -->
+      <rect x="78" y="64" width="44" height="28" fill="${GD}"/>
+      <!-- main dome -->
+      <path d="M 70 64 Q 100 8 130 64 Z" fill="${G}"/>
+      <ellipse cx="100" cy="64" rx="30" ry="4" fill="${GH}"/>
+      <!-- lantern + cross -->
+      <rect x="96" y="20" width="8" height="10" fill="${GH}"/>
+      <rect x="99" y="6" width="2" height="14" fill="${GE}"/>
+      <rect x="95" y="10" width="10" height="2" fill="${GE}"/>
+    </svg>`,
+
+  /* ── CONCIERGERIE — 2 round towers + medieval wall */
+  conciergerie: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="178" width="180" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- water reflection line -->
+      <rect x="10" y="170" width="180" height="1" fill="${GH}" opacity=".4"/>
+      <!-- main wall -->
+      <rect x="40" y="100" width="120" height="70" fill="${GD}"/>
+      <!-- machicolation -->
+      ${Array.from({length:14}).map((_,i)=>`<rect x="${42+i*9}" y="96" width="5" height="6" fill="${GH}"/>`).join("")}
+      <!-- windows -->
+      ${[56,76,96,116,136].map(x=>`<rect x="${x}" y="120" width="6" height="14" fill="${G}"/>`).join("")}
+      <!-- left tower -->
+      <rect x="22" y="60" width="28" height="110" fill="${G}"/>
+      <polygon points="22,60 50,60 36,40" fill="${GH}"/>
+      <rect x="22" y="170" width="28" height="2" fill="${GE}"/>
+      ${[28,38].map(x=>`<rect x="${x}" y="80" width="4" height="10" fill="${GD}"/>`).join("")}
+      <!-- right tower -->
+      <rect x="150" y="60" width="28" height="110" fill="${G}"/>
+      <polygon points="150,60 178,60 164,40" fill="${GH}"/>
+      ${[156,166].map(x=>`<rect x="${x}" y="80" width="4" height="10" fill="${GD}"/>`).join("")}
+      <!-- middle smaller tower -->
+      <rect x="92" y="76" width="16" height="24" fill="${G}"/>
+      <polygon points="92,76 108,76 100,60" fill="${GH}"/>
+    </svg>`,
+
+  /* ── COLONNE DE JUILLET — column + winged genius */
+  juillet: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="178" width="160" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- pedestal -->
+      <rect x="78" y="158" width="44" height="20" fill="${GD}"/>
+      <rect x="74" y="154" width="52" height="6" fill="${GH}"/>
+      <!-- column -->
+      <rect x="90" y="50" width="20" height="106" fill="${G}"/>
+      <!-- column flutes -->
+      ${[93,98,103,107].map(x=>`<rect x="${x}" y="56" width=".8" height="98" fill="${GE}" opacity=".5"/>`).join("")}
+      <!-- capital -->
+      <rect x="86" y="44" width="28" height="6" fill="${GH}"/>
+      <rect x="84" y="40" width="32" height="4" fill="${GE}"/>
+      <!-- platform -->
+      <rect x="92" y="32" width="16" height="8" fill="${GD}"/>
+      <!-- Genie de la Liberté: figure with raised arm + wings -->
+      <!-- wings -->
+      <path d="M 88 24 Q 76 16 78 6 Q 86 14 92 22 Z" fill="${GH}"/>
+      <path d="M 112 24 Q 124 16 122 6 Q 114 14 108 22 Z" fill="${GH}"/>
+      <!-- body -->
+      <ellipse cx="100" cy="22" rx="3" ry="3.5" fill="${GE}"/>
+      <rect x="98" y="14" width="4" height="10" fill="${G}"/>
+      <!-- arm raised holding torch -->
+      <rect x="100" y="6" width="2" height="10" fill="${GE}"/>
+      <polygon points="98,4 104,4 101,-1" fill="${GH}"/>
+    </svg>`,
+
+  /* ── CHÂTEAU DE VINCENNES — donjon massif */
+  vincennes: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="178" width="180" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- outer walls -->
+      <rect x="20" y="130" width="160" height="48" fill="${GD}"/>
+      ${Array.from({length:18}).map((_,i)=>`<rect x="${22+i*9}" y="126" width="5" height="5" fill="${GH}"/>`).join("")}
+      <!-- gate -->
+      <path d="M 92 178 L 92 152 Q 92 144 100 144 Q 108 144 108 152 L 108 178 Z" fill="${G}"/>
+      <!-- corner round towers -->
+      <rect x="22" y="118" width="14" height="14" fill="${G}"/>
+      <rect x="164" y="118" width="14" height="14" fill="${G}"/>
+      <polygon points="22,118 36,118 29,108" fill="${GH}"/>
+      <polygon points="164,118 178,118 171,108" fill="${GH}"/>
+      <!-- donjon (keep) -->
+      <rect x="68" y="40" width="64" height="92" fill="${G}"/>
+      <!-- donjon corner turrets -->
+      <rect x="62" y="34" width="14" height="100" fill="${GH}"/>
+      <rect x="124" y="34" width="14" height="100" fill="${GH}"/>
+      <polygon points="62,34 76,34 69,22" fill="${GE}"/>
+      <polygon points="124,34 138,34 131,22" fill="${GE}"/>
+      <!-- center turret pointed roof -->
+      <polygon points="68,40 132,40 100,8" fill="${GD}"/>
+      <rect x="99" y="4" width="2" height="6" fill="${GE}"/>
+      <!-- windows -->
+      ${[78,90,102,114].map(x=>`<rect x="${x}" y="60" width="4" height="10" fill="${GD}"/>`).join("")}
+      ${[78,90,102,114].map(x=>`<rect x="${x}" y="84" width="4" height="10" fill="${GD}"/>`).join("")}
+    </svg>`,
+
+  /* ── PALAIS DE L'ÉLYSÉE — classical hôtel particulier */
+  elysee: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="178" width="180" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- garden parterre -->
+      <rect x="10" y="172" width="180" height="6" fill="${GD}" opacity=".7"/>
+      <!-- main body -->
+      <rect x="22" y="100" width="156" height="72" fill="${GD}"/>
+      <!-- mansard roof -->
+      <polygon points="22,100 178,100 162,80 38,80" fill="${G}"/>
+      <!-- center pavilion -->
+      <rect x="76" y="74" width="48" height="98" fill="${G}"/>
+      <polygon points="76,74 124,74 100,52" fill="${GH}"/>
+      <!-- center door -->
+      <path d="M 92 172 L 92 146 Q 92 140 100 140 Q 108 140 108 146 L 108 172 Z" fill="${GD}"/>
+      <!-- center balcony -->
+      <rect x="86" y="118" width="28" height="12" fill="${GD}"/>
+      <rect x="86" y="115" width="28" height="3" fill="${GE}"/>
+      <!-- windows side -->
+      ${[30,46,62,134,150,166].map(x=>`<rect x="${x}" y="116" width="6" height="14" fill="${G}"/>`).join("")}
+      ${[30,46,62,134,150,166].map(x=>`<rect x="${x}" y="140" width="6" height="14" fill="${G}"/>`).join("")}
+      <!-- dormers -->
+      ${[40,56,144,160].map(x=>`<rect x="${x}" y="86" width="4" height="6" fill="${GH}"/>`).join("")}
+      <!-- chimneys -->
+      <rect x="50" y="72" width="6" height="10" fill="${GE}"/>
+      <rect x="144" y="72" width="6" height="10" fill="${GE}"/>
+    </svg>`,
+
+  /* ── OPÉRA GARNIER */
+  opera: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="178" width="180" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- base steps -->
+      ${[170,174].map(y=>`<rect x="20" y="${y}" width="160" height="2" fill="${GE}"/>`).join("")}
+      <!-- main facade -->
+      <rect x="20" y="120" width="160" height="50" fill="${GD}"/>
+      <!-- arches arcade -->
+      ${[28,52,76,124,148,172].map(x=>`<path d="M ${x} 168 L ${x} 140 Q ${x} 132 ${x+8} 132 Q ${x+16} 132 ${x+16} 140 L ${x+16} 168 Z" fill="${G}"/>`).join("")}
+      <!-- center loggia -->
+      <rect x="76" y="100" width="48" height="70" fill="${G}"/>
+      ${[80,92,104,116].map(x=>`<rect x="${x}" y="118" width="4" height="40" fill="${GD}"/>`).join("")}
+      <!-- entablature -->
+      <rect x="18" y="96" width="164" height="6" fill="${GH}"/>
+      <rect x="18" y="92" width="164" height="3" fill="${GE}"/>
+      <!-- attic with sculptures -->
+      <rect x="22" y="80" width="156" height="12" fill="${GD}"/>
+      ${[40,70,130,160].map(x=>`<ellipse cx="${x}" cy="76" rx="3" ry="4" fill="${GH}"/>`).join("")}
+      <!-- copper dome -->
+      <rect x="78" y="60" width="44" height="20" fill="${GD}"/>
+      <path d="M 74 60 Q 100 32 126 60 Z" fill="${G}"/>
+      <ellipse cx="100" cy="60" rx="26" ry="3" fill="${GH}"/>
+      <!-- small lantern -->
+      <rect x="96" y="38" width="8" height="6" fill="${GH}"/>
+      <polygon points="96,38 104,38 100,30" fill="${GE}"/>
+      <!-- side pavilions w/ pyramidal roofs -->
+      <polygon points="20,100 50,100 35,80" fill="${GH}"/>
+      <polygon points="150,100 180,100 165,80" fill="${GH}"/>
+    </svg>`,
+
+  /* ── SAINTE-CHAPELLE — gothic spire & rose */
+  saintechapelle: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="178" width="160" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- base chapel -->
+      <rect x="58" y="120" width="84" height="58" fill="${GD}"/>
+      <!-- buttresses -->
+      ${[58,80,102,124,142].map(x=>`<rect x="${x}" y="110" width="4" height="68" fill="${G}"/>`).join("")}
+      <!-- gothic windows -->
+      ${[66,88,110,128].map(x=>`<path d="M ${x} 170 L ${x} 138 Q ${x} 130 ${x+6} 130 Q ${x+12} 130 ${x+12} 138 L ${x+12} 170 Z" fill="${G}"/>`).join("")}
+      <!-- rose window high -->
+      <circle cx="100" cy="100" r="10" fill="none" stroke="${G}" stroke-width="1.4"/>
+      <circle cx="100" cy="100" r="4" fill="${GH}"/>
+      ${[0,45,90,135].map(a=>`<line x1="${100+Math.cos(a*Math.PI/180)*10}" y1="${100+Math.sin(a*Math.PI/180)*10}" x2="${100-Math.cos(a*Math.PI/180)*10}" y2="${100-Math.sin(a*Math.PI/180)*10}" stroke="${GH}" stroke-width=".6"/>`).join("")}
+      <!-- upper gable -->
+      <polygon points="58,118 142,118 100,82" fill="${GD}"/>
+      <!-- central spire -->
+      <rect x="92" y="48" width="16" height="36" fill="${G}"/>
+      <polygon points="86,48 114,48 100,16" fill="${GH}"/>
+      <!-- spire flèche -->
+      <polygon points="98,16 102,16 100,2" fill="${GE}"/>
+      <!-- crockets on spire -->
+      ${[24,36].map(y=>`<circle cx="92" cy="${y}" r="1.5" fill="${GE}"/><circle cx="108" cy="${y}" r="1.5" fill="${GE}"/>`).join("")}
+      <!-- side mini spires -->
+      <rect x="60" y="100" width="6" height="20" fill="${G}"/>
+      <polygon points="58,100 68,100 63,86" fill="${GH}"/>
+      <rect x="134" y="100" width="6" height="20" fill="${G}"/>
+      <polygon points="132,100 142,100 137,86" fill="${GH}"/>
+    </svg>`,
+
+  /* ── INVALIDES — gold dome */
+  invalides: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="178" width="180" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- esplanade -->
+      <rect x="10" y="172" width="180" height="6" fill="${GD}" opacity=".5"/>
+      <!-- side wings long building -->
+      <rect x="14" y="140" width="172" height="32" fill="${GD}"/>
+      ${Array.from({length:11}).map((_,i)=>`<rect x="${22+i*15}" y="148" width="5" height="14" fill="${G}"/>`).join("")}
+      <!-- center facade -->
+      <rect x="68" y="118" width="64" height="54" fill="${G}"/>
+      ${[74,86,98,110,122].map(x=>`<rect x="${x}" y="128" width="4" height="34" fill="${GD}"/>`).join("")}
+      <!-- pediment -->
+      <polygon points="68,118 132,118 100,98" fill="${GH}"/>
+      <!-- drum -->
+      <rect x="78" y="74" width="44" height="24" fill="${GD}"/>
+      ${[84,94,104,114].map(x=>`<rect x="${x-1}" y="78" width="2" height="14" fill="${GE}" opacity=".7"/>`).join("")}
+      <!-- gold dome (the iconic one) -->
+      <path d="M 70 74 Q 100 14 130 74 Z" fill="${G}"/>
+      <ellipse cx="100" cy="74" rx="30" ry="5" fill="${GH}"/>
+      <!-- highlight strip -->
+      <path d="M 86 70 Q 100 30 114 70" stroke="oklch(96% 0.08 90)" stroke-width="1.2" fill="none" opacity=".8"/>
+      <!-- lantern -->
+      <rect x="94" y="22" width="12" height="14" fill="${GH}"/>
+      <rect x="96" y="14" width="8" height="8" fill="${GE}"/>
+      <!-- spire -->
+      <rect x="99" y="2" width="2" height="12" fill="${GE}"/>
+      <circle cx="100" cy="2" r="2" fill="${G}"/>
+    </svg>`,
+
+  /* ── TOUR SAINT-JACQUES */
+  stjacques: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="178" width="160" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- base square -->
+      <rect x="76" y="158" width="48" height="20" fill="${GD}"/>
+      <!-- main square tower -->
+      <rect x="70" y="40" width="60" height="118" fill="${G}"/>
+      <!-- corner pilasters -->
+      <rect x="68" y="40" width="4" height="118" fill="${GH}"/>
+      <rect x="128" y="40" width="4" height="118" fill="${GH}"/>
+      <!-- gothic window strips -->
+      ${[60,80,100,120].map(y=>`<path d="M 80 ${y+18} L 80 ${y+4} Q 80 ${y} 84 ${y} Q 88 ${y} 88 ${y+4} L 88 ${y+18} Z" fill="${GD}"/>
+                                    <path d="M 112 ${y+18} L 112 ${y+4} Q 112 ${y} 116 ${y} Q 120 ${y} 120 ${y+4} L 120 ${y+18} Z" fill="${GD}"/>`).join("")}
+      <!-- crown of pinnacles -->
+      ${[68,82,96,110,124].map(x=>`<rect x="${x-1}" y="32" width="3" height="10" fill="${GH}"/><polygon points="${x-2},32 ${x+2},32 ${x},24" fill="${GE}"/>`).join("")}
+      <!-- top crenellation band -->
+      <rect x="66" y="40" width="68" height="4" fill="${GE}"/>
+      <!-- statue on top (Saint Jacques) -->
+      <ellipse cx="100" cy="20" rx="3" ry="3" fill="${GH}"/>
+      <rect x="98" y="14" width="4" height="8" fill="${G}"/>
+      <rect x="93" y="18" width="14" height="6" fill="${G}"/>
+      <!-- staff -->
+      <rect x="106" y="8" width="1.2" height="14" fill="${GE}"/>
+    </svg>`,
+
+  /* ── PALAIS-ROYAL — courtyard arcade with columns (Buren-free) */
+  palaisroyal: `
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="178" width="180" height="1.2" fill="${GE}" opacity=".5"/>
+      <!-- courtyard floor pattern -->
+      <rect x="10" y="170" width="180" height="8" fill="${GD}" opacity=".4"/>
+      ${[40,80,120,160].map(x=>`<rect x="${x}" y="170" width="1" height="8" fill="${GH}" opacity=".4"/>`).join("")}
+      <!-- back wing -->
+      <rect x="14" y="100" width="172" height="70" fill="${GD}"/>
+      <!-- ground arcade -->
+      ${[20,40,60,80,100,120,140,160].map(x=>`<path d="M ${x} 170 L ${x} 148 Q ${x} 140 ${x+8} 140 Q ${x+16} 140 ${x+16} 148 L ${x+16} 170 Z" fill="${G}"/>`).join("")}
+      <!-- 1st floor windows -->
+      ${[20,40,60,80,100,120,140,160].map(x=>`<rect x="${x+2}" y="115" width="12" height="18" fill="${G}"/>`).join("")}
+      <!-- balcony band -->
+      <rect x="14" y="110" width="172" height="3" fill="${GE}"/>
+      <!-- cornice + roof -->
+      <rect x="12" y="96" width="176" height="6" fill="${GH}"/>
+      <polygon points="12,96 188,96 172,80 28,80" fill="${G}"/>
+      <!-- dormers -->
+      ${[40,80,120,160].map(x=>`<rect x="${x-3}" y="84" width="6" height="8" fill="${GD}"/><polygon points="${x-4},84 ${x+4},84 ${x},78" fill="${GH}"/>`).join("")}
+      <!-- center pavilion -->
+      <rect x="84" y="70" width="32" height="32" fill="${G}"/>
+      <polygon points="80,70 120,70 100,52" fill="${GH}"/>
+      <rect x="98" y="48" width="4" height="6" fill="${GE}"/>
+      <!-- foreground striped column (homage to Buren-style) -->
+      <rect x="50" y="158" width="6" height="20" fill="${GH}"/>
+      ${[0,5,10,15].map(o=>`<rect x="50" y="${158+o}" width="6" height="2" fill="${GE}" opacity=".6"/>`).join("")}
+      <rect x="144" y="158" width="6" height="20" fill="${GH}"/>
+      ${[0,5,10,15].map(o=>`<rect x="144" y="${158+o}" width="6" height="2" fill="${GE}" opacity=".6"/>`).join("")}
+    </svg>`,
+};
+
+/* =========================================================
+   Render
+   ======================================================= */
+const grid = document.getElementById("grid");
+monuments.forEach((m, i)=>{
+  const tile = document.createElement("article");
+  tile.className = "sprite";
+  tile.innerHTML = `
+    <span class="tick tl"></span><span class="tick tr"></span>
+    <span class="tick bl"></span><span class="tick br"></span>
+    <div class="id">№ ${String(i+1).padStart(2,"0")}</div>
+    <div class="arr">${m.arr}</div>
+    <div class="art">
+      <div class="glow"></div>
+      ${sprites[m.svg] || ""}
+    </div>
+    <div class="baseline"></div>
+    <div class="label">
+      <p class="name">${m.name}</p>
+      <div class="sub"><span>${m.id}</span><span class="epoch">${m.epoch}</span></div>
+    </div>
+  `;
+  grid.appendChild(tile);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Médailles Gravées · Planche · Monuments de Paris</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=JetBrains+Mono:wght@300;400;500&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0806; --panel:#120e0a; --ink:#f5e9d0; --ink-dim:#8b7a5a; --ink-mute:#5a4d36; --rule:#1f1810;
+    --gold-1:oklch(94% 0.10 90); --gold-2:oklch(82% 0.14 82); --gold-3:oklch(64% 0.13 72); --gold-4:oklch(40% 0.09 60);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Cormorant Garamond",serif;}
+  body{
+    background:radial-gradient(1200px 800px at 30% -10%, oklch(22% 0.05 70 / .25), transparent 60%), var(--bg);
+    min-height:100vh;
+  }
+  .frame{ max-width:1480px; margin:0 auto; padding:56px 48px 88px; }
+  header.masthead{
+    display:grid; grid-template-columns:minmax(0,1fr) auto; gap:40px;
+    align-items:end; border-bottom:1px solid var(--rule); padding-bottom:24px; margin-bottom:48px;
+  }
+  header.masthead > div:first-child{ min-width:0; }
+  .eyebrow{
+    font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ink-dim); margin:0 0 14px; display:flex; align-items:center; gap:14px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--gold-2);box-shadow:0 0 10px var(--gold-2);}
+  h1{
+    font-weight:400; font-family:"Cinzel",serif; font-size:clamp(40px,5vw,76px); line-height:.96;
+    letter-spacing:.02em; margin:0;
+    background:linear-gradient(180deg, var(--gold-1) 0%, var(--gold-2) 50%, var(--gold-3) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  h1 em{font-style:italic;font-family:"Cormorant Garamond",serif;font-weight:500;color:var(--ink-dim);-webkit-text-fill-color:var(--ink-dim);}
+  .meta{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(--ink-dim); text-align:right; line-height:1.7;}
+  .meta b{color:var(--ink);font-weight:500;}
+  @media (max-width:1100px){ header.masthead{grid-template-columns:1fr;align-items:start;gap:18px;} .meta{text-align:left;} }
+  .grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+    background:var(--rule); border:1px solid var(--rule);
+  }
+  @media (max-width:1100px){ .grid{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:780px){  .grid{grid-template-columns:repeat(2,1fr);} }
+  .cell{
+    background:var(--panel); aspect-ratio:1/1; position:relative; overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .cell::before{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 80% at 50% 110%, oklch(28% 0.06 65 / .45), transparent 60%),
+      linear-gradient(180deg, oklch(14% 0.02 60) 0%, oklch(8% 0.015 50) 100%);
+  }
+  .tick{position:absolute;width:9px;height:9px;border-color:var(--gold-4);border-style:solid;border-width:0;z-index:3;}
+  .tick.tl{top:10px;left:10px;border-top-width:1px;border-left-width:1px;}
+  .tick.tr{top:10px;right:10px;border-top-width:1px;border-right-width:1px;}
+  .tick.bl{bottom:10px;left:10px;border-bottom-width:1px;border-left-width:1px;}
+  .tick.br{bottom:10px;right:10px;border-bottom-width:1px;border-right-width:1px;}
+  .id{position:absolute;top:14px;left:18px;font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.18em;color:var(--ink-mute);z-index:4;text-transform:uppercase;}
+  .arr{position:absolute;top:14px;right:18px;font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.16em;color:var(--gold-3);z-index:4;}
+  .stage{flex:1;position:relative;z-index:2;display:grid;place-items:center;padding:28px 18px 8px;}
+  .stage svg.medal{width:88%;max-width:280px;height:auto;filter: drop-shadow(0 12px 30px oklch(70% 0.13 75 / .18));}
+  .label{
+    position:relative;z-index:3;padding:14px 20px 18px;
+    border-top:1px solid oklch(20% 0.02 60 / .6);
+    background: linear-gradient(180deg, transparent, oklch(8% 0.015 50 / .6));
+    text-align:center;
+  }
+  .label .name{font-family:"Cinzel",serif;font-weight:500;font-size:13.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-1);margin:0 0 4px;text-wrap:balance;}
+  .label .sub{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-mute);}
+  .label .sub b{color:var(--gold-3);font-weight:500;}
+  footer.foot{
+    margin-top:48px;padding-top:24px;border-top:1px solid var(--rule);
+    display:flex;justify-content:space-between;
+    font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--ink-mute);letter-spacing:.16em;text-transform:uppercase;
+  }
+  footer.foot b{color:var(--gold-3);font-weight:500;}
+</style>
+</head>
+<body>
+<div class="frame">
+  <header class="masthead">
+    <div>
+      <p class="eyebrow"><span class="dot"></span>Planche · Médailles Gravées · 16/16</p>
+      <h1>Médailles<br><em>de Paris</em></h1>
+    </div>
+    <div class="meta">
+      <div>STYLE · <b>frappe gravée double cercle</b></div>
+      <div>METAL · <b>or · oklch</b></div>
+      <div>FORMAT · <b>1:1 · vector</b></div>
+      <div>PIECES · <b>16 monuments</b></div>
+    </div>
+  </header>
+  <div class="grid" id="grid"></div>
+  <footer class="foot">
+    <span>Urbink · Atlas Médailles</span>
+    <span><b>16</b> pièces · <b>SVG</b> · <b>cinzel + cormorant</b></span>
+    <span>v.02 · 2026</span>
+  </footer>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="oklch(96% 0.10 90)"/>
+      <stop offset=".45" stop-color="oklch(80% 0.14 80)"/>
+      <stop offset=".7"  stop-color="oklch(55% 0.12 65)"/>
+      <stop offset="1"   stop-color="oklch(34% 0.08 55)"/>
+    </linearGradient>
+    <radialGradient id="field" cx=".4" cy=".35" r=".85">
+      <stop offset="0"   stop-color="oklch(86% 0.12 84)"/>
+      <stop offset=".55" stop-color="oklch(68% 0.13 74)"/>
+      <stop offset="1"   stop-color="oklch(38% 0.09 60)"/>
+    </radialGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="oklch(28% 0.07 55)"/>
+      <stop offset="1" stop-color="oklch(18% 0.04 50)"/>
+    </linearGradient>
+    <linearGradient id="hi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="oklch(98% 0.06 90)"/>
+      <stop offset="1" stop-color="oklch(82% 0.13 80)"/>
+    </linearGradient>
+    <linearGradient id="sh" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="oklch(55% 0.10 65)"/>
+      <stop offset="1" stop-color="oklch(28% 0.07 55)"/>
+    </linearGradient>
+    <pattern id="hatchV" width="1.2" height="3" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="3" stroke="oklch(28% 0.07 55)" stroke-width=".55" opacity=".55"/>
+    </pattern>
+    <pattern id="hatchD" width="2" height="2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="2" stroke="oklch(28% 0.07 55)" stroke-width=".5" opacity=".55"/>
+    </pattern>
+  </defs>
+</svg>
+
+<script>
+const I = "url(#ink)";
+const S = "url(#sh)";
+const H = "url(#hi)";
+const HV = "url(#hatchV)";
+const HD = "url(#hatchD)";
+
+const monuments = [
+  {id:"01", arr:"VII",  name:"Tour Eiffel",            yr:"1889", k:"eiffel"},
+  {id:"02", arr:"I",    name:"Palais du Louvre",       yr:"1546", k:"louvre"},
+  {id:"03", arr:"IV",   name:"Notre-Dame",             yr:"1163", k:"notredame"},
+  {id:"04", arr:"VIII", name:"Arc de Triomphe",        yr:"1836", k:"arc"},
+  {id:"05", arr:"I",    name:"Colonne Vendôme",        yr:"1810", k:"vendome"},
+  {id:"06", arr:"V",    name:"Panthéon",               yr:"1790", k:"pantheon"},
+  {id:"07", arr:"XVIII",name:"Sacré-Cœur",             yr:"1914", k:"sacrecoeur"},
+  {id:"08", arr:"I",    name:"Conciergerie",           yr:"XIVe", k:"conciergerie"},
+  {id:"09", arr:"IV",   name:"Colonne de Juillet",     yr:"1840", k:"juillet"},
+  {id:"10", arr:"XII",  name:"Château de Vincennes",   yr:"XIVe", k:"vincennes"},
+  {id:"11", arr:"VIII", name:"Palais de l'Élysée",     yr:"1722", k:"elysee"},
+  {id:"12", arr:"IX",   name:"Opéra Garnier",          yr:"1875", k:"opera"},
+  {id:"13", arr:"I",    name:"Sainte-Chapelle",        yr:"1248", k:"saintechapelle"},
+  {id:"14", arr:"VII",  name:"Hôtel des Invalides",    yr:"1706", k:"invalides"},
+  {id:"15", arr:"IV",   name:"Tour Saint-Jacques",     yr:"1523", k:"stjacques"},
+  {id:"16", arr:"I",    name:"Palais-Royal",           yr:"1639", k:"palaisroyal"},
+];
+
+// ===== ENGRAVING HELPERS =====
+// Diagonal hatching for shadow side of a rectangle.
+function hatch(x,y,w,h,step=1.6,dir=1){
+  const out=[];
+  // Cover with diagonal lines clipped via path
+  const gx=`hx-${Math.random().toString(36).slice(2,8)}`;
+  out.push(`<defs><clipPath id="${gx}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath></defs>`);
+  const len = w+h;
+  for(let i=-h;i<w+h;i+=step){
+    const x1 = dir>0 ? x+i : x+i;
+    const y1 = dir>0 ? y   : y+h;
+    const x2 = dir>0 ? x+i+h : x+i+h;
+    const y2 = dir>0 ? y+h   : y;
+    out.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${I}" stroke-width=".35" opacity=".7" clip-path="url(#${gx})"/>`);
+  }
+  return out.join("");
+}
+
+const glyphs = {
+  eiffel: `
+    <g stroke="${I}" stroke-width=".55" fill="none" stroke-linecap="round">
+      <!-- ground hatching -->
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="8" y1="92" x2="92" y2="92" stroke-width=".8"/>
+      <!-- silhouette outline (no fill) -->
+      <path d="M 18 92 Q 32 70 40 54 Q 46 42 50 26 Q 54 42 60 54 Q 68 70 82 92" stroke-width=".9"/>
+      <path d="M 26 92 Q 36 74 42 60 L 50 42 L 58 60 Q 64 74 74 92" stroke-width=".7"/>
+      <!-- arches at base -->
+      <path d="M 24 92 Q 50 64 76 92" stroke-width=".55"/>
+      <path d="M 30 92 Q 50 72 70 92" stroke-width=".4"/>
+      <!-- platforms -->
+      <path d="M 32 60 L 68 60 M 33 58 L 67 58" stroke-width=".45"/>
+      <path d="M 40 42 L 60 42 M 41 40.5 L 59 40.5" stroke-width=".4"/>
+      <!-- lattice (horizontal courses) -->
+      <line x1="34" y1="55" x2="66" y2="55" stroke-width=".3" stroke-dasharray="1 1"/>
+      <line x1="36" y1="50" x2="64" y2="50" stroke-width=".3" stroke-dasharray="1 1"/>
+      <line x1="38" y1="46" x2="62" y2="46" stroke-width=".3" stroke-dasharray="1 1"/>
+      <!-- diagonal lattice X's -->
+      <path d="M 38 60 L 50 42 L 38 60 M 62 60 L 50 42 L 62 60" stroke-width=".35"/>
+      <path d="M 38 58 L 62 60 M 38 60 L 62 58" stroke-width=".25"/>
+      <!-- top mast -->
+      <path d="M 46 42 L 50 24 L 54 42" stroke-width=".5"/>
+      <path d="M 48 42 L 50 24 L 52 42" stroke-width=".35"/>
+      <line x1="50" y1="24" x2="50" y2="10" stroke-width=".55"/>
+      <circle cx="50" cy="9" r="1.2" stroke-width=".4"/>
+      <line x1="50" y1="8" x2="50" y2="4" stroke-width=".4"/>
+      <!-- pennant -->
+      <path d="M 50 4 L 56 5 L 53 7 L 56 9 L 50 10" stroke-width=".4"/>
+    </g>
+    <!-- shadow side hatching -->
+    <g stroke="${I}" stroke-width=".3" opacity=".65">
+      ${Array.from({length:14}).map((_,i)=>`<line x1="${52+i*1.8}" y1="${44+i*3}" x2="${56+i*1.8}" y2="${44+i*3}"/>`).join("")}
+    </g>`,
+  louvre: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="6" y1="92" x2="94" y2="92" stroke-width=".8"/>
+      <!-- pavilion wings (left + right) — arched windows -->
+      <path d="M 8 92 L 8 56 L 36 56 L 36 92" stroke-width=".7"/>
+      <path d="M 64 92 L 64 56 L 92 56 L 92 92" stroke-width=".7"/>
+      <!-- mansard roofs over wings -->
+      <path d="M 6 56 L 10 48 L 34 48 L 38 56" stroke-width=".55"/>
+      <path d="M 62 56 L 66 48 L 90 48 L 94 56" stroke-width=".55"/>
+      <!-- arched windows on wings -->
+      ${[12,20,28,68,76,84].map(x=>`<path d="M ${x} 88 L ${x} 72 Q ${x} 67 ${x+3.5} 67 Q ${x+7} 67 ${x+7} 72 L ${x+7} 88 Z" stroke-width=".4"/><line x1="${x+3.5}" y1="67" x2="${x+3.5}" y2="88" stroke-width=".25" stroke-dasharray="1 1"/>`).join("")}
+      <!-- masonry courses -->
+      <line x1="8" y1="76" x2="36" y2="76" stroke-width=".25"/>
+      <line x1="64" y1="76" x2="92" y2="76" stroke-width=".25"/>
+      <!-- glass pyramid -->
+      <path d="M 30 92 L 50 44 L 70 92 Z" stroke-width=".75"/>
+      <path d="M 50 44 L 50 92 M 38 80 L 62 80 M 42 70 L 58 70 M 46 58 L 54 58" stroke-width=".3" stroke-dasharray="1 1"/>
+      <line x1="38" y1="80" x2="50" y2="44" stroke-width=".35"/>
+      <line x1="62" y1="80" x2="50" y2="44" stroke-width=".35"/>
+      <!-- pyramid base ornament -->
+      <line x1="28" y1="92" x2="72" y2="92" stroke-width=".5"/>
+      <circle cx="50" cy="44" r=".9" fill="${I}"/>
+    </g>
+    <!-- right-side hatch on right pavilion -->
+    <g stroke="${I}" stroke-width=".3" opacity=".55">
+      ${Array.from({length:8}).map((_,i)=>`<line x1="${85-i}" y1="${58+i*4}" x2="${92}" y2="${58+i*4}"/>`).join("")}
+    </g>`,
+  notredame: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="6" y1="92" x2="94" y2="92" stroke-width=".8"/>
+      <!-- two towers -->
+      <path d="M 14 92 L 14 24 L 34 24 L 34 92" stroke-width=".75"/>
+      <path d="M 66 92 L 66 24 L 86 24 L 86 92" stroke-width=".75"/>
+      <!-- crenellation -->
+      ${[14,18,22,26,30].map(x=>`<path d="M ${x} 24 L ${x} 20 L ${x+2.5} 20 L ${x+2.5} 24" stroke-width=".4"/>`).join("")}
+      ${[66,70,74,78,82].map(x=>`<path d="M ${x} 24 L ${x} 20 L ${x+2.5} 20 L ${x+2.5} 24" stroke-width=".4"/>`).join("")}
+      <!-- gothic arched openings on towers -->
+      <path d="M 18 50 L 18 36 Q 18 30 24 30 Q 30 30 30 36 L 30 50" stroke-width=".5"/>
+      <path d="M 70 50 L 70 36 Q 70 30 76 30 Q 82 30 82 36 L 82 50" stroke-width=".5"/>
+      <line x1="24" y1="30" x2="24" y2="50" stroke-width=".25" stroke-dasharray="1 1"/>
+      <line x1="76" y1="30" x2="76" y2="50" stroke-width=".25" stroke-dasharray="1 1"/>
+      <path d="M 18 76 L 18 64 Q 18 58 24 58 Q 30 58 30 64 L 30 76" stroke-width=".4"/>
+      <path d="M 70 76 L 70 64 Q 70 58 76 58 Q 82 58 82 64 L 82 76" stroke-width=".4"/>
+      <!-- nave -->
+      <path d="M 34 92 L 34 50 L 66 50 L 66 92" stroke-width=".7"/>
+      <!-- gallery of kings -->
+      <line x1="14" y1="48" x2="86" y2="48" stroke-width=".5"/>
+      <line x1="14" y1="44" x2="86" y2="44" stroke-width=".4"/>
+      ${Array.from({length:9}).map((_,i)=>`<rect x="${17+i*7}" y="44" width="2" height="4" stroke-width=".25"/>`).join("")}
+      <!-- rose window -->
+      <circle cx="50" cy="64" r="9" stroke-width=".7"/>
+      <circle cx="50" cy="64" r="6" stroke-width=".4"/>
+      <circle cx="50" cy="64" r="2.5" stroke-width=".4"/>
+      ${[0,30,60,90,120,150].map(a=>{const r1=2.5,r2=9;const c=Math.cos(a*Math.PI/180),s=Math.sin(a*Math.PI/180);return `<line x1="${50+c*r1}" y1="${64+s*r1}" x2="${50+c*r2}" y2="${64+s*r2}" stroke-width=".35"/>`}).join("")}
+      <!-- portail central -->
+      <path d="M 42 92 L 42 80 Q 42 72 50 72 Q 58 72 58 80 L 58 92" stroke-width=".5"/>
+      <path d="M 44 92 L 44 80 Q 44 74 50 74 Q 56 74 56 80 L 56 92" stroke-width=".35"/>
+      <!-- side portails -->
+      <path d="M 36 92 L 36 84 Q 36 78 40 78 Q 42 78 42 80" stroke-width=".35"/>
+      <path d="M 64 92 L 64 84 Q 64 78 60 78 Q 58 78 58 80" stroke-width=".35"/>
+      <!-- flèche -->
+      <path d="M 47 50 L 50 18 L 53 50" stroke-width=".55"/>
+      <path d="M 49 30 L 51 30 M 48 38 L 52 38 M 47.5 44 L 52.5 44" stroke-width=".3"/>
+      <line x1="50" y1="18" x2="50" y2="10" stroke-width=".5"/>
+      <path d="M 47 12 L 53 12 M 48 14 L 52 14" stroke-width=".35"/>
+      <circle cx="50" cy="9" r="1" stroke-width=".35"/>
+      <!-- flying buttresses hint -->
+      <path d="M 14 70 Q 8 76 8 84" stroke-width=".35"/>
+      <path d="M 86 70 Q 92 76 92 84" stroke-width=".35"/>
+    </g>
+    <g stroke="${I}" stroke-width=".25" opacity=".55">
+      ${Array.from({length:8}).map((_,i)=>`<line x1="${68+i*1.2}" y1="${52+i*4}" x2="${66+i*1.2}" y2="${56+i*4}"/>`).join("")}
+    </g>`,
+  arc: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="6" y1="92" x2="94" y2="92" stroke-width=".8"/>
+      <!-- mass -->
+      <path d="M 14 92 L 14 22 L 86 22 L 86 92" stroke-width=".75"/>
+      <!-- entablature -->
+      <line x1="10" y1="22" x2="90" y2="22" stroke-width=".5"/>
+      <line x1="10" y1="18" x2="90" y2="18" stroke-width=".5"/>
+      <line x1="12" y1="14" x2="88" y2="14" stroke-width=".4"/>
+      <!-- frieze decoration -->
+      ${Array.from({length:10}).map((_,i)=>`<rect x="${15+i*7}" y="14" width="3" height="4" stroke-width=".25"/>`).join("")}
+      <!-- great central arch -->
+      <path d="M 36 92 L 36 50 Q 36 30 50 30 Q 64 30 64 50 L 64 92" stroke-width=".7"/>
+      <path d="M 38 92 L 38 50 Q 38 32 50 32 Q 62 32 62 50 L 62 92" stroke-width=".4"/>
+      <!-- coffered ceiling lines -->
+      ${Array.from({length:6}).map((_,i)=>`<line x1="40" y1="${42+i*8}" x2="60" y2="${42+i*8}" stroke-width=".3" stroke-dasharray="1 1"/>`).join("")}
+      <!-- lateral small arches -->
+      <path d="M 18 92 L 18 76 Q 18 68 24 68 Q 30 68 30 76 L 30 92" stroke-width=".5"/>
+      <path d="M 70 92 L 70 76 Q 70 68 76 68 Q 82 68 82 76 L 82 92" stroke-width=".5"/>
+      <!-- relief panels (pilon) -->
+      <rect x="18" y="38" width="14" height="22" stroke-width=".5"/>
+      <rect x="68" y="38" width="14" height="22" stroke-width=".5"/>
+      <!-- figurative hint -->
+      <path d="M 23 56 Q 25 50 27 56 M 24 50 L 24 60 M 22 58 L 26 58" stroke-width=".35"/>
+      <path d="M 73 56 Q 75 50 77 56 M 74 50 L 74 60 M 72 58 L 76 58" stroke-width=".35"/>
+      <!-- masonry rustication courses -->
+      ${[36,46,56,66,76,86].map(y=>`<line x1="14" y1="${y}" x2="36" y2="${y}" stroke-width=".25"/><line x1="64" y1="${y}" x2="86" y2="${y}" stroke-width=".25"/>`).join("")}
+      <!-- top names slab -->
+      <line x1="14" y1="22" x2="86" y2="22" stroke-width=".7"/>
+    </g>
+    <g stroke="${I}" stroke-width=".25" opacity=".5">
+      ${Array.from({length:10}).map((_,i)=>`<line x1="${75+i*1}" y1="${30+i*5}" x2="${82+i*1}" y2="${30+i*5}"/>`).join("")}
+    </g>`,
+  vendome: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="6" y1="92" x2="94" y2="92" stroke-width=".8"/>
+      <!-- pedestal -->
+      <path d="M 32 92 L 32 80 L 68 80 L 68 92" stroke-width=".7"/>
+      <line x1="30" y1="80" x2="70" y2="80" stroke-width=".5"/>
+      <line x1="34" y1="84" x2="66" y2="84" stroke-width=".3" stroke-dasharray="1 1"/>
+      <!-- column shaft -->
+      <path d="M 42 80 L 42 22 L 58 22 L 58 80" stroke-width=".7"/>
+      <!-- spiral relief band (Trajan-style) -->
+      ${Array.from({length:18}).map((_,i)=>{const y=24+i*3.2;return `<path d="M 42 ${y} Q 50 ${y-1.5} 58 ${y} Q 50 ${y+1.5} 42 ${y}" stroke-width=".3"/>`}).join("")}
+      <line x1="50" y1="22" x2="50" y2="80" stroke-width=".25" stroke-dasharray=".8 1.6"/>
+      <!-- capital -->
+      <path d="M 38 22 L 62 22 L 60 18 L 40 18 Z" stroke-width=".5"/>
+      <path d="M 36 18 L 64 18 L 64 14 L 36 14 Z" stroke-width=".5"/>
+      <!-- abacus -->
+      <line x1="34" y1="14" x2="66" y2="14" stroke-width=".5"/>
+      <!-- statue platform -->
+      <rect x="42" y="10" width="16" height="4" stroke-width=".4"/>
+      <!-- Napoleon statue (silhouette) -->
+      <ellipse cx="50" cy="6" rx="2" ry="2.2" stroke-width=".4"/>
+      <path d="M 47 8 Q 50 7 53 8 L 53 10 L 47 10 Z" stroke-width=".4"/>
+      <path d="M 46 10 L 54 10 L 53 5 Q 50 3 47 5 Z" stroke-width=".35"/>
+      <line x1="50" y1="5" x2="55" y2="-1" stroke-width=".5"/>
+      <line x1="50" y1="6" x2="48" y2="3" stroke-width=".4"/>
+    </g>`,
+  pantheon: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="4" y1="92" x2="96" y2="92" stroke-width=".8"/>
+      <!-- stylobate steps -->
+      <line x1="18" y1="90" x2="82" y2="90" stroke-width=".5"/>
+      <line x1="20" y1="88" x2="80" y2="88" stroke-width=".5"/>
+      <line x1="22" y1="86" x2="78" y2="86" stroke-width=".5"/>
+      <!-- portico colonnade -->
+      <path d="M 22 86 L 22 56 L 78 56 L 78 86" stroke-width=".7"/>
+      ${[26,34,42,50,58,66,74].map(x=>`<path d="M ${x} 86 L ${x} 60 M ${x-1} 60 L ${x+1} 60 M ${x-1.2} 58 L ${x+1.2} 58" stroke-width=".4"/>`).join("")}
+      <!-- entablature -->
+      <line x1="20" y1="56" x2="80" y2="56" stroke-width=".55"/>
+      <line x1="20" y1="54" x2="80" y2="54" stroke-width=".4"/>
+      ${Array.from({length:10}).map((_,i)=>`<line x1="${22+i*6}" y1="54" x2="${22+i*6}" y2="56" stroke-width=".3"/>`).join("")}
+      <!-- pediment -->
+      <path d="M 18 54 L 50 32 L 82 54 Z" stroke-width=".55"/>
+      <line x1="22" y1="52" x2="50" y2="34" stroke-width=".3"/>
+      <line x1="78" y1="52" x2="50" y2="34" stroke-width=".3"/>
+      <!-- pediment ornament -->
+      <circle cx="50" cy="46" r="1.6" stroke-width=".4"/>
+      <path d="M 44 50 Q 47 46 50 48 Q 53 46 56 50" stroke-width=".3"/>
+      <!-- drum -->
+      <rect x="34" y="22" width="32" height="10" stroke-width=".55"/>
+      ${[37,42,47,53,58,63].map(x=>`<line x1="${x}" y1="22" x2="${x}" y2="32" stroke-width=".3"/>`).join("")}
+      <!-- dome -->
+      <path d="M 28 22 Q 50 -2 72 22" stroke-width=".7"/>
+      ${[ -60,-30,0,30,60].map(a=>{const x=50+Math.cos((90-a)*Math.PI/180)*22;const y=22-Math.sin((90-a)*Math.PI/180)*24;return `<line x1="50" y1="22" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke-width=".25"/>`}).join("")}
+      <path d="M 32 18 Q 50 -8 50 -8" stroke-width=".3"/>
+      <!-- lantern -->
+      <rect x="46" y="-2" width="8" height="6" stroke-width=".4"/>
+      <line x1="48" y1="-2" x2="48" y2="4" stroke-width=".3"/>
+      <line x1="52" y1="-2" x2="52" y2="4" stroke-width=".3"/>
+      <path d="M 44 -4 L 56 -4" stroke-width=".4"/>
+      <path d="M 46 -4 L 50 -10 L 54 -4" stroke-width=".4"/>
+      <line x1="50" y1="-10" x2="50" y2="-14" stroke-width=".4"/>
+      <circle cx="50" cy="-14" r=".7" stroke-width=".3"/>
+    </g>`,
+  sacrecoeur: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      <!-- mound of Montmartre -->
+      <path d="M 6 92 Q 30 86 50 88 Q 70 86 94 92" stroke-width=".6"/>
+      ${Array.from({length:14}).map((_,i)=>`<line x1="${10+i*6}" y1="91" x2="${13+i*6}" y2="94" stroke-width=".3"/>`).join("")}
+      <!-- main facade -->
+      <path d="M 32 88 L 32 50 L 68 50 L 68 88" stroke-width=".7"/>
+      <!-- side cupolas (small towers) -->
+      <path d="M 14 88 L 14 56 L 30 56 L 30 88" stroke-width=".55"/>
+      <path d="M 70 88 L 70 56 L 86 56 L 86 88" stroke-width=".55"/>
+      <path d="M 14 56 Q 22 44 30 56" stroke-width=".5"/>
+      <path d="M 70 56 Q 78 44 86 56" stroke-width=".5"/>
+      <!-- finials on side cupolas -->
+      <line x1="22" y1="46" x2="22" y2="38" stroke-width=".35"/>
+      <circle cx="22" cy="37" r=".7" stroke-width=".3"/>
+      <line x1="78" y1="46" x2="78" y2="38" stroke-width=".35"/>
+      <circle cx="78" cy="37" r=".7" stroke-width=".3"/>
+      <!-- main central dome (signature ovoid) -->
+      <path d="M 36 50 Q 36 22 50 18 Q 64 22 64 50" stroke-width=".75"/>
+      <line x1="50" y1="50" x2="50" y2="18" stroke-width=".25" stroke-dasharray="1 1"/>
+      ${[-50,-25,0,25,50].map(a=>{const x=50+Math.cos((90-a)*Math.PI/180)*14;const y=50-Math.sin((90-a)*Math.PI/180)*32;return `<line x1="50" y1="50" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke-width=".25"/>`}).join("")}
+      <!-- cupola lantern -->
+      <line x1="50" y1="18" x2="50" y2="10" stroke-width=".4"/>
+      <ellipse cx="50" cy="10" rx="2" ry="1.2" stroke-width=".4"/>
+      <!-- cross on top -->
+      <line x1="50" y1="10" x2="50" y2="2" stroke-width=".5"/>
+      <line x1="47" y1="6" x2="53" y2="6" stroke-width=".4"/>
+      <!-- arched portico arches (3 arches) -->
+      ${[36,46,56].map(x=>`<path d="M ${x} 88 L ${x} 76 Q ${x} 70 ${x+4} 70 Q ${x+8} 70 ${x+8} 76 L ${x+8} 88" stroke-width=".4"/>`).join("")}
+      <!-- masonry courses on facade -->
+      ${[60,68,78].map(y=>`<line x1="32" y1="${y}" x2="68" y2="${y}" stroke-width=".25" stroke-dasharray=".8 1.4"/>`).join("")}
+      <!-- statue niches -->
+      <path d="M 38 64 L 38 58 Q 38 55 40 55 Q 42 55 42 58 L 42 64" stroke-width=".3"/>
+      <path d="M 58 64 L 58 58 Q 58 55 60 55 Q 62 55 62 58 L 62 64" stroke-width=".3"/>
+    </g>`,
+  conciergerie: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      <!-- Seine ripples -->
+      <line x1="4" y1="88" x2="96" y2="88" stroke-width=".5"/>
+      ${[10,30,50,70,86].map(x=>`<path d="M ${x} 92 Q ${x+3} 91 ${x+6} 92 Q ${x+9} 93 ${x+12} 92" stroke-width=".3"/>`).join("")}
+      ${[18,42,62,82].map(x=>`<path d="M ${x} 94 Q ${x+4} 93 ${x+8} 94" stroke-width=".25"/>`).join("")}
+      <!-- main building block -->
+      <path d="M 22 88 L 22 50 L 78 50 L 78 88" stroke-width=".7"/>
+      <!-- crenellation -->
+      ${Array.from({length:14}).map((_,i)=>`<path d="M ${24+i*4} 50 L ${24+i*4} 46 L ${26.5+i*4} 46 L ${26.5+i*4} 50" stroke-width=".35"/>`).join("")}
+      <!-- arched windows row -->
+      ${[28,38,48,58,68].map(x=>`<path d="M ${x} 80 L ${x} 64 Q ${x} 60 ${x+3} 60 Q ${x+6} 60 ${x+6} 64 L ${x+6} 80" stroke-width=".4"/><line x1="${x+3}" y1="60" x2="${x+3}" y2="80" stroke-width=".25" stroke-dasharray=".8 1"/>`).join("")}
+      <!-- clock tower (Tour de l'Horloge) -->
+      <path d="M 64 88 L 64 28 L 78 28 L 78 88" stroke-width=".7"/>
+      <path d="M 62 28 L 80 28 L 80 24 L 62 24 Z" stroke-width=".4"/>
+      <path d="M 62 24 L 80 24 L 78 18 L 64 18 Z" stroke-width=".4"/>
+      ${Array.from({length:6}).map((_,i)=>`<path d="M ${64+i*2.5} 18 L ${64+i*2.5} 14 L ${65.5+i*2.5} 14 L ${65.5+i*2.5} 18" stroke-width=".3"/>`).join("")}
+      <path d="M 60 18 L 82 18 L 71 6 Z" stroke-width=".5"/>
+      <line x1="71" y1="6" x2="71" y2="2" stroke-width=".4"/>
+      <circle cx="71" cy="2" r=".7" stroke-width=".3"/>
+      <!-- clock face -->
+      <rect x="66" y="34" width="10" height="10" stroke-width=".4"/>
+      <circle cx="71" cy="39" r="3" stroke-width=".4"/>
+      <line x1="71" y1="39" x2="71" y2="37" stroke-width=".3"/>
+      <line x1="71" y1="39" x2="73" y2="40" stroke-width=".3"/>
+      <!-- twin round towers (left) -->
+      <path d="M 8 88 L 8 30 L 22 30 L 22 88" stroke-width=".7"/>
+      <path d="M 8 30 Q 15 18 22 30" stroke-width=".5"/>
+      <line x1="15" y1="22" x2="15" y2="14" stroke-width=".4"/>
+      <circle cx="15" cy="13" r=".7" stroke-width=".3"/>
+      <!-- arrow slits -->
+      ${[40,52,64,76].map(y=>`<rect x="14" y="${y}" width="2" height="5" stroke-width=".25"/>`).join("")}
+      <!-- masonry rustication -->
+      ${[58,68,78].map(y=>`<line x1="22" y1="${y}" x2="64" y2="${y}" stroke-width=".25" stroke-dasharray=".8 1.4"/>`).join("")}
+    </g>`,
+  juillet: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="6" y1="92" x2="94" y2="92" stroke-width=".8"/>
+      <!-- pedestal -->
+      <path d="M 32 92 L 32 78 L 68 78 L 68 92" stroke-width=".7"/>
+      <line x1="30" y1="78" x2="70" y2="78" stroke-width=".5"/>
+      <line x1="34" y1="84" x2="66" y2="84" stroke-width=".25" stroke-dasharray=".8 1.4"/>
+      <!-- relief panel -->
+      <rect x="38" y="80" width="24" height="8" stroke-width=".3"/>
+      <!-- column shaft (gilded — show vertical fluting) -->
+      <path d="M 44 78 L 44 22 L 56 22 L 56 78" stroke-width=".7"/>
+      ${[46,48,50,52,54].map(x=>`<line x1="${x}" y1="22" x2="${x}" y2="78" stroke-width=".25" stroke-dasharray=".8 1.4"/>`).join("")}
+      <!-- relief medallions -->
+      ${[30,42,54,66].map(y=>`<circle cx="50" cy="${y}" r="1.4" stroke-width=".3"/>`).join("")}
+      <!-- capital -->
+      <path d="M 40 22 L 60 22 L 58 18 L 42 18 Z" stroke-width=".5"/>
+      <path d="M 38 18 L 62 18 L 62 14 L 38 14 Z" stroke-width=".5"/>
+      <line x1="36" y1="14" x2="64" y2="14" stroke-width=".5"/>
+      <!-- platform & winged genius (Génie de la Liberté) — silhouette in flight -->
+      <rect x="44" y="10" width="12" height="4" stroke-width=".4"/>
+      <ellipse cx="50" cy="6" rx="2" ry="2" stroke-width=".4"/>
+      <path d="M 48 8 L 48 14 L 52 14 L 52 8" stroke-width=".4"/>
+      <!-- wings spread -->
+      <path d="M 48 5 Q 40 0 38 -8 Q 44 -2 50 4" stroke-width=".4"/>
+      <path d="M 52 5 Q 60 0 62 -8 Q 56 -2 50 4" stroke-width=".4"/>
+      <!-- raised torch -->
+      <line x1="50" y1="6" x2="56" y2="-2" stroke-width=".5"/>
+      <path d="M 56 -2 L 58 -2 L 56.5 -8 L 55 -2 Z" stroke-width=".4"/>
+      <line x1="56.5" y1="-2" x2="56.5" y2="-8" stroke-width=".25"/>
+      <!-- raised broken-chain -->
+      <line x1="48" y1="8" x2="44" y2="12" stroke-width=".35"/>
+      <circle cx="44" cy="13" r=".5" stroke-width=".25"/>
+    </g>`,
+  vincennes: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="4" y1="92" x2="96" y2="92" stroke-width=".8"/>
+      <!-- moat suggestion -->
+      <path d="M 4 90 Q 50 86 96 90" stroke-width=".3"/>
+      <!-- curtain wall -->
+      <path d="M 6 88 L 6 60 L 94 60 L 94 88" stroke-width=".7"/>
+      <!-- crenellation on curtain -->
+      ${Array.from({length:22}).map((_,i)=>`<path d="M ${7+i*4} 60 L ${7+i*4} 56 L ${9.5+i*4} 56 L ${9.5+i*4} 60" stroke-width=".3"/>`).join("")}
+      <!-- arrow slits -->
+      ${[12,20,28,76,84].map(x=>`<rect x="${x}" y="68" width="1.4" height="6" stroke-width=".25"/>`).join("")}
+      <!-- gate -->
+      <path d="M 44 88 L 44 76 Q 44 70 50 70 Q 56 70 56 76 L 56 88" stroke-width=".5"/>
+      <line x1="50" y1="70" x2="50" y2="88" stroke-width=".25" stroke-dasharray=".8 1"/>
+      ${[74,80].map(y=>`<line x1="44" y1="${y}" x2="56" y2="${y}" stroke-width=".2" stroke-dasharray=".8 1"/>`).join("")}
+      <!-- corner towers -->
+      <path d="M 6 60 L 6 44 L 18 44 L 18 60" stroke-width=".55"/>
+      <path d="M 82 60 L 82 44 L 94 44 L 94 60" stroke-width=".55"/>
+      ${[6,9,12,15,18].map(x=>`<path d="M ${x} 44 L ${x} 41 L ${x+1.5} 41 L ${x+1.5} 44" stroke-width=".25"/>`).join("")}
+      ${[82,85,88,91,94].map(x=>`<path d="M ${x} 44 L ${x} 41 L ${x+1.5} 41 L ${x+1.5} 44" stroke-width=".25"/>`).join("")}
+      <!-- DONJON (signature massive square keep with 4 turrets) -->
+      <path d="M 36 60 L 36 18 L 64 18 L 64 60" stroke-width=".75"/>
+      ${[38,44,50,56].map(y=>`<line x1="36" y1="${y}" x2="64" y2="${y}" stroke-width=".22" stroke-dasharray=".8 1.4"/>`).join("")}
+      <!-- corner turrets on donjon -->
+      <path d="M 32 60 L 32 12 L 40 12 L 40 18" stroke-width=".55"/>
+      <path d="M 60 18 L 60 12 L 68 12 L 68 60" stroke-width=".55"/>
+      <path d="M 30 12 L 42 12 L 36 6 Z" stroke-width=".5"/>
+      <path d="M 58 12 L 70 12 L 64 6 Z" stroke-width=".5"/>
+      <line x1="36" y1="6" x2="36" y2="2" stroke-width=".35"/>
+      <line x1="64" y1="6" x2="64" y2="2" stroke-width=".35"/>
+      <path d="M 33 2 L 36 2 L 33 4 Z" stroke-width=".3"/>
+      <path d="M 67 2 L 64 2 L 67 4 Z" stroke-width=".3"/>
+      <!-- machicolations -->
+      ${Array.from({length:10}).map((_,i)=>`<rect x="${37+i*2.7}" y="18" width="1.4" height="2" stroke-width=".25"/>`).join("")}
+      <!-- arched windows on keep -->
+      ${[42,52].map(x=>`<path d="M ${x} 50 L ${x} 38 Q ${x} 34 ${x+3} 34 Q ${x+6} 34 ${x+6} 38 L ${x+6} 50" stroke-width=".4"/>`).join("")}
+      <path d="M 46 60 L 46 50 Q 46 46 50 46 Q 54 46 54 50 L 54 60" stroke-width=".4"/>
+    </g>`,
+  elysee: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="4" y1="92" x2="96" y2="92" stroke-width=".8"/>
+      <!-- forecourt paving -->
+      <line x1="4" y1="90" x2="96" y2="90" stroke-width=".25" stroke-dasharray="1.5 1.5"/>
+      <!-- side wings -->
+      <path d="M 6 88 L 6 60 L 36 60 L 36 88" stroke-width=".7"/>
+      <path d="M 64 88 L 64 60 L 94 60 L 94 88" stroke-width=".7"/>
+      <!-- mansard roofs over wings -->
+      <path d="M 4 60 L 8 52 L 34 52 L 38 60" stroke-width=".5"/>
+      <path d="M 62 60 L 66 52 L 92 52 L 96 60" stroke-width=".5"/>
+      <!-- arched windows on wings -->
+      ${[10,18,26,68,76,84].map(x=>`<path d="M ${x} 84 L ${x} 70 Q ${x} 66 ${x+3} 66 Q ${x+6} 66 ${x+6} 70 L ${x+6} 84" stroke-width=".4"/><line x1="${x+3}" y1="66" x2="${x+3}" y2="84" stroke-width=".22" stroke-dasharray=".8 1"/>`).join("")}
+      <!-- central main pavilion -->
+      <path d="M 36 88 L 36 46 L 64 46 L 64 88" stroke-width=".75"/>
+      <!-- pediment over central pavilion -->
+      <path d="M 32 46 L 50 30 L 68 46" stroke-width=".55"/>
+      <line x1="34" y1="46" x2="50" y2="32" stroke-width=".3"/>
+      <line x1="66" y1="46" x2="50" y2="32" stroke-width=".3"/>
+      <ellipse cx="50" cy="42" rx="2" ry="1.2" stroke-width=".35"/>
+      <!-- entry portico (4 columns) -->
+      ${[40,46,52,58].map(x=>`<path d="M ${x} 88 L ${x} 50 M ${x-1} 50 L ${x+1} 50 M ${x-1} 88 L ${x+1} 88" stroke-width=".4"/>`).join("")}
+      <!-- door -->
+      <path d="M 47 88 L 47 78 Q 47 74 50 74 Q 53 74 53 78 L 53 88" stroke-width=".4"/>
+      <!-- French flag pole -->
+      <line x1="50" y1="30" x2="50" y2="20" stroke-width=".4"/>
+      <path d="M 50 22 L 56 23 L 50 25" stroke-width=".4"/>
+      <!-- masonry courses -->
+      ${[60,70,80].map(y=>`<line x1="36" y1="${y}" x2="64" y2="${y}" stroke-width=".22" stroke-dasharray=".8 1.4"/>`).join("")}
+    </g>`,
+  opera: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="4" y1="92" x2="96" y2="92" stroke-width=".8"/>
+      <!-- ground floor (loggia of 7 arches) -->
+      <path d="M 14 88 L 14 62 L 86 62 L 86 88" stroke-width=".7"/>
+      ${[16,26,36,46,56,66,76].map(x=>`<path d="M ${x} 86 L ${x} 70 Q ${x} 64 ${x+4} 64 Q ${x+8} 64 ${x+8} 70 L ${x+8} 86" stroke-width=".4"/><line x1="${x+4}" y1="64" x2="${x+4}" y2="86" stroke-width=".22" stroke-dasharray=".8 1"/>`).join("")}
+      <!-- string course -->
+      <line x1="12" y1="62" x2="88" y2="62" stroke-width=".5"/>
+      <line x1="12" y1="60" x2="88" y2="60" stroke-width=".4"/>
+      <!-- main floor: paired columns -->
+      <path d="M 14 60 L 14 42 L 86 42 L 86 60" stroke-width=".7"/>
+      ${[16,21,30,35,46,51,62,67,78,83].map(x=>`<path d="M ${x} 60 L ${x} 44 M ${x-.8} 44 L ${x+.8} 44 M ${x-.8} 60 L ${x+.8} 60" stroke-width=".35"/>`).join("")}
+      <!-- entablature -->
+      <line x1="12" y1="42" x2="88" y2="42" stroke-width=".5"/>
+      <line x1="12" y1="38" x2="88" y2="38" stroke-width=".4"/>
+      ${Array.from({length:12}).map((_,i)=>`<rect x="${14+i*6}" y="38" width="3" height="4" stroke-width=".22"/>`).join("")}
+      <!-- attic with sculptures -->
+      <path d="M 14 38 L 14 30 L 86 30 L 86 38" stroke-width=".5"/>
+      ${[24,40,60,76].map(x=>`<ellipse cx="${x}" cy="26" rx="1.5" ry="1.2" stroke-width=".3"/><path d="M ${x-1.5} 26 L ${x-1.5} 30 L ${x+1.5} 30 L ${x+1.5} 26" stroke-width=".3"/>`).join("")}
+      <!-- corner Pegasi (winged figures) -->
+      <path d="M 14 26 Q 12 24 10 26 Q 12 28 14 26 Z" stroke-width=".4"/>
+      <path d="M 86 26 Q 88 24 90 26 Q 88 28 86 26 Z" stroke-width=".4"/>
+      <line x1="13" y1="26" x2="13" y2="30" stroke-width=".3"/>
+      <line x1="87" y1="26" x2="87" y2="30" stroke-width=".3"/>
+      <!-- central crowning section with dome -->
+      <rect x="38" y="22" width="24" height="8" stroke-width=".5"/>
+      ${[42,46,50,54,58].map(x=>`<line x1="${x}" y1="22" x2="${x}" y2="30" stroke-width=".25"/>`).join("")}
+      <!-- saucer dome -->
+      <path d="M 32 22 Q 50 -2 68 22" stroke-width=".7"/>
+      ${[-50,-25,0,25,50].map(a=>{const x=50+Math.cos((90-a)*Math.PI/180)*18;const y=22-Math.sin((90-a)*Math.PI/180)*24;return `<line x1="50" y1="22" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke-width=".22"/>`}).join("")}
+      <!-- Apollo -->
+      <ellipse cx="50" cy="-3" rx="1.5" ry="1.5" stroke-width=".4"/>
+      <path d="M 48 -3 L 48 2 L 52 2 L 52 -3" stroke-width=".35"/>
+      <line x1="50" y1="-4" x2="50" y2="-10" stroke-width=".4"/>
+      ${[0,30,60,-30,-60].map(a=>{const x=50+Math.cos((90-a)*Math.PI/180)*4;const y=-10-Math.sin((90-a)*Math.PI/180)*4;return `<line x1="50" y1="-10" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke-width=".25"/>`}).join("")}
+    </g>`,
+  saintechapelle: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="6" y1="92" x2="94" y2="92" stroke-width=".8"/>
+      <!-- main chapel body -->
+      <path d="M 22 90 L 22 38 L 78 38 L 78 90" stroke-width=".75"/>
+      <!-- gothic pinnacles around (buttresses with spires) -->
+      ${[22,34,46,58,70,78].map(x=>`<path d="M ${x-1} 38 L ${x-1} 32 L ${x+2} 32 L ${x+2} 38" stroke-width=".4"/><path d="M ${x-1.5} 32 L ${x+2.5} 32 L ${x+.5} 24 Z" stroke-width=".4"/><line x1="${x+.5}" y1="24" x2="${x+.5}" y2="20" stroke-width=".3"/><circle cx="${x+.5}" cy="19.5" r=".5" stroke-width=".25"/>`).join("")}
+      <!-- tall stained-glass lancet windows -->
+      ${[26,38,50,62].map(x=>`<path d="M ${x} 86 L ${x} 56 Q ${x} 48 ${x+3} 48 Q ${x+6} 48 ${x+6} 56 L ${x+6} 86" stroke-width=".5"/><line x1="${x+3}" y1="48" x2="${x+3}" y2="86" stroke-width=".22" stroke-dasharray=".8 1"/><path d="M ${x+1.5} 56 Q ${x+3} 52 ${x+4.5} 56" stroke-width=".22"/>`).join("")}
+      <!-- great rose window -->
+      <circle cx="50" cy="34" r="11" stroke-width=".7"/>
+      <circle cx="50" cy="34" r="7" stroke-width=".4"/>
+      <circle cx="50" cy="34" r="2.5" stroke-width=".4"/>
+      ${Array.from({length:12}).map((_,i)=>{const a=i*30*Math.PI/180;const x1=50+Math.cos(a)*2.5,y1=34+Math.sin(a)*2.5;const x2=50+Math.cos(a)*11,y2=34+Math.sin(a)*11;return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke-width=".3"/>`}).join("")}
+      <!-- quatrefoils between rose petals -->
+      ${[0,60,120,180,240,300].map(a=>{const x=50+Math.cos(a*Math.PI/180)*9.5,y=34+Math.sin(a*Math.PI/180)*9.5;return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r=".8" stroke-width=".25"/>`}).join("")}
+      <!-- gable above rose -->
+      <path d="M 36 22 L 50 6 L 64 22" stroke-width=".55"/>
+      <path d="M 38 22 L 50 8 L 62 22" stroke-width=".25"/>
+      <!-- the iconic FLECHE (signature spire — tall, slender) -->
+      <line x1="50" y1="6" x2="50" y2="-12" stroke-width=".7"/>
+      <path d="M 47 6 L 53 6 L 50 -2 Z" stroke-width=".4"/>
+      <path d="M 48 0 L 52 0" stroke-width=".3"/>
+      <!-- ornaments along flèche -->
+      <circle cx="50" cy="-2" r=".5" stroke-width=".25"/>
+      <circle cx="50" cy="-6" r=".5" stroke-width=".25"/>
+      <!-- cross at top -->
+      <line x1="50" y1="-12" x2="50" y2="-18" stroke-width=".5"/>
+      <line x1="48" y1="-15" x2="52" y2="-15" stroke-width=".4"/>
+      <!-- masonry courses on lower part -->
+      ${[42,52,62,72,82].map(y=>`<line x1="22" y1="${y}" x2="78" y2="${y}" stroke-width=".22" stroke-dasharray=".8 1.4"/>`).join("")}
+    </g>`,
+  invalides: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="4" y1="92" x2="96" y2="92" stroke-width=".8"/>
+      <!-- esplanade -->
+      <line x1="4" y1="90" x2="96" y2="90" stroke-width=".25" stroke-dasharray="1.5 1.5"/>
+      <!-- long flanking wings -->
+      <path d="M 4 88 L 4 70 L 34 70 L 34 88" stroke-width=".7"/>
+      <path d="M 66 88 L 66 70 L 96 70 L 96 88" stroke-width=".7"/>
+      <!-- arched windows wings -->
+      ${[6,14,22,68,76,84].map(x=>`<path d="M ${x} 86 L ${x} 76 Q ${x} 73 ${x+3} 73 Q ${x+6} 73 ${x+6} 76 L ${x+6} 86" stroke-width=".35"/>`).join("")}
+      <!-- main central church block -->
+      <path d="M 34 88 L 34 50 L 66 50 L 66 88" stroke-width=".75"/>
+      <!-- portico (4 columns) -->
+      ${[38,46,54,62].map(x=>`<path d="M ${x} 88 L ${x} 56 M ${x-.8} 56 L ${x+.8} 56 M ${x-.8} 88 L ${x+.8} 88" stroke-width=".35"/>`).join("")}
+      <!-- pediment -->
+      <path d="M 32 50 L 50 36 L 68 50" stroke-width=".55"/>
+      <line x1="34" y1="50" x2="50" y2="38" stroke-width=".3"/>
+      <line x1="66" y1="50" x2="50" y2="38" stroke-width=".3"/>
+      <ellipse cx="50" cy="46" rx="1.8" ry="1.2" stroke-width=".3"/>
+      <!-- high drum with columns ringing dome -->
+      <rect x="38" y="28" width="24" height="8" stroke-width=".5"/>
+      ${[40,44,48,52,56,60].map(x=>`<line x1="${x}" y1="28" x2="${x}" y2="36" stroke-width=".3"/>`).join("")}
+      <line x1="36" y1="28" x2="64" y2="28" stroke-width=".4"/>
+      <!-- THE GOLDEN DOME (signature — tall, ovoid) -->
+      <path d="M 32 28 Q 50 -8 68 28" stroke-width=".85"/>
+      <!-- meridian ribs -->
+      ${[-60,-30,0,30,60].map(a=>{const x=50+Math.cos((90-a)*Math.PI/180)*18;const y=28-Math.sin((90-a)*Math.PI/180)*36;return `<line x1="50" y1="28" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke-width=".3"/>`}).join("")}
+      <!-- decorative trophies/fleurs along rib -->
+      ${[36,44,52].map(x=>`<circle cx="${x}" cy="${20-Math.abs(x-50)*.5}" r=".5" stroke-width=".25"/>`).join("")}
+      ${[56,64].map(x=>`<circle cx="${x}" cy="${20-Math.abs(x-50)*.5}" r=".5" stroke-width=".25"/>`).join("")}
+      <!-- gold lantern -->
+      <rect x="46" y="-10" width="8" height="6" stroke-width=".4"/>
+      <line x1="48" y1="-10" x2="48" y2="-4" stroke-width=".25"/>
+      <line x1="52" y1="-10" x2="52" y2="-4" stroke-width=".25"/>
+      <path d="M 44 -12 L 56 -12" stroke-width=".4"/>
+      <path d="M 46 -12 L 50 -16 L 54 -12" stroke-width=".4"/>
+      <line x1="50" y1="-16" x2="50" y2="-22" stroke-width=".5"/>
+      <!-- cross on top -->
+      <line x1="48" y1="-19" x2="52" y2="-19" stroke-width=".4"/>
+      <circle cx="50" cy="-22" r=".5" stroke-width=".25"/>
+    </g>`,
+  stjacques: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="6" y1="92" x2="94" y2="92" stroke-width=".8"/>
+      <!-- terrace base -->
+      <path d="M 22 88 L 22 84 L 78 84 L 78 88" stroke-width=".6"/>
+      <line x1="20" y1="84" x2="80" y2="84" stroke-width=".4"/>
+      <!-- stepped sub-base -->
+      <path d="M 32 84 L 32 78 L 68 78 L 68 84" stroke-width=".5"/>
+      <line x1="30" y1="78" x2="70" y2="78" stroke-width=".4"/>
+      <!-- gothic tower body -->
+      <path d="M 36 78 L 36 24 L 64 24 L 64 78" stroke-width=".75"/>
+      <!-- vertical buttresses on tower edges -->
+      <path d="M 34 78 L 34 22 L 36 22" stroke-width=".4"/>
+      <path d="M 66 78 L 66 22 L 64 22" stroke-width=".4"/>
+      <line x1="34" y1="60" x2="36" y2="60" stroke-width=".25"/>
+      <line x1="64" y1="60" x2="66" y2="60" stroke-width=".25"/>
+      <line x1="34" y1="42" x2="36" y2="42" stroke-width=".25"/>
+      <line x1="64" y1="42" x2="66" y2="42" stroke-width=".25"/>
+      <!-- tall gothic windows (3 levels of tracery) -->
+      ${[28,42,56,70].map(y=>`<path d="M 40 ${y+10} L 40 ${y+1} Q 40 ${y-2} 43 ${y-2} Q 46 ${y-2} 46 ${y+1} L 46 ${y+10}" stroke-width=".4"/><path d="M 54 ${y+10} L 54 ${y+1} Q 54 ${y-2} 57 ${y-2} Q 60 ${y-2} 60 ${y+1} L 60 ${y+10}" stroke-width=".4"/><line x1="43" y1="${y-2}" x2="43" y2="${y+10}" stroke-width=".22"/><line x1="57" y1="${y-2}" x2="57" y2="${y+10}" stroke-width=".22"/>`).join("")}
+      <!-- horizontal string courses -->
+      ${[24,38,52,66].map(y=>`<line x1="36" y1="${y}" x2="64" y2="${y}" stroke-width=".3"/>`).join("")}
+      <!-- crown of tower with crocketed pinnacles -->
+      ${[34,42,50,58,66].map(x=>`<path d="M ${x-1} 24 L ${x-1} 18 L ${x+1} 18 L ${x+1} 24" stroke-width=".35"/><path d="M ${x-1.5} 18 L ${x+1.5} 18 L ${x} 12 Z" stroke-width=".4"/>`).join("")}
+      ${[34,42,50,58,66].map(x=>`<line x1="${x}" y1="12" x2="${x}" y2="9" stroke-width=".25"/><circle cx="${x}" cy="9" r=".4" stroke-width=".2"/>`).join("")}
+      <!-- statue of saint at the top (with pose suggestion) -->
+      <ellipse cx="50" cy="2" rx="1.4" ry="1.4" stroke-width=".4"/>
+      <path d="M 48 4 L 48 9 L 52 9 L 52 4" stroke-width=".4"/>
+      <path d="M 47 4 Q 44 6 46 9 L 50 9 Z" stroke-width=".3"/>
+      <path d="M 53 4 Q 56 6 54 9 L 50 9 Z" stroke-width=".3"/>
+      <!-- pilgrim staff -->
+      <line x1="55" y1="-4" x2="51" y2="9" stroke-width=".4"/>
+      <circle cx="55" cy="-4" r=".5" stroke-width=".25"/>
+    </g>`,
+  palaisroyal: `
+    <g stroke="${I}" fill="none" stroke-linecap="round">
+      ${Array.from({length:18}).map((_,i)=>`<line x1="${10+i*4.5}" y1="93" x2="${14+i*4.5}" y2="96" stroke-width=".4"/>`).join("")}
+      <line x1="4" y1="92" x2="96" y2="92" stroke-width=".8"/>
+      <!-- courtyard with Buren's striped columns (signature: tall, short alternating) -->
+      ${[14,22,30,70,78,86].map((x,i)=>{const h = i%2===0 ? 14 : 8; return `<rect x="${x}" y="${88-h}" width="3" height="${h}" stroke-width=".4"/><line x1="${x}" y1="${88-h+2}" x2="${x+3}" y2="${88-h+2}" stroke-width=".25" stroke-dasharray=".6 1"/><line x1="${x}" y1="${88-h+4}" x2="${x+3}" y2="${88-h+4}" stroke-width=".25" stroke-dasharray=".6 1"/><line x1="${x}" y1="${88-h+6}" x2="${x+3}" y2="${88-h+6}" stroke-width=".25" stroke-dasharray=".6 1"/>`}).join("")}
+      <!-- main palace facade with arcade -->
+      <path d="M 6 88 L 6 46 L 94 46 L 94 88" stroke-width=".75"/>
+      <!-- ground arcade (round arches) -->
+      ${[8,18,28,62,72,82].map(x=>`<path d="M ${x} 86 L ${x} 70 Q ${x} 64 ${x+4} 64 Q ${x+8} 64 ${x+8} 70 L ${x+8} 86" stroke-width=".4"/><line x1="${x+4}" y1="64" x2="${x+4}" y2="86" stroke-width=".22" stroke-dasharray=".8 1"/>`).join("")}
+      <!-- main floor windows -->
+      ${[8,18,28,62,72,82].map(x=>`<path d="M ${x} 60 L ${x} 50 L ${x+8} 50 L ${x+8} 60" stroke-width=".35"/><line x1="${x+4}" y1="50" x2="${x+4}" y2="60" stroke-width=".22"/>`).join("")}
+      <line x1="6" y1="62" x2="94" y2="62" stroke-width=".4"/>
+      <line x1="6" y1="48" x2="94" y2="48" stroke-width=".4"/>
+      <!-- string course / cornice -->
+      <line x1="4" y1="46" x2="96" y2="46" stroke-width=".5"/>
+      <line x1="6" y1="44" x2="94" y2="44" stroke-width=".35"/>
+      <!-- attic / mansard with pediment -->
+      <path d="M 6 44 L 14 36 L 86 36 L 94 44" stroke-width=".5"/>
+      ${[20,30,70,80].map(x=>`<rect x="${x-2}" y="36" width="4" height="6" stroke-width=".3"/><path d="M ${x-2} 36 L ${x+2} 36 L ${x} 32 Z" stroke-width=".3"/>`).join("")}
+      <!-- central pavilion -->
+      <path d="M 38 36 L 38 88 L 62 88 L 62 36" stroke-width=".75"/>
+      <path d="M 36 36 L 50 24 L 64 36" stroke-width=".55"/>
+      <line x1="38" y1="36" x2="50" y2="26" stroke-width=".3"/>
+      <line x1="62" y1="36" x2="50" y2="26" stroke-width=".3"/>
+      <ellipse cx="50" cy="32" rx="1.6" ry="1.2" stroke-width=".3"/>
+      <!-- main entry arch -->
+      <path d="M 46 88 L 46 76 Q 46 70 50 70 Q 54 70 54 76 L 54 88" stroke-width=".5"/>
+      <!-- clock -->
+      <circle cx="50" cy="44" r="2.5" stroke-width=".4"/>
+      <line x1="50" y1="44" x2="50" y2="42.4" stroke-width=".3"/>
+      <line x1="50" y1="44" x2="51.4" y2="44.6" stroke-width=".3"/>
+      <!-- masonry rustication on ground -->
+      ${[72,80].map(y=>`<line x1="6" y1="${y}" x2="94" y2="${y}" stroke-width=".22" stroke-dasharray=".8 1.4"/>`).join("")}
+    </g>`,
+};
+
+// Build a scalloped (cusped) cartouche path — like the inner border of the reference pendant.
+// nLobes = number of cusps; rOuter = outer radius (lobe peak); rInner = inner radius (lobe valley).
+function scallopedPath(cx, cy, rOuter, rInner, nLobes){
+  const pts = [];
+  const step = Math.PI / nLobes; // alternate outer/inner
+  for(let i=0;i<nLobes*2;i++){
+    const a = -Math.PI/2 + i*step;
+    const r = (i%2===0) ? rOuter : rInner;
+    pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r]);
+  }
+  // smooth via quadratic curves through midpoints
+  let d = `M ${pts[0][0].toFixed(2)} ${pts[0][1].toFixed(2)}`;
+  for(let i=1;i<=pts.length;i++){
+    const p = pts[i % pts.length];
+    const prev = pts[(i-1) % pts.length];
+    const mx = (p[0]+prev[0])/2, my = (p[1]+prev[1])/2;
+    d += ` Q ${prev[0].toFixed(2)} ${prev[1].toFixed(2)} ${mx.toFixed(2)} ${my.toFixed(2)}`;
+  }
+  d += " Z";
+  return d;
+}
+
+function medal(m, idx){
+  const upperText = m.name.toUpperCase();
+  const len = upperText.length;
+  const fs  = len > 22 ? 9.5 : len > 18 ? 11 : len > 14 ? 12.5 : 13.5;
+  const ls  = len > 22 ? 1.6 : len > 18 ? 2.2 : 2.8;
+
+  // Beaded rim — small gold balls around the perimeter (like ref 1)
+  const beads = [];
+  const N = 84;
+  for(let i=0;i<N;i++){
+    const a = i*(360/N)*Math.PI/180;
+    const x = 110+Math.cos(a)*101.5, y = 110+Math.sin(a)*101.5;
+    beads.push(`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="1.7" fill="url(#hi)"/>`);
+    beads.push(`<circle cx="${(x+.3).toFixed(2)}" cy="${(y+.3).toFixed(2)}" r=".7" fill="oklch(96% 0.08 88)" opacity=".9"/>`);
+    beads.push(`<circle cx="${(x-.4).toFixed(2)}" cy="${(y-.4).toFixed(2)}" r=".4" fill="oklch(28% 0.07 55)" opacity=".55"/>`);
+  }
+
+  // Scalloped cartouche around the monument (8 lobes — like ref 1)
+  const cartouche = scallopedPath(110, 112, 78, 68, 8);
+
+  // Hammered/aged field — sparse irregular dots & marks
+  const wear = [];
+  const seed = idx*7919 + 13;
+  for(let k=0;k<60;k++){
+    const r = 8 + ((seed*(k+3))%82);
+    const a = ((seed*13*(k+1))%3600)/10*Math.PI/180;
+    const x = 110+Math.cos(a)*r, y = 110+Math.sin(a)*r;
+    const rr = 0.3 + ((k*seed)%9)/12;
+    const op = .15 + ((k*seed)%8)/30;
+    wear.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rr.toFixed(2)}" fill="oklch(35% 0.08 55)" opacity="${op.toFixed(2)}"/>`);
+  }
+  for(let k=0;k<10;k++){
+    const a = ((seed*7*(k+2))%360)*Math.PI/180;
+    const r = 30 + (k*6);
+    const x = 110+Math.cos(a)*r, y = 110+Math.sin(a)*r;
+    const dx = Math.cos(a+1)*2.5, dy = Math.sin(a+1)*2.5;
+    wear.push(`<line x1="${(x-dx).toFixed(1)}" y1="${(y-dy).toFixed(1)}" x2="${(x+dx).toFixed(1)}" y2="${(y+dy).toFixed(1)}" stroke="oklch(96% 0.08 88)" stroke-width=".4" opacity=".25"/>`);
+  }
+
+  return `
+  <svg class="medal" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- cast shadow -->
+    <ellipse cx="110" cy="212" rx="86" ry="7" fill="rgba(0,0,0,.65)"/>
+
+    <!-- ===== ANTIQUE PENDANT (ref 1 + ref 2) =====
+         outer disc · beaded rim · scalloped cartouche · hammered field      -->
+
+    <!-- gold disc body -->
+    <circle cx="110" cy="110" r="106" fill="url(#field)"/>
+    <!-- soft inner field -->
+    <circle cx="110" cy="110" r="100" fill="url(#field)"/>
+
+    <!-- aged metal wear / hammered marks across whole field -->
+    ${wear.join("")}
+
+    <!-- engraved fine line just inside the beaded rim -->
+    <circle cx="110" cy="110" r="95" fill="none" stroke="oklch(28% 0.07 55)" stroke-width=".5" opacity=".5"/>
+
+    <!-- arc paths for inscription (between beaded rim and cartouche) -->
+    <defs>
+      <path id="topArc-${idx}" d="M 32 110 A 78 78 0 0 1 188 110" fill="none"/>
+      <path id="botArc-${idx}" d="M 36 122 A 74 74 0 0 0 184 122" fill="none"/>
+    </defs>
+
+    <!-- ENGRAVED NAME (top arc) — deep shadow under, raised metal letter on top -->
+    <text font-family="Cinzel, serif" font-size="${fs}" font-weight="600" letter-spacing="${ls}" transform="translate(0 .9)">
+      <textPath href="#topArc-${idx}" startOffset="50%" text-anchor="middle" fill="oklch(18% 0.05 50)" opacity=".75">${upperText}</textPath>
+    </text>
+    <text font-family="Cinzel, serif" font-size="${fs}" font-weight="600" letter-spacing="${ls}">
+      <textPath href="#topArc-${idx}" startOffset="50%" text-anchor="middle" fill="oklch(38% 0.09 60)">${upperText}</textPath>
+    </text>
+    <text font-family="Cinzel, serif" font-size="${fs}" font-weight="600" letter-spacing="${ls}" transform="translate(-.3 -.3)">
+      <textPath href="#topArc-${idx}" startOffset="50%" text-anchor="middle" fill="oklch(96% 0.10 88)" opacity=".5">${upperText}</textPath>
+    </text>
+
+    <!-- ENGRAVED DATE (bottom arc) -->
+    <text font-family="Cinzel, serif" font-size="9" font-weight="500" letter-spacing="3.4" transform="translate(0 .7)">
+      <textPath href="#botArc-${idx}" startOffset="50%" text-anchor="middle" fill="oklch(18% 0.05 50)" opacity=".7">·  ${m.yr}  ·  ${m.arr}ᵉ ARR.  ·</textPath>
+    </text>
+    <text font-family="Cinzel, serif" font-size="9" font-weight="500" letter-spacing="3.4">
+      <textPath href="#botArc-${idx}" startOffset="50%" text-anchor="middle" fill="oklch(38% 0.09 60)">·  ${m.yr}  ·  ${m.arr}ᵉ ARR.  ·</textPath>
+    </text>
+
+    <!-- BEADED RIM (signature of ref 1) -->
+    ${beads.join("")}
+
+    <!-- side fleurons (between the two arcs, on the rim's inner edge) -->
+    <g fill="oklch(22% 0.06 55)">
+      <g transform="translate(22 117)">
+        <circle cx="0" cy="0" r="2.2"/>
+        <circle cx="-5" cy="0" r="1"/>
+        <circle cx="5" cy="0" r="1"/>
+        <circle cx="0" cy="-5" r=".7"/>
+        <circle cx="0" cy="5" r=".7"/>
+      </g>
+      <g transform="translate(198 117)">
+        <circle cx="0" cy="0" r="2.2"/>
+        <circle cx="-5" cy="0" r="1"/>
+        <circle cx="5" cy="0" r="1"/>
+        <circle cx="0" cy="-5" r=".7"/>
+        <circle cx="0" cy="5" r=".7"/>
+      </g>
+    </g>
+
+    <!-- SCALLOPED CARTOUCHE around monument (ref 1's signature lobed border) -->
+    <path d="${cartouche}" fill="oklch(72% 0.13 78)" stroke="oklch(20% 0.05 50)" stroke-width="1.1"/>
+    <path d="${cartouche}" fill="none" stroke="oklch(96% 0.10 88)" stroke-width=".5" opacity=".55" transform="translate(-.4 -.4)"/>
+    <!-- inner cartouche shadow ring giving depth -->
+    <path d="${scallopedPath(110, 112, 75, 65.5, 8)}" fill="url(#field)"/>
+
+    <!-- tiny corner cusps decoration inside the cartouche corners (8 dots in valleys) -->
+    ${Array.from({length:8}).map((_,i)=>{
+      const a = -Math.PI/2 + (i+0.5)*(Math.PI/4);
+      const x = 110+Math.cos(a)*60, y = 112+Math.sin(a)*60;
+      return `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
+        <circle r="1.1" fill="oklch(22% 0.06 55)"/>
+        <circle cx="-2.5" cy="0" r=".6" fill="oklch(22% 0.06 55)"/>
+        <circle cx="2.5" cy="0" r=".6" fill="oklch(22% 0.06 55)"/>
+      </g>`;
+    }).join("")}
+
+    <!-- MAIN MONUMENT GLYPH — centered inside cartouche -->
+    <g transform="translate(45 50) scale(1.2)" opacity=".96">
+      ${glyphs[m.k]}
+    </g>
+
+    <!-- gentle raised highlight & bottom shadow for 3D coin feel -->
+    <ellipse cx="78" cy="54" rx="50" ry="20" fill="oklch(98% 0.06 88 / .18)"/>
+    <ellipse cx="72" cy="46" rx="24" ry="7" fill="oklch(98% 0.06 88 / .28)"/>
+    <path d="M 16 140 A 98 98 0 0 0 204 140" stroke="oklch(28% 0.07 55 / .45)" stroke-width="4" fill="none"/>
+    <path d="M 22 86 A 94 94 0 0 1 198 86" stroke="oklch(96% 0.08 88 / .35)" stroke-width="1.5" fill="none"/>
+  </svg>`;
+}
+
+const grid = document.getElementById("grid");
+monuments.forEach((m,i)=>{
+  const cell = document.createElement("article");
+  cell.className = "cell";
+  cell.innerHTML = `
+    <span class="tick tl"></span><span class="tick tr"></span>
+    <span class="tick bl"></span><span class="tick br"></span>
+    <div class="id">№ ${m.id}</div>
+    <div class="arr">${m.arr}ᵉ</div>
+    <div class="stage">${medal(m, i)}</div>
+    <div class="label">
+      <p class="name">${m.name}</p>
+      <div class="sub"><b>${m.yr}</b> · ${m.arr}ᵉ ARR.</div>
+    </div>`;
+  grid.appendChild(cell);
+});
+</script>
+</body>
+</html>

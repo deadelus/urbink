@@ -1,6 +1,6 @@
 'use strict';
 // ─── Design Tokens ────────────────────────────────────────────────────────────
-const T = {
+const T_LIGHT = {
   primary:'#256F4C', primaryD:'#1a5438',
   p10:'rgba(37,111,76,.10)', p06:'rgba(37,111,76,.06)', p18:'rgba(37,111,76,.18)',
   accent:'#F59E0B', a10:'rgba(245,158,11,.10)', a22:'rgba(245,158,11,.22)',
@@ -8,6 +8,20 @@ const T = {
   text:'#0F172A', muted:'#64748B', border:'#E2E8F0',
   pill:'#CBD5E1', red:'#DC2626',
 };
+const T_DARK = {
+  primary:'#4ADE80', primaryD:'#22C55E',
+  p10:'rgba(74,222,128,.12)', p06:'rgba(74,222,128,.07)', p18:'rgba(74,222,128,.20)',
+  accent:'#F59E0B', a10:'rgba(245,158,11,.14)', a22:'rgba(245,158,11,.26)',
+  bg:'#0F0F0F', surface:'#1C1C1E', surfVar:'#252528',
+  text:'#F2F2F2', muted:'#9A9A9F', border:'#2A2A2D',
+  pill:'#3A3A3D', red:'#F87171',
+};
+const T = {...T_LIGHT};
+const applyTheme = (mode) => {
+  Object.assign(T, mode==='dark' ? T_DARK : T_LIGHT);
+};
+window.applyTheme = applyTheme;
+window.T_LIGHT = T_LIGHT; window.T_DARK = T_DARK;
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const IC = {
