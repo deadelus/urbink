@@ -13,8 +13,8 @@ class ParcoursRepository {
     required String uid,
     required Parcours parcours,
   }) async {
-    final ref = await _collection(uid).add(parcours.toFirestore());
-    return ref.id;
+    await _collection(uid).doc(parcours.id).set(parcours.toFirestore());
+    return parcours.id;
   }
 
   Stream<List<Parcours>> streamByUser(String uid) => _collection(uid)

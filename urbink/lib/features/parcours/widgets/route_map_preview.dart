@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart' hide Path;
 import 'package:urbink/shared/constants/colors.dart';
@@ -153,7 +154,7 @@ class _RouteMapPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RouteMapPainter old) =>
-      old.points != points ||
+      !listEquals(old.points, points) ||
       old.variant != variant ||
       old.isSession != isSession;
 }

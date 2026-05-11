@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart' hide Path;
 import 'package:urbink/features/parcours/widgets/route_map_preview.dart';
+import 'package:urbink/shared/constants/colors.dart';
 
 const _points = [
   LatLng(48.8566, 2.3522),
@@ -74,18 +75,28 @@ void main() {
   });
 
   group('RouteMapPreview — isSession flag', () {
-    testWidgets('session=false se rend sans erreur', (tester) async {
+    testWidgets('session=false utilise la couleur Ocre pour la polyline', (tester) async {
       await tester.pumpWidget(
         _wrap(const RouteMapPreview(points: _points)),
       );
       expect(tester.takeException(), isNull);
+      final painter = find.descendant(
+        of: find.byType(RouteMapPreview),
+        matching: find.byType(CustomPaint),
+      );
+      expect(painter, paints..rect()..path(color: UrbinkColors.ocre));
     });
 
-    testWidgets('session=true se rend sans erreur', (tester) async {
+    testWidgets('session=true utilise la couleur Vert Sauge pour la polyline', (tester) async {
       await tester.pumpWidget(
         _wrap(const RouteMapPreview(points: _points, isSession: true)),
       );
       expect(tester.takeException(), isNull);
+      final painter = find.descendant(
+        of: find.byType(RouteMapPreview),
+        matching: find.byType(CustomPaint),
+      );
+      expect(painter, paints..rect()..path(color: UrbinkColors.streetExplored));
     });
   });
 }

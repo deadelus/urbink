@@ -33,7 +33,7 @@ Epic 5 · Story 5.1 — Composant RouteMapPreview + modèle de données parcours
 ### Modèle Firestore `/users/{userId}/parcours/{parcoursId}`
 ```
 name: string
-points: [{lat: double, lng: double}]   ← GeoPoint list
+points: [{lat: double, lng: double}]   ← liste de maps (pas GeoPoint)
 estimatedDistance: double              ← mètres
 estimatedDuration: int                 ← secondes
 mode: 'walk' | 'bike' | 'car'
@@ -90,4 +90,4 @@ createdAt: Timestamp
 
 ## Status
 
-review
+done
