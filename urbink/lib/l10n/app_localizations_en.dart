@@ -509,4 +509,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String objectif_progress(int unlocked, int total) {
     return '$unlocked / $total monuments';
   }
+
+  @override
+  String get rank_explorer_label => 'EXPLORER RANK';
+
+  @override
+  String rank_toward_next(String name) {
+    return 'Toward $name';
+  }
+
+  @override
+  String rank_monuments_count(int count) {
+    return '$count monuments discovered';
+  }
+
+  @override
+  String get rank_max_reached => 'maximum rank reached';
+
+  @override
+  String get rank_all_label => 'All 11 ranks';
+
+  @override
+  String rank_position(int current, int total) {
+    return '$current of $total';
+  }
+
+  @override
+  String get ranks_screen_title => 'Explorer rank';
+
+  @override
+  String get ranks_screen_subtitle => '1 monument discovered = 1 XP';
+
+  @override
+  String rank_hero_label(int current, int total) {
+    return 'Current rank · $current of $total';
+  }
+
+  @override
+  String get rank_next_label => 'Next rank';
+
+  @override
+  String get rank_you_are_here => 'You are here';
+
+  @override
+  String get rank_threshold_start => 'Starting point';
+
+  @override
+  String rank_threshold_from(int count) {
+    return 'From $count monuments';
+  }
+
+  @override
+  String get profile_anonymous_name => 'Anonymous Explorer';
+
+  @override
+  String get profile_anonymous_initials => 'AE';
+
+  @override
+  String get profile_stat_monuments => 'monuments';
+
+  @override
+  String get profile_stat_sorties => 'outings';
+
+  @override
+  String get profile_stat_ville => 'city';
+
+  @override
+  String get profile_last_sessions => 'Latest outings';
+
+  @override
+  String get badge_new_label => 'NEW';
+
+  @override
+  String get rank_mythic => 'Mythic';
 }

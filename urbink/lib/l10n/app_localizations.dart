@@ -991,6 +991,132 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'{unlocked} / {total} monuments'**
   String objectif_progress(int unlocked, int total);
+
+  /// Label supérieur de la RankCard (tout en majuscules)
+  ///
+  /// In fr, this message translates to:
+  /// **'RANG D\'EXPLORATEUR'**
+  String get rank_explorer_label;
+
+  /// Label progression vers le prochain rang
+  ///
+  /// In fr, this message translates to:
+  /// **'Vers {name}'**
+  String rank_toward_next(String name);
+
+  /// Nombre de monuments découverts (XP) dans la RankCard
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} monuments découverts'**
+  String rank_monuments_count(int count);
+
+  /// Label affiché quand le rang Légendaire est atteint
+  ///
+  /// In fr, this message translates to:
+  /// **'Rang maximum atteint'**
+  String get rank_max_reached;
+
+  /// Titre de la RankPreviewStrip
+  ///
+  /// In fr, this message translates to:
+  /// **'Les 11 rangs'**
+  String get rank_all_label;
+
+  /// Position du rang actuel parmi tous les rangs
+  ///
+  /// In fr, this message translates to:
+  /// **'{current} sur {total}'**
+  String rank_position(int current, int total);
+
+  /// Titre de l'écran RanksScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Rang d\'explorateur'**
+  String get ranks_screen_title;
+
+  /// Sous-titre de l'écran RanksScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'1 monument découvert = 1 XP'**
+  String get ranks_screen_subtitle;
+
+  /// Label du héros dans RanksScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Rang actuel · {current} sur {total}'**
+  String rank_hero_label(int current, int total);
+
+  /// Label prochain rang dans le héros RanksScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Prochain rang'**
+  String get rank_next_label;
+
+  /// Badge rang actuel dans la timeline des rangs
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous êtes ici'**
+  String get rank_you_are_here;
+
+  /// Seuil du rang Cristal (0 monument)
+  ///
+  /// In fr, this message translates to:
+  /// **'Point de départ'**
+  String get rank_threshold_start;
+
+  /// Seuil XP pour atteindre ce rang
+  ///
+  /// In fr, this message translates to:
+  /// **'À partir de {count} monuments'**
+  String rank_threshold_from(int count);
+
+  /// Nom affiché pour un compte anonyme dans le profil
+  ///
+  /// In fr, this message translates to:
+  /// **'Explorateur Anonyme'**
+  String get profile_anonymous_name;
+
+  /// Initiales affichées dans l'avatar anonyme
+  ///
+  /// In fr, this message translates to:
+  /// **'EA'**
+  String get profile_anonymous_initials;
+
+  /// Label stat monuments dans le ProfilScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'monuments'**
+  String get profile_stat_monuments;
+
+  /// Label stat sorties dans le ProfilScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'sorties'**
+  String get profile_stat_sorties;
+
+  /// Label stat villes dans le ProfilScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'ville'**
+  String get profile_stat_ville;
+
+  /// Titre de la section historique dans le ProfilScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Dernières sorties'**
+  String get profile_last_sessions;
+
+  /// Chip affiché sur les sorties du jour dans la liste profil
+  ///
+  /// In fr, this message translates to:
+  /// **'NOUVEAU'**
+  String get badge_new_label;
+
+  /// Badge rang Légendaire dans la timeline RanksScreen
+  ///
+  /// In fr, this message translates to:
+  /// **'Mythique'**
+  String get rank_mythic;
 }
 
 class _AppLocalizationsDelegate

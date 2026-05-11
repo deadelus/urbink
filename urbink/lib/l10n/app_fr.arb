@@ -530,5 +530,95 @@
       "unlocked": { "type": "int" },
       "total": { "type": "int" }
     }
-  }
+  },
+
+  "rank_explorer_label": "RANG D'EXPLORATEUR",
+  "@rank_explorer_label": { "description": "Label supérieur de la RankCard (tout en majuscules)" },
+
+  "rank_toward_next": "Vers {name}",
+  "@rank_toward_next": {
+    "description": "Label progression vers le prochain rang",
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "rank_monuments_count": "{count} monuments découverts",
+  "@rank_monuments_count": {
+    "description": "Nombre de monuments découverts (XP) dans la RankCard",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "rank_max_reached": "Rang maximum atteint",
+  "@rank_max_reached": { "description": "Label affiché quand le rang Légendaire est atteint" },
+
+  "rank_all_label": "Les 11 rangs",
+  "@rank_all_label": { "description": "Titre de la RankPreviewStrip" },
+
+  "rank_position": "{current} sur {total}",
+  "@rank_position": {
+    "description": "Position du rang actuel parmi tous les rangs",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "ranks_screen_title": "Rang d'explorateur",
+  "@ranks_screen_title": { "description": "Titre de l'écran RanksScreen" },
+
+  "ranks_screen_subtitle": "1 monument découvert = 1 XP",
+  "@ranks_screen_subtitle": { "description": "Sous-titre de l'écran RanksScreen" },
+
+  "rank_hero_label": "Rang actuel · {current} sur {total}",
+  "@rank_hero_label": {
+    "description": "Label du héros dans RanksScreen",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "rank_next_label": "Prochain rang",
+  "@rank_next_label": { "description": "Label prochain rang dans le héros RanksScreen" },
+
+  "rank_you_are_here": "Vous êtes ici",
+  "@rank_you_are_here": { "description": "Badge rang actuel dans la timeline des rangs" },
+
+  "rank_threshold_start": "Point de départ",
+  "@rank_threshold_start": { "description": "Seuil du rang Cristal (0 monument)" },
+
+  "rank_threshold_from": "À partir de {count} monuments",
+  "@rank_threshold_from": {
+    "description": "Seuil XP pour atteindre ce rang",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "profile_anonymous_name": "Explorateur Anonyme",
+  "@profile_anonymous_name": { "description": "Nom affiché pour un compte anonyme dans le profil" },
+
+  "profile_anonymous_initials": "EA",
+  "@profile_anonymous_initials": { "description": "Initiales affichées dans l'avatar anonyme" },
+
+  "profile_stat_monuments": "monuments",
+  "@profile_stat_monuments": { "description": "Label stat monuments dans le ProfilScreen" },
+
+  "profile_stat_sorties": "sorties",
+  "@profile_stat_sorties": { "description": "Label stat sorties dans le ProfilScreen" },
+
+  "profile_stat_ville": "ville",
+  "@profile_stat_ville": { "description": "Label stat villes dans le ProfilScreen" },
+
+  "profile_last_sessions": "Dernières sorties",
+  "@profile_last_sessions": { "description": "Titre de la section historique dans le ProfilScreen" },
+
+  "badge_new_label": "NOUVEAU",
+  "@badge_new_label": { "description": "Chip affiché sur les sorties du jour dans la liste profil" },
+
+  "rank_mythic": "Mythique",
+  "@rank_mythic": { "description": "Badge rang Légendaire dans la timeline RanksScreen" }
 }
