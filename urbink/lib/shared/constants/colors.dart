@@ -52,4 +52,7 @@ abstract final class UrbinkColors {
   // ── Séparateurs & bordures ────────────────────────────────────────────────
   static const Color border = Color(0xFFE2E8F0);
   static const Color borderSubtle = Color(0xFFF1F5F9);
+
+  // ── Ocre — itinéraires planifiés, point d'arrivée parcours ───────────────
+  static const Color ocre = Color(0xFFB8832E);
 }
